@@ -1,27 +1,51 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/utils/utils.dart';
 
-final authRepositoryProvider = Provider((ref) => AuthRepository(
-   ));
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => AuthRepository(
+    auth: FirebaseAuth.instance,
+    firestore: FirebaseFirestore.instance,
+  ),
+);
+
+final getUserProvider = FutureProvider((
+  ref,
+) {
+  return ref.watch(authRepositoryProvider).getUser();
+});
 
 class AuthRepository {
+  final FirebaseAuth auth;
+  final FirebaseFirestore firestore;
+
+  AuthRepository({required this.auth, required this.firestore});
   Future<void> createUser(
     String email,
     String password,
     BuildContext context,
   ) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-      showSnackBar(
-        context: context,
-        content: "User created: ${userCredential.user?.uid}",
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-
+      // showSnackBar(
+      //   context: context,
+      //   content: "User created: ${userCredential.user?.uid}",
+      // );
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) {
+            return Home();
+          },
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         showSnackBar(
@@ -37,7 +61,48 @@ class AuthRepository {
         showSnackBar(context: context, content: 'Error: ${e.message}');
       }
     } catch (e) {
+      print(e);
       showSnackBar(context: context, content: 'Unexpected error: $e');
     }
+  }
+
+  Future<void> login(
+    String email,
+    String password,
+    BuildContext context,
+  ) async {
+    try {
+      UserCredential userCredential = await auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Navigate to home after successful login
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (context) => Home()));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        showSnackBar(
+          context: context,
+          content: 'No user found for that email.',
+        );
+      } else if (e.code == 'wrong-password') {
+        showSnackBar(context: context, content: 'Wrong password provided.');
+      } else {
+        showSnackBar(
+          context: context,
+          content: 'Authentication error: ${e.message}',
+        );
+      }
+    } catch (e) {
+      print(e);
+      showSnackBar(context: context, content: 'Unexpected error: $e');
+    }
+  }
+
+  getUser() async {
+
+  return auth.currentUser;
   }
 }
