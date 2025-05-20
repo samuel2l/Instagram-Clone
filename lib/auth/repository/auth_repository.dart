@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/utils/utils.dart';
 
@@ -14,9 +15,7 @@ final authRepositoryProvider = Provider<AuthRepository>(
   ),
 );
 
-final getUserProvider = FutureProvider((
-  ref,
-) {
+final getUserProvider = FutureProvider<AppUserModel?>((ref) {
   return ref.watch(authRepositoryProvider).getUser();
 });
 
@@ -39,6 +38,12 @@ class AuthRepository {
       //   context: context,
       //   content: "User created: ${userCredential.user?.uid}",
       // );
+      await firestore.collection('users').doc(userCredential.user!.uid).set({
+        'email': email,
+        'uid': userCredential.user!.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) {
@@ -101,8 +106,15 @@ class AuthRepository {
     }
   }
 
-  getUser() async {
-
-  return auth.currentUser;
+  Future<AppUserModel?> getUser() async {
+    var userData =
+        await firestore.collection('users').doc(auth.currentUser!.uid).get();
+    AppUserModel? user;
+    if (userData.data() != null) {
+      user = AppUserModel.fromMap(userData.data()!);
+    }
+    print("returning user?");
+    print(user?.email);
+    return user;
   }
 }

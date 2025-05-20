@@ -34,16 +34,18 @@ class MyApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: [Locale("en"), Locale("fr")],
-      home: 
+      home:
       // FirebaseAuth.instance.currentUser==null?SignUp():Home()
       ref
           .watch(getUserProvider)
           .when(
             data: (data) {
-             return data == null ? const SignUp() : Home();
+              print("ah gotten data??");
+              print(data);
+
+              return data == null ? const SignUp() : Home();
             },
-            error:
-                (error, stackTrace) => Center(child: Text("Unexpected error $error")),
+            error: (error, stackTrace) => Center(child: Text(error.toString())),
             loading: () => Center(child: CircularProgressIndicator()),
           ),
     );

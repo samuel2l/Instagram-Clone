@@ -10,9 +10,23 @@ class Home extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: Text("Home"),),
+      appBar: AppBar(title: Text("Home")),
       body: Center(
-        child: Text(FirebaseAuth.instance.currentUser.toString()),
+        child: ref
+            .read(getUserProvider)
+            .when(
+              data: (user) {
+                return Column(
+                  children: [
+                    
+                    Text(user!.email),
+                    Text(user!.firebaseUID)
+                  ],
+                );
+              },
+              error: (error, stackTrace) => Text(error.toString()),
+              loading: () => Center(child: CircularProgressIndicator(),),
+            ),
       ),
     );
   }
