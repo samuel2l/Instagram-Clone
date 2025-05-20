@@ -113,8 +113,7 @@ class AuthRepository {
     if (userData.data() != null) {
       user = AppUserModel.fromMap(userData.data()!);
     }
-    print("returning user?");
-    print(user?.email);
+
     return user;
   }
 }

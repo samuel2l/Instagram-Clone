@@ -40,8 +40,6 @@ class MyApp extends ConsumerWidget {
           .watch(getUserProvider)
           .when(
             data: (data) {
-              print("ah gotten data??");
-              print(data);
 
               return data == null ? const SignUp() : Home();
             },
