@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import 'package:firebase_core/firebase_core.dart';
@@ -12,6 +13,7 @@ import 'package:instagram/home/screens/home.dart';
 // ...
 
 void main() async {
+  await dotenv.load(fileName: "/Users/samuel/instagram/.env");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(ProviderScope(child: const MyApp()));

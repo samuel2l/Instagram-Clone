@@ -41,6 +41,14 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Instagram needs access to your photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Instagram needs access to your camera.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Instagram needs access to your microphone.</string>
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
