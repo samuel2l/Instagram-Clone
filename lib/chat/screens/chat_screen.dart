@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
+import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
@@ -17,8 +18,8 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? chatId;
-  String? img;
-  String? imagePath;
+  String? file;
+  String? filePath;
 
   final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
@@ -120,6 +121,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                         ),
                       );
+                    } else if (messages[index]["type"] == video) {
+                      return VideoMessage(url: messages[index]["text"],isSender:messages[index]["senderId"] ==
+                                  FirebaseAuth.instance.currentUser!.uid);
                     } else {
                       return Padding(
                         padding: EdgeInsets.all(8),
@@ -146,31 +150,33 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    img = await pickImageFromGallery(context);
-                    imagePath = await uploadToCloudinary(img);
-                    // setState(() {});
-                    print("ah so the image path now??");
-                    print((imagePath));
+                    file = await pickImageFromGallery(context);
+                    filePath = await uploadToCloudinary(file);
                   },
                   icon: Icon(Icons.photo),
                 ),
 
-                IconButton(onPressed: () {}, icon: Icon(Icons.attachment)),
+                IconButton(
+                  onPressed: () async {
+                    file = await pickVideoFromGallery(context);
+                    filePath = await uploadToCloudinary(file);
+                  },
+                  icon: Icon(Icons.attachment),
+                ),
                 IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () {
                     final text = messageController.text.trim();
-                    print("image path on send?? ${imagePath}");
-                    if (imagePath != null) {
-                      print("you send the filek??");
+
+                    if (filePath != null) {
                       ref
                           .read(chatRepositoryProvider)
                           .sendFile(
                             receiverId: widget.user["uid"],
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: chatId ?? "",
-                            messageType: image,
-                            imageUrl: imagePath!,
+                            messageType: video,
+                            imageUrl: filePath!,
                           );
                     } else {
                       if (text.isNotEmpty) {

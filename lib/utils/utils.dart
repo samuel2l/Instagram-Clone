@@ -22,18 +22,33 @@ Future<String?> pickImageFromGallery(BuildContext context) async {
   return "";
 }
 
+Future<String?> pickVideoFromGallery(BuildContext context) async {
+  try {
+    final pickedVideo = await ImagePicker().pickVideo(
+      source: ImageSource.gallery,
+    );
+    return pickedVideo?.path ?? "";
+  } catch (e) {
+    showSnackBar(context: context, content: e.toString());
+  }
+  return "";
+}
+
 Future<String> uploadToCloudinary(path) async {
   final cloudinary = CloudinaryPublic(
     dotenv.env["CLOUDINARY_KEY1"]!,
     dotenv.env["CLOUDINARY_KEY2"]!,
   );
+
   CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
     CloudinaryFile.fromFile(
       path,
-      resourceType: CloudinaryResourceType.Image,
+      resourceType: CloudinaryResourceType.Video,
       folder: FirebaseAuth.instance.currentUser!.email,
     ),
   );
+  print("cideo????");
+  print(cloudinaryResponse.secureUrl);
 
   return cloudinaryResponse.secureUrl;
 }

@@ -169,8 +169,7 @@ class ChatRepository {
     required String messageType,
     required String imageUrl,
   }) async {
-    print("gotten imng url");
-    print(imageUrl);
+
     if (chatId.isEmpty) {
       chatId = await getOrCreateChatId([senderId, receiverId]);
     }

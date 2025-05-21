@@ -48,6 +48,7 @@ dependencies:
   cloudinary_public: ^0.23.1
   flutter_dotenv: ^5.2.1
   cached_network_image: ^3.4.1
+  cached_video_player_plus: ^3.0.3
 
 dev_dependencies:
   flutter_test:
