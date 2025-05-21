@@ -1,12 +1,54 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
+
+class EmojiSafeFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Check for backspace behavior (shorter text and backward cursor move)
+    final isBackspace =
+        newValue.text.length < oldValue.text.length &&
+        newValue.selection.start < oldValue.selection.start;
+
+    if (!isBackspace) return newValue;
+
+    final oldText = oldValue.text;
+    final cursorPos = oldValue.selection.start;
+
+    if (cursorPos <= 0) return newValue;
+
+    // Split grapheme clusters
+    final characters = oldText.characters;
+
+    // Keep characters before cursor
+    final beforeCursor = characters.take(cursorPos).toList();
+
+    // Remove the last cluster before the cursor
+    beforeCursor.removeLast();
+
+    // Add characters after cursor
+    final afterCursor = characters.skip(cursorPos).toList();
+
+    final updatedText = [...beforeCursor, ...afterCursor].join();
+    final newCursorPos = beforeCursor.join().length;
+
+    return TextEditingValue(
+      text: updatedText,
+      selection: TextSelection.collapsed(offset: newCursorPos),
+    );
+  }
+}
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.user});
@@ -33,6 +75,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       chatId = id;
     });
   }
+
+  bool showEmojis = false;
+  FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -122,8 +167,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                       );
                     } else if (messages[index]["type"] == video) {
-                      return VideoMessage(url: messages[index]["text"],isSender:messages[index]["senderId"] ==
-                                  FirebaseAuth.instance.currentUser!.uid);
+                      return VideoMessage(
+                        url: messages[index]["text"],
+                        isSender:
+                            messages[index]["senderId"] ==
+                            FirebaseAuth.instance.currentUser!.uid,
+                      );
                     } else {
                       return Padding(
                         padding: EdgeInsets.all(8),
@@ -140,59 +189,145 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: messageController,
-                    decoration: InputDecoration(hintText: "Type a message..."),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    file = await pickImageFromGallery(context);
-                    filePath = await uploadToCloudinary(file);
-                  },
-                  icon: Icon(Icons.photo),
-                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        showEmojis = !showEmojis;
+                        if (showEmojis) {
+                          focusNode.unfocus();
+                        } else {
+                          focusNode.requestFocus();
+                        }
+                        setState(() {});
+                      },
+                      icon: Icon(Icons.emoji_emotions_outlined),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        focusNode: focusNode,
+                        // inputFormatters: [EmojiSafeFormatter()],
+                        controller: messageController,
+                        decoration: InputDecoration(
+                          hintText: "Type a message...",
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        file = await pickImageFromGallery(context);
+                        filePath = await uploadToCloudinary(file);
+                      },
+                      icon: Icon(Icons.photo),
+                    ),
 
-                IconButton(
-                  onPressed: () async {
-                    file = await pickVideoFromGallery(context);
-                    filePath = await uploadToCloudinary(file);
-                  },
-                  icon: Icon(Icons.attachment),
-                ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () {
-                    final text = messageController.text.trim();
+                    IconButton(
+                      onPressed: () async {
+                        file = await pickVideoFromGallery(context);
+                        filePath = await uploadToCloudinary(file);
+                      },
+                      icon: Icon(Icons.attachment),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.send),
+                      onPressed: () {
+                        final text = messageController.text.trim();
 
-                    if (filePath != null) {
-                      ref
-                          .read(chatRepositoryProvider)
-                          .sendFile(
-                            receiverId: widget.user["uid"],
-                            senderId: FirebaseAuth.instance.currentUser!.uid,
-                            chatId: chatId ?? "",
-                            messageType: video,
-                            imageUrl: filePath!,
-                          );
-                    } else {
-                      if (text.isNotEmpty) {
-                        ref
-                            .read(chatRepositoryProvider)
-                            .sendMessage(
-                              receiverId: widget.user["uid"],
-                              senderId: FirebaseAuth.instance.currentUser!.uid,
-                              messageText: text,
-                              chatId: chatId ?? "",
+                        if (filePath != null) {
+                          ref
+                              .read(chatRepositoryProvider)
+                              .sendFile(
+                                receiverId: widget.user["uid"],
+                                senderId:
+                                    FirebaseAuth.instance.currentUser!.uid,
+                                chatId: chatId ?? "",
+                                messageType: video,
+                                imageUrl: filePath!,
+                              );
+                        } else {
+                          if (text.isNotEmpty) {
+                            ref
+                                .read(chatRepositoryProvider)
+                                .sendMessage(
+                                  receiverId: widget.user["uid"],
+                                  senderId:
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                  messageText: text,
+                                  chatId: chatId ?? "",
+                                );
+                            messageController.clear();
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                showEmojis
+                    ? SizedBox(
+                      height: 250,
+                      child: EmojiPicker(
+                        
+onBackspacePressed: () {
+  final text = messageController.text;
+  final selection = messageController.selection;
+
+  if (selection.start <= 0) return;
+
+  final characters = text.characters;
+  int deleteOffset = selection.start;
+
+  int currentOffset = 0;
+  for (final char in characters) {
+    final nextOffset = currentOffset + char.length;
+    if (nextOffset >= deleteOffset) {
+      // Found the character to delete
+      final newText = text.replaceRange(
+        currentOffset,
+        nextOffset,
+        '',
+      );
+
+      // Update the text and cursor position
+      messageController.text = newText;
+      messageController.selection =
+          TextSelection.collapsed(offset: currentOffset);
+      return;
+    }
+    currentOffset = nextOffset;
+  }
+},                      onEmojiSelected: (category, emoji) {
+                          final text = messageController.text;
+                          final textSelection = messageController.selection;
+
+                          // 🛡️ Prevent range error if selection is invalid
+                          if (textSelection.start < 0 ||
+                              textSelection.end < 0) {
+                            messageController.text += emoji.emoji;
+                            messageController
+                                .selection = TextSelection.collapsed(
+                              offset: messageController.text.length,
                             );
-                        messageController.clear();
-                      }
-                    }
-                  },
-                ),
+                            return;
+                          }
+
+                          final newText = text.replaceRange(
+                            textSelection.start,
+                            textSelection.end,
+                            emoji.emoji,
+                          );
+                          final emojiLength = emoji.emoji.length;
+
+                          messageController.text = newText;
+                          messageController.selection = textSelection.copyWith(
+                            baseOffset: textSelection.start + emojiLength,
+                            extentOffset: textSelection.start + emojiLength,
+                          );
+                        },
+                      ),
+                    )
+                    : SizedBox.shrink(),
               ],
             ),
           ),

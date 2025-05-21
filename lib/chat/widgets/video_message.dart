@@ -12,6 +12,7 @@ class VideoMessage extends ConsumerStatefulWidget {
 
 class _VideoMessageState extends ConsumerState<VideoMessage> {
   late CachedVideoPlayerPlusController controller;
+  bool isPlay = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -23,7 +24,7 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
       )
       ..initialize().then((value) async {
         await controller.setLooping(false);
-        controller.play();
+        // controller.play();
         setState(() {});
       });
   }
@@ -39,19 +40,35 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
     return Center(
       child:
           controller.value.isInitialized
-              ? Container(
-                padding: EdgeInsets.symmetric(horizontal: 17,vertical: 7),
-                height: 250,
-                width: double.infinity,
-                color:
-                    widget.isSender
-                        ? const Color.fromARGB(255, 143, 207, 145)
-                        : Colors.white,
+              ? Stack(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 17, vertical: 7),
+                    height: 250,
+                    width: double.infinity,
+                    color:
+                        widget.isSender
+                            ? const Color.fromARGB(255, 143, 207, 145)
+                            : Colors.white,
 
-                child: AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: CachedVideoPlayerPlus(controller),
-                ),
+                    child: CachedVideoPlayerPlus(controller),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      isPlay = !isPlay;
+                      isPlay ? controller.play() : controller.pause();
+                      setState(() {});
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(top: 120),
+                      alignment: Alignment.bottomCenter,
+                      child: Icon(
+                        isPlay ? Icons.pause : Icons.play_arrow,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               )
               : const CircularProgressIndicator.adaptive(),
     );
