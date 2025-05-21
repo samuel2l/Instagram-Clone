@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -47,8 +45,5 @@ Future<String> uploadToCloudinary(path) async {
       folder: FirebaseAuth.instance.currentUser!.email,
     ),
   );
-  print("cideo????");
-  print(cloudinaryResponse.secureUrl);
-
   return cloudinaryResponse.secureUrl;
 }

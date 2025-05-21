@@ -66,7 +66,6 @@ class AuthRepository {
         showSnackBar(context: context, content: 'Error: ${e.message}');
       }
     } catch (e) {
-      print(e);
       showSnackBar(context: context, content: 'Unexpected error: $e');
     }
   }
@@ -77,12 +76,11 @@ class AuthRepository {
     BuildContext context,
   ) async {
     try {
-      UserCredential userCredential = await auth.signInWithEmailAndPassword(
+      await auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Navigate to home after successful login
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (context) => Home()));
@@ -101,7 +99,6 @@ class AuthRepository {
         );
       }
     } catch (e) {
-      print(e);
       showSnackBar(context: context, content: 'Unexpected error: $e');
     }
   }

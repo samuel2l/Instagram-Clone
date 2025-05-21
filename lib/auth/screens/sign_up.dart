@@ -34,9 +34,6 @@ class _SignUpState extends ConsumerState<SignUp> {
           TextButton(
             onPressed: () {
               if (formKey.currentState!.validate()) {
-                print(
-                  "${emailController.text.trim()}, ${passwordController.text.trim()}",
-                );
                 ref
                     .read(authRepositoryProvider)
                     .login(
