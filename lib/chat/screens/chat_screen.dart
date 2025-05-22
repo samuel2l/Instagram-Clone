@@ -10,45 +10,6 @@ import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
-class EmojiSafeFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    // Check for backspace behavior (shorter text and backward cursor move)
-    final isBackspace =
-        newValue.text.length < oldValue.text.length &&
-        newValue.selection.start < oldValue.selection.start;
-
-    if (!isBackspace) return newValue;
-
-    final oldText = oldValue.text;
-    final cursorPos = oldValue.selection.start;
-
-    if (cursorPos <= 0) return newValue;
-
-    // Split grapheme clusters
-    final characters = oldText.characters;
-
-    // Keep characters before cursor
-    final beforeCursor = characters.take(cursorPos).toList();
-
-    // Remove the last cluster before the cursor
-    beforeCursor.removeLast();
-
-    // Add characters after cursor
-    final afterCursor = characters.skip(cursorPos).toList();
-
-    final updatedText = [...beforeCursor, ...afterCursor].join();
-    final newCursorPos = beforeCursor.join().length;
-
-    return TextEditingValue(
-      text: updatedText,
-      selection: TextSelection.collapsed(offset: newCursorPos),
-    );
-  }
-}
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.user});
