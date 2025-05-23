@@ -199,7 +199,7 @@ class ChatRepository {
         'lastMessage': "🎵 Audio",
         'lastMessageTime': FieldValue.serverTimestamp(),
       });
-    } else if (messageType == gif) {
+    } else if (messageType == GIF) {
       await firestore.collection('chats').doc(chatId).update({
         'lastMessage': "📽️ GIF",
         'lastMessageTime': FieldValue.serverTimestamp(),
@@ -212,57 +212,4 @@ class ChatRepository {
     }
   }
 
-  // void sendFile({
-  //   required BuildContext context,
-  //   required File file,
-  //   required UserModel receiver,
-  //   required UserModel sender,
-  //   required ProviderRef ref,
-  //   required MessageType messageType,
-  // }) async {
-  //   try {
-  //     var timeSent = DateTime.now();
-  //     var messageId = const Uuid().v1();
-
-  //     String fileUrl =
-  //         await ref.read(firebaseStorageRepositoryProvider).storeFileToFirebase(
-  //               'chat/${messageType.type}/${sender.uid}/${receiver.uid}/$messageId',
-  //               file,
-  //             );
-
-  //     String displayMessage;
-
-  //     switch (messageType) {
-  //       case MessageType.image:
-  //         displayMessage = '🎞️ Image';
-  //         break;
-  //       case MessageType.video:
-  //         displayMessage = '🎥 Video';
-  //         break;
-  //       case MessageType.audio:
-  //         displayMessage = '🎵 Audio';
-  //         break;
-  //       case MessageType.gif:
-  //         displayMessage = ' GIF';
-  //         break;
-  //       default:
-  //         displayMessage = '';
-  //     }
-  //     saveChatDataToContactCollection(
-  //         sender: sender,
-  //         receiver: receiver,
-  //         text: displayMessage,
-  //         timeSent: timeSent);
-
-  //     saveMessage(
-  //         sender: sender,
-  //         receiver: receiver,
-  //         text: fileUrl,
-  //         timeSent: timeSent,
-  //         messageId: messageId,
-  //         messageType: messageType, reply: null);
-  //   } catch (e) {
-  //     showSnackBar(context: context, content: e.toString());
-  //   }
-  // }
 }

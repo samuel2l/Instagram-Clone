@@ -3,13 +3,13 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:giphy_get/giphy_get.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
-
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.user});
@@ -105,7 +105,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           subtitle: Text(messages[index]["senderId"] ?? ""),
                         ),
                       );
-                    } else if (messages[index]["type"] == image) {
+                    } else if (messages[index]["type"] == image ||
+                        messages[index]["type"] == GIF) {
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Container(
@@ -179,15 +180,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     IconButton(
                       onPressed: () async {
                         file = await pickImageFromGallery(context);
-                        filePath = await uploadToCloudinary(file);
+                        if (file != "")
+                          filePath = await uploadToCloudinary(file);
                       },
                       icon: Icon(Icons.photo),
                     ),
 
                     IconButton(
                       onPressed: () async {
+                        GiphyGif? gif = await pickGIF(context);
+                        if (gif != null) {
+
+                        }
+                        if (gif != null) {
+                          ref
+                              .read(chatRepositoryProvider)
+                              .sendFile(
+                                receiverId: widget.user["uid"],
+                                senderId:
+                                    FirebaseAuth.instance.currentUser!.uid,
+                                chatId: chatId ?? "",
+                                messageType: GIF,
+                                imageUrl: gif.images?.original?.url??"",
+                              );
+                        }
+                      },
+                      icon: Icon(Icons.gif),
+                    ),
+                    IconButton(
+                      onPressed: () async {
                         file = await pickVideoFromGallery(context);
-                        filePath = await uploadToCloudinary(file);
+                        if (file != "") {
+                          filePath = await uploadToCloudinary(file);
+                        }
                       },
                       icon: Icon(Icons.attachment),
                     ),
@@ -229,36 +254,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ? SizedBox(
                       height: 250,
                       child: EmojiPicker(
-                        
-onBackspacePressed: () {
-  final text = messageController.text;
-  final selection = messageController.selection;
+                        onBackspacePressed: () {
+                          final text = messageController.text;
+                          final selection = messageController.selection;
 
-  if (selection.start <= 0) return;
+                          if (selection.start <= 0) return;
 
-  final characters = text.characters;
-  int deleteOffset = selection.start;
+                          final characters = text.characters;
+                          int deleteOffset = selection.start;
 
-  int currentOffset = 0;
-  for (final char in characters) {
-    final nextOffset = currentOffset + char.length;
-    if (nextOffset >= deleteOffset) {
-      // Found the character to delete
-      final newText = text.replaceRange(
-        currentOffset,
-        nextOffset,
-        '',
-      );
+                          int currentOffset = 0;
+                          for (final char in characters) {
+                            final nextOffset = currentOffset + char.length;
+                            if (nextOffset >= deleteOffset) {
+                              // Found the character to delete
+                              final newText = text.replaceRange(
+                                currentOffset,
+                                nextOffset,
+                                '',
+                              );
 
-      // Update the text and cursor position
-      messageController.text = newText;
-      messageController.selection =
-          TextSelection.collapsed(offset: currentOffset);
-      return;
-    }
-    currentOffset = nextOffset;
-  }
-},                      onEmojiSelected: (category, emoji) {
+                              // Update the text and cursor position
+                              messageController.text = newText;
+                              messageController
+                                  .selection = TextSelection.collapsed(
+                                offset: currentOffset,
+                              );
+                              return;
+                            }
+                            currentOffset = nextOffset;
+                          }
+                        },
+                        onEmojiSelected: (category, emoji) {
                           final text = messageController.text;
                           final textSelection = messageController.selection;
 
