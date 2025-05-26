@@ -144,6 +144,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           messageToReply = {
                             "senderId": messages[index]["senderId"],
                             "text": messages[index]["text"],
+                            "type":messages[index]["type"],
                           };
                           setState(() {});
                         },
@@ -152,24 +153,49 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           child: Column(
                             children: [
                               ListTile(
-                                   tileColor:
-                              messages[index]["senderId"] ==
-                                      FirebaseAuth.instance.currentUser!.uid
-                                  ? const Color.fromARGB(255, 143, 207, 145)
-                                  : Colors.white,
+                                tileColor:
+                                    messages[index]["senderId"] ==
+                                            FirebaseAuth
+                                                .instance
+                                                .currentUser!
+                                                .uid
+                                        ? const Color.fromARGB(
+                                          255,
+                                          143,
+                                          207,
+                                          145,
+                                        )
+                                        : Colors.white,
                                 title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    messages[index]["repliedTo"].toString().isEmpty
+                                    messages[index]["repliedTo"]
+                                            .toString()
+                                            .isEmpty
                                         ? SizedBox.shrink()
-                                        : Text(messages[index]["repliedTo"]??""),
-
-                                    messages[index]["reply"].toString().isEmpty
-                                        ? SizedBox.shrink()
-                                        : Container(
-
-
-                                          child: Text(messages[index]["reply"]??""),
+                                        : 
+                                        // Text(
+                                        //   messages[index]["repliedTo"] ?? "",
+                                        // ),
+                                        Container(
+                                          width: double.infinity,
+                                          color: Colors.lightGreenAccent,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                               Text(
+                                          messages[index]["repliedTo"] ?? "",
                                         ),
+                                        Text(
+                                            messages[index]["reply"] ?? "",
+                                          ),
+
+                                            ],
+                                          ),
+                                        ),
+
+
+
                                     Text(messages[index]["text"] ?? ""),
                                   ],
                                 ),
@@ -202,7 +228,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             children: [
                               Text(
                                 messageToReply["senderId"] ==
-                                        FirebaseAuth.instance.currentUser?.uid
+                                        FirebaseAuth.instance.currentUser!.uid
                                     ? "Me"
                                     : messageToReply["senderId"],
                               ),
@@ -337,6 +363,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     );
                             messageController.clear();
                           }
+                          messageToReply = {};
+                          showReply = false;
+                          setState(() {});
                         }
                       },
                     ),

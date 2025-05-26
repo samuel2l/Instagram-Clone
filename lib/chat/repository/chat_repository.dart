@@ -134,7 +134,7 @@ class ChatRepository {
       "type": text,
       "repliedTo": repliedTo,
       "reply": reply,
-      "replyType": text,
+      "replyType": replyType,
       "isSeen": false,
       'createdAt': FieldValue.serverTimestamp(),
     };
