@@ -118,6 +118,9 @@ class ChatRepository {
     required String senderId,
     required String messageText,
     required String chatId,
+    String repliedTo = "",
+    String reply = "",
+    String replyType = "",
   }) async {
     if (chatId.isEmpty) {
       chatId = await getOrCreateChatId([senderId, receiverId]);
@@ -129,6 +132,10 @@ class ChatRepository {
       'senderId': senderId,
       'text': messageText,
       "type": text,
+      "repliedTo": repliedTo,
+      "reply": reply,
+      "replyType": text,
+      "isSeen": false,
       'createdAt': FieldValue.serverTimestamp(),
     };
 
@@ -168,8 +175,10 @@ class ChatRepository {
 
     required String messageType,
     required String imageUrl,
+    String repliedTo = "",
+    String reply = "",
+    String replyType = "",
   }) async {
-
     if (chatId.isEmpty) {
       chatId = await getOrCreateChatId([senderId, receiverId]);
     }
@@ -179,6 +188,10 @@ class ChatRepository {
       'senderId': senderId,
       'text': imageUrl,
       "type": messageType,
+      "repliedTo": repliedTo,
+      "reply": reply,
+      "replyType": replyType,
+      "isSeen": false,
       'createdAt': FieldValue.serverTimestamp(),
     };
 
@@ -211,5 +224,4 @@ class ChatRepository {
       });
     }
   }
-
 }

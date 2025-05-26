@@ -1,4 +1,6 @@
+import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
@@ -9,13 +11,15 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/firebase_options.dart';
 import 'package:instagram/home/screens/home.dart';
+import 'package:instagram/recorddd.dart';
 
-// ...
 
 void main() async {
-  await dotenv.load(fileName: "/Users/samuel/instagram/.env");
+  await dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(ProviderScope(child: const MyApp()));
 }
 
@@ -36,8 +40,9 @@ class MyApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: [Locale("en"), Locale("fr")],
+      // home: Testingg(),
+
       home:
-      // FirebaseAuth.instance.currentUser==null?SignUp():Home()
       ref
           .watch(getUserProvider)
           .when(
@@ -51,3 +56,4 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
+

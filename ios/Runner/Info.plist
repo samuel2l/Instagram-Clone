@@ -48,7 +48,10 @@
 	<string>Instagram needs access to your camera.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Instagram needs access to your microphone.</string>
-
+<key>UIBackgroundModes</key>
+<array>
+    <string>audio</string>
+</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

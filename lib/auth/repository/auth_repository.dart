@@ -76,10 +76,7 @@ class AuthRepository {
     BuildContext context,
   ) async {
     try {
-      await auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await auth.signInWithEmailAndPassword(email: email, password: password);
 
       Navigator.of(
         context,
@@ -104,6 +101,11 @@ class AuthRepository {
   }
 
   Future<AppUserModel?> getUser() async {
+    final curr = auth.currentUser;
+    if (curr == null) {
+      return null;
+    }
+
     var userData =
         await firestore.collection('users').doc(auth.currentUser!.uid).get();
     AppUserModel? user;

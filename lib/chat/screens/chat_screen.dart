@@ -10,6 +10,7 @@ import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
+import 'package:swipe_to/swipe_to.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.user});
@@ -26,7 +27,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
-
+  bool showReply = false;
+  Map<String, dynamic> messageToReply = {};
   Future<void> getChatId() async {
     final id = await ref.read(chatRepositoryProvider).getChatId([
       FirebaseAuth.instance.currentUser!.uid,
@@ -136,11 +138,47 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             FirebaseAuth.instance.currentUser!.uid,
                       );
                     } else {
-                      return Padding(
-                        padding: EdgeInsets.all(8),
-                        child: ListTile(
-                          title: Text(messages[index]["text"] ?? ""),
-                          subtitle: Text(messages[index]["senderId"] ?? ""),
+                      return SwipeTo(
+                        onLeftSwipe: (details) {
+                          showReply = true;
+                          messageToReply = {
+                            "senderId": messages[index]["senderId"],
+                            "text": messages[index]["text"],
+                          };
+                          setState(() {});
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                   tileColor:
+                              messages[index]["senderId"] ==
+                                      FirebaseAuth.instance.currentUser!.uid
+                                  ? const Color.fromARGB(255, 143, 207, 145)
+                                  : Colors.white,
+                                title: Column(
+                                  children: [
+                                    messages[index]["repliedTo"].toString().isEmpty
+                                        ? SizedBox.shrink()
+                                        : Text(messages[index]["repliedTo"]??""),
+
+                                    messages[index]["reply"].toString().isEmpty
+                                        ? SizedBox.shrink()
+                                        : Container(
+
+
+                                          child: Text(messages[index]["reply"]??""),
+                                        ),
+                                    Text(messages[index]["text"] ?? ""),
+                                  ],
+                                ),
+                                subtitle: Text(
+                                  messages[index]["senderId"] ?? "",
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -153,6 +191,36 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
+                showReply
+                    ? Container(
+                      color: Colors.lightGreenAccent,
+                      width: double.infinity,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                messageToReply["senderId"] ==
+                                        FirebaseAuth.instance.currentUser?.uid
+                                    ? "Me"
+                                    : messageToReply["senderId"],
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  showReply = false;
+                                  setState(() {});
+                                },
+                                icon: Icon(Icons.close),
+                              ),
+                            ],
+                          ),
+                          Text(messageToReply["text"]),
+                        ],
+                      ),
+                    )
+                    : SizedBox.shrink(),
+
                 Row(
                   children: [
                     IconButton(
@@ -189,9 +257,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     IconButton(
                       onPressed: () async {
                         GiphyGif? gif = await pickGIF(context);
-                        if (gif != null) {
-
-                        }
+                        if (gif != null) {}
                         if (gif != null) {
                           ref
                               .read(chatRepositoryProvider)
@@ -201,7 +267,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     FirebaseAuth.instance.currentUser!.uid,
                                 chatId: chatId ?? "",
                                 messageType: GIF,
-                                imageUrl: gif.images?.original?.url??"",
+                                imageUrl: gif.images?.original?.url ?? "",
                               );
                         }
                       },
@@ -234,15 +300,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               );
                         } else {
                           if (text.isNotEmpty) {
-                            ref
-                                .read(chatRepositoryProvider)
-                                .sendMessage(
-                                  receiverId: widget.user["uid"],
-                                  senderId:
-                                      FirebaseAuth.instance.currentUser!.uid,
-                                  messageText: text,
-                                  chatId: chatId ?? "",
-                                );
+                            showReply
+                                ? ref
+                                    .read(chatRepositoryProvider)
+                                    .sendMessage(
+                                      receiverId: widget.user["uid"],
+                                      senderId:
+                                          FirebaseAuth
+                                              .instance
+                                              .currentUser!
+                                              .uid,
+                                      messageText: text,
+                                      chatId: chatId ?? "",
+                                      repliedTo:
+                                          FirebaseAuth
+                                                      .instance
+                                                      .currentUser
+                                                      ?.uid ==
+                                                  messageToReply["senderId"]
+                                              ? "Me"
+                                              : messageToReply["senderId"],
+                                      reply: messageToReply["text"],
+                                      replyType: text,
+                                    )
+                                : ref
+                                    .read(chatRepositoryProvider)
+                                    .sendMessage(
+                                      receiverId: widget.user["uid"],
+                                      senderId:
+                                          FirebaseAuth
+                                              .instance
+                                              .currentUser!
+                                              .uid,
+                                      messageText: text,
+                                      chatId: chatId ?? "",
+                                    );
                             messageController.clear();
                           }
                         }
