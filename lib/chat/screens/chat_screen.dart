@@ -94,20 +94,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   controller: scrollController,
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    if (messages[index]["type"] == null) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListTile(
-                          tileColor:
-                              messages[index]["senderId"] ==
-                                      FirebaseAuth.instance.currentUser!.uid
-                                  ? const Color.fromARGB(255, 143, 207, 145)
-                                  : Colors.white,
-                          title: Text(messages[index]["text"] ?? ""),
-                          subtitle: Text(messages[index]["senderId"] ?? ""),
-                        ),
-                      );
-                    } else if (messages[index]["type"] == image ||
+                    if (messages[index]["type"] == image ||
                         messages[index]["type"] == GIF) {
                       return SwipeTo(
                         onLeftSwipe: (details) {
@@ -144,6 +131,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                               child: CachedNetworkImage(
                                                 imageUrl:
                                                     messages[index]["reply"],
+                                              ),
+                                            )
+                                            : messages[index]["replyType"] ==
+                                                video
+                                            ? SizedBox(
+                                              height: 70,
+                                              width: 70,
+                                              child: VideoMessage(
+                                                url: messages[index]["reply"],
+                                                isSender:
+                                                    messages[index]["repliedTo"] ==
+                                                            "Me"
+                                                        ? true
+                                                        : false,
                                               ),
                                             )
                                             : Text(
@@ -187,7 +188,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       );
                     } else if (messages[index]["type"] == video) {
                       return SwipeTo(
-                                                onLeftSwipe: (details) {
+                        onLeftSwipe: (details) {
                           showReply = true;
                           messageToReply = {
                             "senderId": messages[index]["senderId"],
@@ -218,6 +219,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                             child: CachedNetworkImage(
                                               imageUrl:
                                                   messages[index]["reply"],
+                                            ),
+                                          )
+                                          : messages[index]["replyType"] ==
+                                              video
+                                          ? SizedBox(
+                                            height: 70,
+                                            width: 70,
+                                            child: VideoMessage(
+                                              url: messages[index]["reply"],
+                                              isSender:
+                                                  messages[index]["repliedTo"] ==
+                                                          "Me"
+                                                      ? true
+                                                      : false,
                                             ),
                                           )
                                           : Text(
@@ -299,6 +314,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                           messages[index]["reply"],
                                                     ),
                                                   )
+                                                  : messages[index]["replyType"] ==
+                                                      video
+                                                  ? SizedBox(
+                                                    height: 70,
+                                                    width: 70,
+                                                    child: VideoMessage(
+                                                      url:
+                                                          messages[index]["reply"],
+                                                      isSender:
+                                                          messages[index]["repliedTo"] ==
+                                                                  "Me"
+                                                              ? true
+                                                              : false,
+                                                    ),
+                                                  )
                                                   : Text(
                                                     messages[index]["reply"] ??
                                                         "",
@@ -360,6 +390,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 width: 70,
                                 child: CachedNetworkImage(
                                   imageUrl: messageToReply["text"],
+                                ),
+                              )
+                              : messageToReply["type"] == video
+                              ? SizedBox(
+                                height: 70,
+                                width: 70,
+                                child: VideoMessage(
+                                  url: messageToReply["text"],
+                                  isSender:
+                                      messageToReply["senderId"] ==
+                                      FirebaseAuth.instance.currentUser!.uid,
                                 ),
                               )
                               : Text(messageToReply["text"]),
