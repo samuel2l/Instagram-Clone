@@ -163,16 +163,32 @@ class ChatRepository {
         .collection('messages')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id; // add the document ID into the map
+                return data;
+              }).toList(),
+        );
+  }
+
+  Future<void> updateSeen(String chatId, String messageId) async {
+    return firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .update({
+          "isSeen":true
+        });
   }
 
   Future<void> sendFile({
     //generic function to send audio,images,gifs,files etc
     required String receiverId,
     required String senderId,
-
     required String chatId,
-
     required String messageType,
     required String imageUrl,
     String repliedTo = "",

@@ -94,6 +94,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   controller: scrollController,
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
+                    print("MESSAGE");
+                    print(messages[index]);
+                    if (!messages[index]["isSeen"] &&
+                        FirebaseAuth.instance.currentUser?.uid !=
+                            messages[index]["senderId"]) {
+                      ref
+                          .read(chatRepositoryProvider)
+                          .updateSeen(chatId??"123", messages[index]["id"]);
+                    }
                     if (messages[index]["type"] == image ||
                         messages[index]["type"] == GIF) {
                       return SwipeTo(
@@ -436,7 +445,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     IconButton(
                       onPressed: () async {
                         file = await pickImageFromGallery(context);
-                        print("file from picker???? $file");
                         if (file != "") {
                           mediaFilePath = await uploadImageToCloudinary(file);
 

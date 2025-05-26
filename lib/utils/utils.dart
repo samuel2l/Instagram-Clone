@@ -40,9 +40,6 @@ Future<String> uploadImageToCloudinary(path) async {
       dotenv.env["CLOUDINARY_KEY1"]!,
       dotenv.env["CLOUDINARY_KEY2"]!,
     );
-    print(
-      "error where??? ${dotenv.env["CLOUDINARY_KEY1"]!} ${dotenv.env["CLOUDINARY_KEY2"]!}",
-    );
 
     CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
       CloudinaryFile.fromFile(
@@ -51,7 +48,6 @@ Future<String> uploadImageToCloudinary(path) async {
         folder: FirebaseAuth.instance.currentUser!.email,
       ),
     );
-    print("it never uploads????????");
     return cloudinaryResponse.secureUrl;
   } catch (e) {
     return "";
@@ -64,9 +60,6 @@ Future<String> uploadVideoToCloudinary(path) async {
       dotenv.env["CLOUDINARY_KEY1"]!,
       dotenv.env["CLOUDINARY_KEY2"]!,
     );
-    print(
-      "error where??? ${dotenv.env["CLOUDINARY_KEY1"]!} ${dotenv.env["CLOUDINARY_KEY2"]!}",
-    );
 
     CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
       CloudinaryFile.fromFile(
@@ -75,7 +68,7 @@ Future<String> uploadVideoToCloudinary(path) async {
         folder: FirebaseAuth.instance.currentUser!.email,
       ),
     );
-    print("it never uploads????????");
+
     return cloudinaryResponse.secureUrl;
   } catch (e) {
     return "";
