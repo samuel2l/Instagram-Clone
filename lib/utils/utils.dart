@@ -34,21 +34,54 @@ Future<String?> pickVideoFromGallery(BuildContext context) async {
   return "";
 }
 
-Future<String> uploadToCloudinary(path) async {
-  final cloudinary = CloudinaryPublic(
-    dotenv.env["CLOUDINARY_KEY1"]!,
-    dotenv.env["CLOUDINARY_KEY2"]!,
-  );
+Future<String> uploadImageToCloudinary(path) async {
+  try {
+    final cloudinary = CloudinaryPublic(
+      dotenv.env["CLOUDINARY_KEY1"]!,
+      dotenv.env["CLOUDINARY_KEY2"]!,
+    );
+    print(
+      "error where??? ${dotenv.env["CLOUDINARY_KEY1"]!} ${dotenv.env["CLOUDINARY_KEY2"]!}",
+    );
 
-  CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
-    CloudinaryFile.fromFile(
-      path,
-      resourceType: CloudinaryResourceType.Video,
-      folder: FirebaseAuth.instance.currentUser!.email,
-    ),
-  );
-  return cloudinaryResponse.secureUrl;
+    CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
+      CloudinaryFile.fromFile(
+        path,
+        resourceType: CloudinaryResourceType.Image,
+        folder: FirebaseAuth.instance.currentUser!.email,
+      ),
+    );
+    print("it never uploads????????");
+    return cloudinaryResponse.secureUrl;
+  } catch (e) {
+    return "";
+  }
 }
+
+Future<String> uploadVideoToCloudinary(path) async {
+  try {
+    final cloudinary = CloudinaryPublic(
+      dotenv.env["CLOUDINARY_KEY1"]!,
+      dotenv.env["CLOUDINARY_KEY2"]!,
+    );
+    print(
+      "error where??? ${dotenv.env["CLOUDINARY_KEY1"]!} ${dotenv.env["CLOUDINARY_KEY2"]!}",
+    );
+
+    CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
+      CloudinaryFile.fromFile(
+        path,
+        resourceType: CloudinaryResourceType.Video,
+        folder: FirebaseAuth.instance.currentUser!.email,
+      ),
+    );
+    print("it never uploads????????");
+    return cloudinaryResponse.secureUrl;
+  } catch (e) {
+    return "";
+  }
+}
+
 
 Future<GiphyGif?> pickGIF(BuildContext context) async {
   try {
@@ -61,11 +94,9 @@ Future<GiphyGif?> pickGIF(BuildContext context) async {
       debounceTimeInMilliseconds:
           350, // Optional- time to pause between search keystrokes
     );
-      return gif;
-
+    return gif;
   } catch (e) {
     showSnackBar(context: context, content: e.toString());
   }
   return null;
 }
-

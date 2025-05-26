@@ -23,7 +23,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? chatId;
   String? file;
-  String? filePath;
+  String? mediaFilePath;
 
   final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
@@ -109,24 +109,83 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       );
                     } else if (messages[index]["type"] == image ||
                         messages[index]["type"] == GIF) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          padding: EdgeInsets.all(5),
-                          color:
-                              messages[index]["senderId"] ==
-                                      FirebaseAuth.instance.currentUser!.uid
-                                  ? const Color.fromARGB(255, 143, 207, 145)
-                                  : Colors.white,
-                          height: 250,
-                          width: 250,
-                          child: CachedNetworkImage(
-                            imageUrl: messages[index]["text"],
-                            placeholder:
-                                (context, url) =>
-                                    Center(child: CircularProgressIndicator()),
-                            errorWidget:
-                                (context, url, error) => Icon(Icons.error),
+                      return SwipeTo(
+                        onLeftSwipe: (details) {
+                          showReply = true;
+                          messageToReply = {
+                            "senderId": messages[index]["senderId"],
+                            "text": messages[index]["text"],
+                            "type": messages[index]["type"],
+                          };
+                          setState(() {});
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              messages[index]["repliedTo"].toString().isEmpty
+                                  ? SizedBox.shrink()
+                                  :
+                                  // Text(
+                                  //   messages[index]["repliedTo"] ?? "",
+                                  // ),
+                                  Container(
+                                    width: double.infinity,
+                                    color: Colors.lightGreenAccent,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          messages[index]["repliedTo"] ?? "",
+                                        ),
+                                        messages[index]["replyType"] == image ||
+                                                messages[index]["replyType"] ==
+                                                    GIF
+                                            ? SizedBox(
+                                              height: 70,
+                                              width: 70,
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    messages[index]["reply"],
+                                              ),
+                                            )
+                                            : Text(
+                                              messages[index]["reply"] ?? "",
+                                            ),
+                                      ],
+                                    ),
+                                  ),
+
+                              Container(
+                                padding: EdgeInsets.all(5),
+                                color:
+                                    messages[index]["senderId"] ==
+                                            FirebaseAuth
+                                                .instance
+                                                .currentUser!
+                                                .uid
+                                        ? const Color.fromARGB(
+                                          255,
+                                          143,
+                                          207,
+                                          145,
+                                        )
+                                        : Colors.white,
+                                height: 350,
+
+                                child: CachedNetworkImage(
+                                  imageUrl: messages[index]["text"],
+                                  placeholder:
+                                      (context, url) => Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                  errorWidget:
+                                      (context, url, error) =>
+                                          Icon(Icons.error),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -144,7 +203,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           messageToReply = {
                             "senderId": messages[index]["senderId"],
                             "text": messages[index]["text"],
-                            "type":messages[index]["type"],
+                            "type": messages[index]["type"],
                           };
                           setState(() {});
                         },
@@ -173,7 +232,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                             .toString()
                                             .isEmpty
                                         ? SizedBox.shrink()
-                                        : 
+                                        :
                                         // Text(
                                         //   messages[index]["repliedTo"] ?? "",
                                         // ),
@@ -181,20 +240,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                           width: double.infinity,
                                           color: Colors.lightGreenAccent,
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                               Text(
-                                          messages[index]["repliedTo"] ?? "",
-                                        ),
-                                        Text(
-                                            messages[index]["reply"] ?? "",
-                                          ),
-
+                                              Text(
+                                                messages[index]["repliedTo"] ??
+                                                    "",
+                                              ),
+                                              messages[index]["replyType"] ==
+                                                          image ||
+                                                      messages[index]["replyType"] ==
+                                                          GIF
+                                                  ? SizedBox(
+                                                    height: 70,
+                                                    width: 70,
+                                                    child: CachedNetworkImage(
+                                                      imageUrl:
+                                                          messages[index]["reply"],
+                                                    ),
+                                                  )
+                                                  : Text(
+                                                    messages[index]["reply"] ??
+                                                        "",
+                                                  ),
                                             ],
                                           ),
                                         ),
-
-
 
                                     Text(messages[index]["text"] ?? ""),
                                   ],
@@ -222,6 +293,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       color: Colors.lightGreenAccent,
                       width: double.infinity,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -241,7 +313,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ),
                             ],
                           ),
-                          Text(messageToReply["text"]),
+                          messageToReply["type"] == image ||
+                                  messageToReply["type"] == GIF
+                              ? SizedBox(
+                                height: 70,
+                                width: 70,
+                                child: CachedNetworkImage(
+                                  imageUrl: messageToReply["text"],
+                                ),
+                              )
+                              : Text(messageToReply["text"]),
                         ],
                       ),
                     )
@@ -274,8 +355,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     IconButton(
                       onPressed: () async {
                         file = await pickImageFromGallery(context);
-                        if (file != "")
-                          filePath = await uploadToCloudinary(file);
+                        print("file from picker???? $file");
+                        if (file != "") {
+                          mediaFilePath = await uploadImageToCloudinary(file);
+
+                          showReply
+                              ? ref
+                                  .read(chatRepositoryProvider)
+                                  .sendFile(
+                                    receiverId: widget.user["uid"],
+                                    senderId:
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                    chatId: chatId ?? "",
+                                    messageType: image,
+                                    imageUrl: mediaFilePath!,
+                                    repliedTo:
+                                        FirebaseAuth
+                                                    .instance
+                                                    .currentUser
+                                                    ?.uid ==
+                                                messageToReply["senderId"]
+                                            ? "Me"
+                                            : messageToReply["senderId"],
+                                    reply: messageToReply["text"],
+                                    replyType: messageToReply["type"],
+                                  )
+                              : ref
+                                  .read(chatRepositoryProvider)
+                                  .sendFile(
+                                    receiverId: widget.user["uid"],
+                                    senderId:
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                    chatId: chatId ?? "",
+                                    messageType: image,
+                                    imageUrl: mediaFilePath!,
+                                  );
+                          mediaFilePath = "";
+                          showReply = false;
+                          setState(() {});
+                        }
                       },
                       icon: Icon(Icons.photo),
                     ),
@@ -283,18 +401,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     IconButton(
                       onPressed: () async {
                         GiphyGif? gif = await pickGIF(context);
-                        if (gif != null) {}
                         if (gif != null) {
-                          ref
-                              .read(chatRepositoryProvider)
-                              .sendFile(
-                                receiverId: widget.user["uid"],
-                                senderId:
-                                    FirebaseAuth.instance.currentUser!.uid,
-                                chatId: chatId ?? "",
-                                messageType: GIF,
-                                imageUrl: gif.images?.original?.url ?? "",
-                              );
+                          showReply
+                              ? ref
+                                  .read(chatRepositoryProvider)
+                                  .sendFile(
+                                    receiverId: widget.user["uid"],
+                                    senderId:
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                    chatId: chatId ?? "",
+                                    messageType: GIF,
+                                    imageUrl: gif.images?.original?.url ?? "",
+                                    repliedTo:
+                                        FirebaseAuth
+                                                    .instance
+                                                    .currentUser
+                                                    ?.uid ==
+                                                messageToReply["senderId"]
+                                            ? "Me"
+                                            : messageToReply["senderId"],
+                                    reply: messageToReply["text"],
+                                    replyType: messageToReply["type"],
+                                  )
+                              : ref
+                                  .read(chatRepositoryProvider)
+                                  .sendFile(
+                                    receiverId: widget.user["uid"],
+                                    senderId:
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                    chatId: chatId ?? "",
+                                    messageType: GIF,
+                                    imageUrl: gif.images?.original?.url ?? "",
+                                  );
+                          messageToReply = {};
+                          showReply = false;
+                          setState(() {});
                         }
                       },
                       icon: Icon(Icons.gif),
@@ -302,42 +443,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     IconButton(
                       onPressed: () async {
                         file = await pickVideoFromGallery(context);
-                        if (file != "") {
-                          filePath = await uploadToCloudinary(file);
-                        }
-                      },
-                      icon: Icon(Icons.attachment),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.send),
-                      onPressed: () {
-                        final text = messageController.text.trim();
-
-                        if (filePath != null) {
-                          ref
-                              .read(chatRepositoryProvider)
-                              .sendFile(
-                                receiverId: widget.user["uid"],
-                                senderId:
-                                    FirebaseAuth.instance.currentUser!.uid,
-                                chatId: chatId ?? "",
-                                messageType: video,
-                                imageUrl: filePath!,
-                              );
-                        } else {
-                          if (text.isNotEmpty) {
+                        if (file != "" || file != null) {
+                          mediaFilePath = await uploadVideoToCloudinary(file);
+                          if (mediaFilePath != "") {
                             showReply
                                 ? ref
                                     .read(chatRepositoryProvider)
-                                    .sendMessage(
+                                    .sendFile(
                                       receiverId: widget.user["uid"],
                                       senderId:
                                           FirebaseAuth
                                               .instance
                                               .currentUser!
                                               .uid,
-                                      messageText: text,
                                       chatId: chatId ?? "",
+                                      messageType: video,
+                                      imageUrl: mediaFilePath!,
                                       repliedTo:
                                           FirebaseAuth
                                                       .instance
@@ -347,26 +468,69 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                               ? "Me"
                                               : messageToReply["senderId"],
                                       reply: messageToReply["text"],
-                                      replyType: text,
+                                      replyType: messageToReply["type"],
                                     )
                                 : ref
                                     .read(chatRepositoryProvider)
-                                    .sendMessage(
+                                    .sendFile(
                                       receiverId: widget.user["uid"],
                                       senderId:
                                           FirebaseAuth
                                               .instance
                                               .currentUser!
                                               .uid,
-                                      messageText: text,
                                       chatId: chatId ?? "",
+                                      messageType: video,
+                                      imageUrl: mediaFilePath!,
                                     );
-                            messageController.clear();
+                            mediaFilePath = "";
+                            showReply = false;
+                            setState(() {});
                           }
-                          messageToReply = {};
-                          showReply = false;
-                          setState(() {});
                         }
+                      },
+                      icon: Icon(Icons.attachment),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.send),
+                      onPressed: () {
+                        final text = messageController.text.trim();
+
+                        if (text.isNotEmpty) {
+                          showReply
+                              ? ref
+                                  .read(chatRepositoryProvider)
+                                  .sendMessage(
+                                    receiverId: widget.user["uid"],
+                                    senderId:
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                    messageText: text,
+                                    chatId: chatId ?? "",
+                                    repliedTo:
+                                        FirebaseAuth
+                                                    .instance
+                                                    .currentUser
+                                                    ?.uid ==
+                                                messageToReply["senderId"]
+                                            ? "Me"
+                                            : messageToReply["senderId"],
+                                    reply: messageToReply["text"],
+                                    replyType: messageToReply["type"],
+                                  )
+                              : ref
+                                  .read(chatRepositoryProvider)
+                                  .sendMessage(
+                                    receiverId: widget.user["uid"],
+                                    senderId:
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                    messageText: text,
+                                    chatId: chatId ?? "",
+                                  );
+                          messageController.clear();
+                        }
+                        messageToReply = {};
+                        showReply = false;
+                        setState(() {});
                       },
                     ),
                   ],
