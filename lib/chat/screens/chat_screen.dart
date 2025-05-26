@@ -125,11 +125,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             children: [
                               messages[index]["repliedTo"].toString().isEmpty
                                   ? SizedBox.shrink()
-                                  :
-                                  // Text(
-                                  //   messages[index]["repliedTo"] ?? "",
-                                  // ),
-                                  Container(
+                                  : Container(
                                     width: double.infinity,
                                     color: Colors.lightGreenAccent,
                                     child: Column(
@@ -190,11 +186,55 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                       );
                     } else if (messages[index]["type"] == video) {
-                      return VideoMessage(
-                        url: messages[index]["text"],
-                        isSender:
-                            messages[index]["senderId"] ==
-                            FirebaseAuth.instance.currentUser!.uid,
+                      return SwipeTo(
+                                                onLeftSwipe: (details) {
+                          showReply = true;
+                          messageToReply = {
+                            "senderId": messages[index]["senderId"],
+                            "text": messages[index]["text"],
+                            "type": messages[index]["type"],
+                          };
+                          setState(() {});
+                        },
+
+                        child: Column(
+                          children: [
+                            messages[index]["repliedTo"].toString().isEmpty
+                                ? SizedBox.shrink()
+                                : Container(
+                                  width: double.infinity,
+                                  color: Colors.lightGreenAccent,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(messages[index]["repliedTo"] ?? ""),
+                                      messages[index]["replyType"] == image ||
+                                              messages[index]["replyType"] ==
+                                                  GIF
+                                          ? SizedBox(
+                                            height: 70,
+                                            width: 70,
+                                            child: CachedNetworkImage(
+                                              imageUrl:
+                                                  messages[index]["reply"],
+                                            ),
+                                          )
+                                          : Text(
+                                            messages[index]["reply"] ?? "",
+                                          ),
+                                    ],
+                                  ),
+                                ),
+
+                            VideoMessage(
+                              url: messages[index]["text"],
+                              isSender:
+                                  messages[index]["senderId"] ==
+                                  FirebaseAuth.instance.currentUser!.uid,
+                            ),
+                          ],
+                        ),
                       );
                     } else {
                       return SwipeTo(
