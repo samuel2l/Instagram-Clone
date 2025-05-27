@@ -34,9 +34,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       FirebaseAuth.instance.currentUser!.uid,
 
       widget.user["uid"],
-
     ]);
-    
 
     setState(() {
       chatId = id;

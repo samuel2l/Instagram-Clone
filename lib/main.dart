@@ -13,7 +13,6 @@ import 'package:instagram/firebase_options.dart';
 import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/recorddd.dart';
 
-
 void main() async {
   await dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +39,7 @@ class MyApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: [Locale("en"), Locale("fr")],
-      // home: Testingg(),
+      // home: DraggableCaption(caption: "my drag"),
 
       home:
       ref
@@ -57,3 +56,47 @@ class MyApp extends ConsumerWidget {
   }
 }
 
+class DraggableCaption extends StatefulWidget {
+  final String caption;
+  // final Function(Offset) onPositionChanged;
+
+  const DraggableCaption({
+    super.key,
+    required this.caption,
+    // required this.onPositionChanged,
+  });
+
+  @override
+  _DraggableCaptionState createState() => _DraggableCaptionState();
+}
+
+class _DraggableCaptionState extends State<DraggableCaption> {
+  Offset position = Offset(100, 100); // default starting point
+  void updatePosition(Offset newPosition) {
+    position = newPosition;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: position.dx,
+      top: position.dy,
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          setState(() {
+            position += details.delta;
+            updatePosition(position);
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          color: Colors.black54,
+          child: Text(
+            widget.caption,
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
+}
