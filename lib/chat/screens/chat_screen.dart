@@ -32,8 +32,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> getChatId() async {
     final id = await ref.read(chatRepositoryProvider).getChatId([
       FirebaseAuth.instance.currentUser!.uid,
+
       widget.user["uid"],
+
     ]);
+    
+
     setState(() {
       chatId = id;
     });
@@ -94,14 +98,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   controller: scrollController,
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    print("MESSAGE");
-                    print(messages[index]);
                     if (!messages[index]["isSeen"] &&
                         FirebaseAuth.instance.currentUser?.uid !=
                             messages[index]["senderId"]) {
                       ref
                           .read(chatRepositoryProvider)
-                          .updateSeen(chatId??"123", messages[index]["id"]);
+                          .updateSeen(chatId ?? "123", messages[index]["id"]);
                     }
                     if (messages[index]["type"] == image ||
                         messages[index]["type"] == GIF) {

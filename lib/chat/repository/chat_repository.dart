@@ -72,6 +72,7 @@ class ChatRepository {
   }
 
   Future<String> getChatId(List<String> userIds, {bool isGroup = false}) async {
+    userIds.sort();
     final chatQuery =
         await firestore
             .collection('chats')
@@ -89,6 +90,7 @@ class ChatRepository {
     List<String> userIds, {
     bool isGroup = false,
   }) async {
+    userIds.sort();
     final chatQuery =
         await firestore
             .collection('chats')
@@ -179,9 +181,7 @@ class ChatRepository {
         .doc(chatId)
         .collection('messages')
         .doc(messageId)
-        .update({
-          "isSeen":true
-        });
+        .update({"isSeen": true});
   }
 
   Future<void> sendFile({

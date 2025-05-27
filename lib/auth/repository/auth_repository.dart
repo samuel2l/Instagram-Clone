@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
+import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/utils/utils.dart';
 
@@ -114,5 +115,21 @@ class AuthRepository {
     }
 
     return user;
+  }
+
+  Future<void> logoutUser(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) {
+            return SignUp();
+          },
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      showSnackBar(context: context, content: e.toString());
+    }
   }
 }

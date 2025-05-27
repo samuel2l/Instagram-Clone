@@ -22,22 +22,28 @@ class Home extends ConsumerWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
+                      ref.read(authRepositoryProvider).logoutUser(context);
+                    },
+                    child: Text("Logout"),
+                  ),
+                  GestureDetector(
+                    onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => FindUsers()),
                       );
                     },
                     child: Text("Connect with others"),
                   ),
-                  Text(user!.email),
-                  Text(user.firebaseUID),
-                  Text(user.createdAt),
+                  Text(user?.email ?? ""),
+                  Text(user?.firebaseUID ?? ""),
+                  Text(user?.createdAt ?? ""),
                   SizedBox(height: 20),
                   Text("CHATS", style: TextStyle(fontSize: 22)),
                   Expanded(
                     child: StreamBuilder<List<Map<String, dynamic>>>(
                       stream: ref
                           .watch(chatRepositoryProvider)
-                          .getUserChats(user.firebaseUID),
+                          .getUserChats(user?.firebaseUID ?? ""),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -62,12 +68,14 @@ class Home extends ConsumerWidget {
                           itemCount: chats.length,
                           itemBuilder: (context, index) {
                             final chat = chats[index];
+                            print("ah the chat $chat");
 
                             String receiverUid =
                                 (chat["participants"][0] ==
                                         FirebaseAuth.instance.currentUser!.uid)
                                     ? chat["participants"][1]
                                     : chat["participants"][0];
+                            print("other participants $receiverUid");
 
                             Timestamp? timestamp = chat["lastMessageTime"];
                             String formattedTime = '';
