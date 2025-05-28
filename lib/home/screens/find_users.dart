@@ -41,7 +41,7 @@ class _FindUsersState extends ConsumerState<FindUsers> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) {
-                        return ChatScreen(user: user);
+                        return ChatScreen(chatData: {},user: user);
                       },
                     ),
                   );

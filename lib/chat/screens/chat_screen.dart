@@ -7,21 +7,23 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:giphy_get/giphy_get.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
+import 'package:instagram/chat/screens/add_member.dart';
+import 'package:instagram/chat/screens/remove_member.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key, required this.user});
+  const ChatScreen({super.key, required this.user, required this.chatData});
   final Map<String, dynamic> user;
+  final Map<String, dynamic> chatData;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  String? chatId;
   String? file;
   String? mediaFilePath;
 
@@ -29,17 +31,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController scrollController = ScrollController();
   bool showReply = false;
   Map<String, dynamic> messageToReply = {};
-  Future<void> getChatId() async {
-    final id = await ref.read(chatRepositoryProvider).getChatId([
-      FirebaseAuth.instance.currentUser!.uid,
-
-      widget.user["uid"],
-    ]);
-
-    setState(() {
-      chatId = id;
-    });
-  }
 
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
@@ -47,7 +38,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    getChatId();
+    // getChatId();
   }
 
   @override
@@ -60,14 +51,54 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.user["email"])),
+      appBar: AppBar(
+        title: Text(
+          widget.chatData["isGroup"]
+              ? widget.chatData["groupName"]
+              : widget.user["email"],
+        ),
+        actions:
+            widget.chatData["isGroup"]
+                ? [
+                  GestureDetector(
+                    onDoubleTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return RemoveMember(
+                              chatId: widget.chatData["chatId"],
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: Text("remove"),
+                  ),
+SizedBox(width: 10,),
+                  GestureDetector(
+                    onDoubleTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return AddMember(
+                              chatId: widget.chatData["chatId"],
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: Text("add"),
+                  ),
+                ]
+                : [],
+      ),
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<List<Map<String, dynamic>>>(
               stream: ref
                   .watch(chatRepositoryProvider)
-                  .getMessages(chatId ?? ""),
+                  .getMessages(widget.chatData["chatId"] ?? ""),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -101,7 +132,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             messages[index]["senderId"]) {
                       ref
                           .read(chatRepositoryProvider)
-                          .updateSeen(chatId ?? "123", messages[index]["id"]);
+                          .updateSeen(
+                            widget.chatData["chatId"] ?? "123",
+                            messages[index]["id"],
+                          );
                     }
                     if (messages[index]["type"] == image ||
                         messages[index]["type"] == GIF) {
@@ -452,10 +486,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ? ref
                                   .read(chatRepositoryProvider)
                                   .sendFile(
-                                    receiverId: widget.user["uid"],
+                                    receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: chatId ?? "",
+                                    chatId: widget.chatData["chatId"] ?? "",
                                     messageType: image,
                                     imageUrl: mediaFilePath!,
                                     repliedTo:
@@ -472,10 +506,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               : ref
                                   .read(chatRepositoryProvider)
                                   .sendFile(
-                                    receiverId: widget.user["uid"],
+                                    receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: chatId ?? "",
+                                    chatId: widget.chatData["chatId"] ?? "",
                                     messageType: image,
                                     imageUrl: mediaFilePath!,
                                   );
@@ -495,10 +529,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ? ref
                                   .read(chatRepositoryProvider)
                                   .sendFile(
-                                    receiverId: widget.user["uid"],
+                                    receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: chatId ?? "",
+                                    chatId: widget.chatData["chatId"] ?? "",
                                     messageType: GIF,
                                     imageUrl: gif.images?.original?.url ?? "",
                                     repliedTo:
@@ -515,10 +549,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               : ref
                                   .read(chatRepositoryProvider)
                                   .sendFile(
-                                    receiverId: widget.user["uid"],
+                                    receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: chatId ?? "",
+                                    chatId: widget.chatData["chatId"] ?? "",
                                     messageType: GIF,
                                     imageUrl: gif.images?.original?.url ?? "",
                                   );
@@ -539,13 +573,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 ? ref
                                     .read(chatRepositoryProvider)
                                     .sendFile(
-                                      receiverId: widget.user["uid"],
+                                      receiverId: widget.user["uid"] ?? "",
                                       senderId:
                                           FirebaseAuth
                                               .instance
                                               .currentUser!
                                               .uid,
-                                      chatId: chatId ?? "",
+                                      chatId: widget.chatData["chatId"] ?? "",
                                       messageType: video,
                                       imageUrl: mediaFilePath!,
                                       repliedTo:
@@ -562,13 +596,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 : ref
                                     .read(chatRepositoryProvider)
                                     .sendFile(
-                                      receiverId: widget.user["uid"],
+                                      receiverId: widget.user["uid"] ?? "",
                                       senderId:
                                           FirebaseAuth
                                               .instance
                                               .currentUser!
                                               .uid,
-                                      chatId: chatId ?? "",
+                                      chatId: widget.chatData["chatId"] ?? "",
                                       messageType: video,
                                       imageUrl: mediaFilePath!,
                                     );
@@ -590,11 +624,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               ? ref
                                   .read(chatRepositoryProvider)
                                   .sendMessage(
-                                    receiverId: widget.user["uid"],
+                                    receiverId: widget.user["uid"] ?? "" ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
                                     messageText: text,
-                                    chatId: chatId ?? "",
+                                    chatId: widget.chatData["chatId"] ?? "",
                                     repliedTo:
                                         FirebaseAuth
                                                     .instance
@@ -609,11 +643,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               : ref
                                   .read(chatRepositoryProvider)
                                   .sendMessage(
-                                    receiverId: widget.user["uid"],
+                                    receiverId: widget.user["uid"] ?? "" ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
                                     messageText: text,
-                                    chatId: chatId ?? "",
+                                    chatId: widget.chatData["chatId"] ?? "",
                                   );
                           messageController.clear();
                         }

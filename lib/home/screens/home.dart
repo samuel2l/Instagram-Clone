@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
-import 'package:instagram/home/find_users.dart';
+import 'package:instagram/chat/screens/create_group.dart';
+import 'package:instagram/home/screens/find_users.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
@@ -29,6 +30,16 @@ class Home extends ConsumerWidget {
                     },
                     child: Text("Logout"),
                   ),
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => CreateGroup()),
+                      );
+                    },
+                    child: Text("Create Group"),
+                  ),
+
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(
@@ -39,7 +50,6 @@ class Home extends ConsumerWidget {
                   ),
                   Text(user?.email ?? ""),
                   Text(user?.firebaseUID ?? ""),
-                  Text(user?.createdAt ?? ""),
                   SizedBox(height: 20),
                   Text("CHATS", style: TextStyle(fontSize: 22)),
                   Expanded(
@@ -59,6 +69,7 @@ class Home extends ConsumerWidget {
                           );
                         }
                         final chats = snapshot.data ?? [];
+                        print("chats gotten in home??? $chats");
                         if (chats.isEmpty) {
                           return Center(
                             child: Text(
@@ -71,14 +82,8 @@ class Home extends ConsumerWidget {
                           itemCount: chats.length,
                           itemBuilder: (context, index) {
                             final chat = chats[index];
-                            print("ah the chat $chat");
+                            print("a chat is$chat ${chat["chatId"]}");
 
-                            String receiverUid =
-                                (chat["participants"][0] ==
-                                        FirebaseAuth.instance.currentUser!.uid)
-                                    ? chat["participants"][1]
-                                    : chat["participants"][0];
-                            print("other participants $receiverUid");
 
                             Timestamp? timestamp = chat["lastMessageTime"];
                             String formattedTime = '';
@@ -86,44 +91,67 @@ class Home extends ConsumerWidget {
                               formattedTime = timestamp.toDate().toString();
                             }
 
-                            return FutureBuilder<Map<String, dynamic>>(
-                              future: ref
-                                  .read(chatRepositoryProvider)
-                                  .getUserById(receiverUid),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return ListTile(
-                                    title: Text("Loading..."),
-                                    subtitle: Text("Fetching user info"),
-                                  );
-                                }
-
-                                if (!snapshot.hasData || snapshot.hasError) {
-                                  return ListTile(
-                                    title: Text("Unknown User"),
-                                    subtitle: Text("Error loading user"),
-                                  );
-                                }
-
-                                final receiver = snapshot.data!;
-
-                                return ListTile(
+                            return chat["isGroup"]
+                                ? ListTile(
+                                  title: Text(chat["groupName"]),
+                                  subtitle: Text(chat["lastMessage"]),
                                   onTap: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder:
-                                            (context) =>
-                                                ChatScreen(user: receiver),
+                                            (context) => ChatScreen(
+                                              chatData: chat,
+                                              user: {},
+                                            ),
                                       ),
                                     );
                                   },
-                                  title: Text(receiver["email"]),
-                                  subtitle: Text(chat["lastMessage"] ?? ""),
                                   trailing: Text(formattedTime),
+                                )
+                                : FutureBuilder<Map<String, dynamic>>(
+                                  future: ref
+                                      .read(chatRepositoryProvider)
+                                      .getUserById( (chat["participants"][0] ==
+                                        FirebaseAuth.instance.currentUser!.uid)
+                                    ? chat["participants"][1]
+                                    : chat["participants"][0]),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return ListTile(
+                                        title: Text("Loading..."),
+                                        subtitle: Text("Fetching user info"),
+                                      );
+                                    }
+
+                                    if (!snapshot.hasData ||
+                                        snapshot.hasError) {
+                                      return ListTile(
+                                        title: Text("Unknown User"),
+                                        subtitle: Text("Error loading user"),
+                                      );
+                                    }
+
+                                    final receiver = snapshot.data!;
+
+                                    return ListTile(
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => ChatScreen(
+                                                  chatData: chat,
+                                                  user: receiver,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      title: Text(receiver["email"]),
+                                      subtitle: Text(chat["lastMessage"] ?? ""),
+                                      trailing: Text(formattedTime),
+                                    );
+                                  },
                                 );
-                              },
-                            );
                           },
                         );
                       },
@@ -150,26 +178,26 @@ class Home extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () async {
-                      final imgPath = await pickImageFromGallery(context);
-                      if (imgPath != null && imgPath.isNotEmpty) {
-                        var mediaUrl = await uploadImageToCloudinary(imgPath);
+                      // final imgPath = await pickImageFromGallery(context);
+                      // if (imgPath != null && imgPath.isNotEmpty) {
+                      //   var mediaUrl = await uploadImageToCloudinary(imgPath);
 
-                        final uid = FirebaseAuth.instance.currentUser?.uid;
-                        ref
-                            .watch(storyRepositoryProvider)
-                            .uploadStory(
-                              uid!,
-                              caption: "first story upload",
-                              mediaType: image,
-                              mediaUrl: "mediaUrl",
-                            );
-                      }
+                      //   final uid = FirebaseAuth.instance.currentUser?.uid;
+                      //   ref
+                      //       .watch(storyRepositoryProvider)
+                      //       .uploadStory(
+                      //         uid!,
+                      //         caption: "first story upload",
+                      //         mediaType: image,
+                      //         mediaUrl: mediaUrl,
+                      //       );
+                      // }
                     },
                     child: Text("Add Image"),
                   ),
                   TextButton(
                     onPressed: () {
-                      ref.read(storyRepositoryProvider).getActiveStories();
+                      // ref.read(storyRepositoryProvider).getActiveStories();
                     },
                     child: Text("see stories"),
                   ),

@@ -20,30 +20,31 @@ class ChatRepository {
             snapshot.docs.map((doc) async {
               final chatData = doc.data();
 
-              // Add chat ID
               chatData['chatId'] = doc.id;
+              print("at this pointttttt");
+              print(chatData);
 
-              // Get the other participant's UID
-              List participants = chatData['participants'];
-              String otherUserId = participants.firstWhere(
-                (id) => id != userId,
-              );
+              if (chatData["isGroup"]) {
+                return chatData;
+              } else {
+                List participants = chatData['participants'];
+                String otherUserId = participants.firstWhere(
+                  (id) => id != userId,
+                );
+                final userSnap =
+                    await firestore
+                        .collection('users')
+                        .where('uid', isEqualTo: otherUserId)
+                        .limit(1)
+                        .get();
 
-              // Fetch other user's data
-              final userSnap =
-                  await firestore
-                      .collection('users')
-                      .where('uid', isEqualTo: otherUserId)
-                      .limit(1)
-                      .get();
-
-              if (userSnap.docs.isNotEmpty) {
-                final userData = userSnap.docs.first.data();
-                chatData['email'] = userData['email'];
-                chatData['name'] = userData['name'];
-                chatData['profilePic'] = userData['profilePic'];
+                if (userSnap.docs.isNotEmpty) {
+                  final userData = userSnap.docs.first.data();
+                  chatData['email'] = userData['email'];
+                  chatData['name'] = userData['name'];
+                  chatData['profilePic'] = userData['profilePic'];
+                }
               }
-
               return chatData;
             }).toList(),
           );
@@ -71,20 +72,26 @@ class ChatRepository {
     return snapshot.docs.first.data();
   }
 
-  Future<String> getChatId(List<String> userIds, {bool isGroup = false}) async {
-    userIds.sort();
-    final chatQuery =
-        await firestore
-            .collection('chats')
-            .where('participants', isEqualTo: userIds)
-            .limit(1)
-            .get();
+  // Future<List<dynamic>> getChatId(
+  //   List<String> userIds, {
+  //   bool isGroup = false,
+  // }) async {
+  //   print("in get chagt id");
+  //   userIds.sort();
+  //   final chatQuery =
+  //       await firestore
+  //           .collection('chats')
+  //           .where('participants', isEqualTo: userIds)
+  //           .limit(1)
+  //           .get();
 
-    if (chatQuery.docs.isNotEmpty) {
-      return chatQuery.docs.first.id;
-    }
-    return "";
-  }
+  //   print("returningin ${chatQuery.docs.first.id}");
+
+  //   if (chatQuery.docs.isNotEmpty) {
+  //     return [chatQuery.docs.first.id, chatQuery.docs.first.data()];
+  //   }
+  //   return [];
+  // }
 
   Future<String> getOrCreateChatId(
     List<String> userIds, {
@@ -102,7 +109,6 @@ class ChatRepository {
       return chatQuery.docs.first.id;
     }
 
-    // Create a new chat if not found
     final newChatDoc = firestore.collection('chats').doc();
     await newChatDoc.set({
       'participants': userIds,
@@ -115,6 +121,80 @@ class ChatRepository {
     return newChatDoc.id;
   }
 
+  Future<Map<String, dynamic>> createGroupChat({
+    required List<String> userIds,
+    required String groupName,
+  }) async {
+    final newChatDoc = firestore.collection('chats').doc();
+
+    final data = {
+      'participants': userIds,
+      'isGroup': true,
+      'groupName': groupName,
+      'createdAt': FieldValue.serverTimestamp(),
+      'lastMessage': '',
+      'lastMessageTime': FieldValue.serverTimestamp(),
+    };
+
+    await newChatDoc.set(data);
+
+    final snapshot = await newChatDoc.get();
+    final docData = snapshot.data() ?? {};
+
+    return {'chatId': newChatDoc.id, ...docData};
+  }
+
+  Future<List<String>> getGroupMembers({required String chatId}) async {
+    final docSnapshot =
+        await FirebaseFirestore.instance.collection('chats').doc(chatId).get();
+
+    if (docSnapshot.exists) {
+      final data = docSnapshot.data();
+      if (data != null && data.containsKey('participants')) {
+        List<dynamic> participants = data['participants'];
+        return participants.cast<String>();
+      }
+    }
+
+    return [];
+  }
+
+  Future<void> addMemberToGroup({
+    required String userId,
+    required String chatId,
+  }) async {
+    final doc = await firestore.collection('chats').doc(chatId).get();
+
+    if (doc.exists) {
+      final data = doc.data();
+      final List<dynamic> participants = data?['participants'] ?? [];
+
+      if (!participants.contains(userId)) {
+        await firestore.collection('chats').doc(chatId).update({
+          'participants': FieldValue.arrayUnion([userId]),
+        });
+      }
+    }
+  }
+
+  Future<void> removeMemberFromGroup({
+    required String userId,
+    required String chatId,
+  }) async {
+    final doc = await firestore.collection('chats').doc(chatId).get();
+
+    if (doc.exists) {
+      final data = doc.data();
+      final List<dynamic> participants = data?['participants'] ?? [];
+
+      if (participants.contains(userId)) {
+        await firestore.collection('chats').doc(chatId).update({
+          'participants': FieldValue.arrayRemove([userId]),
+        });
+      }
+    }
+  }
+
   Future<void> sendMessage({
     required String receiverId,
     required String senderId,
@@ -123,6 +203,10 @@ class ChatRepository {
     String repliedTo = "",
     String reply = "",
     String replyType = "",
+
+    bool isGroup = false,
+    List<String> participants = const [],
+    String groupName = "",
   }) async {
     if (chatId.isEmpty) {
       chatId = await getOrCreateChatId([senderId, receiverId]);

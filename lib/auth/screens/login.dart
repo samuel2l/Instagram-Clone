@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
-import 'package:instagram/auth/screens/login.dart';
 
-class SignUp extends ConsumerStatefulWidget {
-  const SignUp({super.key});
+class Login extends ConsumerStatefulWidget {
+  const Login({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _SignUpState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _LoginState();
 }
 
-class _SignUpState extends ConsumerState<SignUp> {
+class _LoginState extends ConsumerState<Login> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Sign up")),
+      appBar: AppBar(title: Text("Login")),
       body: Column(
         children: [
           Form(
@@ -37,27 +36,14 @@ class _SignUpState extends ConsumerState<SignUp> {
               if (formKey.currentState!.validate()) {
                 ref
                     .read(authRepositoryProvider)
-                    .signUp(
+                    .login(
                       emailController.text.trim(),
                       passwordController.text.trim(),
                       context,
                     );
               }
             },
-            child: Text("Sign up"),
-          ),
-          Text("already have an account log in"),
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) {
-                    return Login();
-                  },
-                ),
-              );
-            },
-            child: Text("LOGIN"),
+            child: Text("login"),
           ),
         ],
       ),
