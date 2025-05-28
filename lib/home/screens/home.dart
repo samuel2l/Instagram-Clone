@@ -69,7 +69,6 @@ class Home extends ConsumerWidget {
                           );
                         }
                         final chats = snapshot.data ?? [];
-                        print("chats gotten in home??? $chats");
                         if (chats.isEmpty) {
                           return Center(
                             child: Text(
@@ -82,7 +81,7 @@ class Home extends ConsumerWidget {
                           itemCount: chats.length,
                           itemBuilder: (context, index) {
                             final chat = chats[index];
-                            print("a chat is$chat ${chat["chatId"]}");
+
 
 
                             Timestamp? timestamp = chat["lastMessageTime"];

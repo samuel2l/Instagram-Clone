@@ -48,7 +48,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                     return ListTile(
                       onTap: () {
                         selectedGroupMembers.add(user["uid"]);
-                        print("curr selected $selectedGroupMembers");
+
                       },
                       title: Text(user["email"]),
                     );

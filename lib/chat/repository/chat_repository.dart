@@ -21,8 +21,6 @@ class ChatRepository {
               final chatData = doc.data();
 
               chatData['chatId'] = doc.id;
-              print("at this pointttttt");
-              print(chatData);
 
               if (chatData["isGroup"]) {
                 return chatData;
@@ -71,28 +69,6 @@ class ChatRepository {
 
     return snapshot.docs.first.data();
   }
-
-  // Future<List<dynamic>> getChatId(
-  //   List<String> userIds, {
-  //   bool isGroup = false,
-  // }) async {
-  //   print("in get chagt id");
-  //   userIds.sort();
-  //   final chatQuery =
-  //       await firestore
-  //           .collection('chats')
-  //           .where('participants', isEqualTo: userIds)
-  //           .limit(1)
-  //           .get();
-
-  //   print("returningin ${chatQuery.docs.first.id}");
-
-  //   if (chatQuery.docs.isNotEmpty) {
-  //     return [chatQuery.docs.first.id, chatQuery.docs.first.data()];
-  //   }
-  //   return [];
-  // }
-
   Future<String> getOrCreateChatId(
     List<String> userIds, {
     bool isGroup = false,

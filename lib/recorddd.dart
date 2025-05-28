@@ -27,7 +27,7 @@ class _TestinggState extends State<Testingg> {
       final dir = await getApplicationDocumentsDirectory();
       final path = join(dir.path, 'test_recording.mp4');
 
-      print('Recording to: $path');
+      // print('Recording to: $path');
 
       await record.start(
         RecordConfig(
@@ -41,9 +41,9 @@ class _TestinggState extends State<Testingg> {
       await Future.delayed(Duration(seconds: 5)); // Give it time to record
 
       final result = await record.stop();
-      print('Recording stopped. File path: $result');
+      // print('Recording stopped. File path: $result');
     } else {
-      print('No mic permission');
+      // print('No mic permission');
     }
   }
 
@@ -58,17 +58,17 @@ class _TestinggState extends State<Testingg> {
               isRecording = false;
               path = filePath;
               final file = File(path!);
-              print("File size: ${await file.length()} bytes");
+              // print("File size: ${await file.length()} bytes");
 
               setState(() {});
             }
           } else {
             if (await record.hasPermission()) {
               final Directory dir = await getApplicationDocumentsDirectory();
-              print("gotten dirr $dir");
+              // print("gotten dirr $dir");
               final String audioPath = join(dir.path, "vn.aac");
 
-              print("audio path $audioPath");
+              // print("audio path $audioPath");
 
               // await record.start(RecordConfig(), path: audioPath);
               await record.start(
@@ -93,7 +93,7 @@ class _TestinggState extends State<Testingg> {
         child: TextButton(
           // height: 200,
           onPressed: () async {
-            print("plkayinf this file: $path");
+            // print("plkayinf this file: $path");
             if (player.playing) {
               await player.pause();
             } else {
