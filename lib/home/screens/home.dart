@@ -1,3 +1,4 @@
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,9 @@ import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
 import 'package:instagram/chat/screens/create_group.dart';
 import 'package:instagram/home/screens/find_users.dart';
+import 'package:instagram/live%20stream/repository/livestream_repository.dart';
+import 'package:instagram/live%20stream/screens/livestream_screen.dart';
+import 'package:instagram/live%20stream/screens/start_livestream.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
@@ -43,10 +47,33 @@ class Home extends ConsumerWidget {
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => StartLivestreamScreen(),
+                        ),
+                      );
+                    },
+                    child: Text("Create Group"),
+                  ),
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => FindUsers()),
                       );
                     },
                     child: Text("Connect with others"),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return StartLivestreamScreen();
+                          },
+                        ),
+                      );
+                    },
+                    child: Text("Start Live stream"),
                   ),
                   Text(user?.email ?? ""),
                   Text(user?.firebaseUID ?? ""),
@@ -82,8 +109,6 @@ class Home extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             final chat = chats[index];
 
-
-
                             Timestamp? timestamp = chat["lastMessageTime"];
                             String formattedTime = '';
                             if (timestamp != null) {
@@ -110,10 +135,15 @@ class Home extends ConsumerWidget {
                                 : FutureBuilder<Map<String, dynamic>>(
                                   future: ref
                                       .read(chatRepositoryProvider)
-                                      .getUserById( (chat["participants"][0] ==
-                                        FirebaseAuth.instance.currentUser!.uid)
-                                    ? chat["participants"][1]
-                                    : chat["participants"][0]),
+                                      .getUserById(
+                                        (chat["participants"][0] ==
+                                                FirebaseAuth
+                                                    .instance
+                                                    .currentUser!
+                                                    .uid)
+                                            ? chat["participants"][1]
+                                            : chat["participants"][0],
+                                      ),
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {

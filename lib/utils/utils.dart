@@ -79,13 +79,13 @@ Future<String> uploadVideoToCloudinary(path) async {
 Future<GiphyGif?> pickGIF(BuildContext context) async {
   try {
     GiphyGif? gif = await GiphyGet.getGif(
-      context: context, //Required
-      apiKey: dotenv.env["GIPHY_KEY"]!, //Required.
-      lang: GiphyLanguage.english, //Optional - Language for query.
-      tabColor: Colors.teal, // Optional- default accent color.
+      context: context, 
+      apiKey: dotenv.env["GIPHY_KEY"]!, 
+      lang: GiphyLanguage.english, 
+      tabColor: Colors.teal, 
       randomID: "123",
       debounceTimeInMilliseconds:
-          350, // Optional- time to pause between search keystrokes
+          350, 
     );
     return gif;
   } catch (e) {
