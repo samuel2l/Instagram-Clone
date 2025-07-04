@@ -123,7 +123,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
 
   @override
   void dispose() {
-    endStream();
+    // endStream();
     super.dispose();
   }
 
@@ -252,7 +252,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
                   child: Container(
                     height: MediaQuery.of(context).size.height * 0.4,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.transparent,
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(16),
                       ),
@@ -303,7 +303,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
             ),
           ),
           Container(
-            color: Colors.grey[200],
+            color: Colors.transparent,
             padding: const EdgeInsets.all(8),
             child: Row(
               children: [
@@ -319,9 +319,10 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
                         .read(liveStreamRepositoryProvider)
                         .addLivestreamComment(
                           channelId: widget.channelId,
-                          email: FirebaseAuth.instance.currentUser?.email??"",
+                          email: FirebaseAuth.instance.currentUser?.email ?? "",
                           commentText: commentController.text.trim(),
                         );
+                    commentController.clear();
                   },
                   icon: const Icon(Icons.send),
                 ),

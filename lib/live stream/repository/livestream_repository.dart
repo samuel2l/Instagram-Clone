@@ -88,6 +88,7 @@ class LivestreamRepository {
   }
 
   endLiveStream(String uid, String channelId, BuildContext context) async {
+    print("ending livestream with $channelId");
     await deleteLivestreamComments(channelId);
     await firestore.collection("livestreams").doc(channelId).delete();
     await firestore.collection('users').doc(uid).update({'isLive': false});
