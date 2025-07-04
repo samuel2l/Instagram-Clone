@@ -1,6 +1,8 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'livestream_screen.dart';
 
 class StartLivestreamScreen extends ConsumerWidget {
@@ -11,44 +13,37 @@ class StartLivestreamScreen extends ConsumerWidget {
     TextEditingController titleController = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Start Livestream"),
-      ),
+      appBar: AppBar(title: const Text("Start Livestream")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "Enter stream title",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "My awesome livestream",
-              ),
-            ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               icon: const Icon(Icons.videocam),
               label: const Text("Start Live"),
-              onPressed: () {
-                if (titleController.text.isNotEmpty) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (ctx) => LivestreamScreen(
-                        role: ClientRoleType.clientRoleBroadcaster,
-                      ),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please enter a stream title")),
-                  );
-                }
+              onPressed: () async {
+                String channelId = await ref
+                    .read(liveStreamRepositoryProvider)
+                    .startLiveStream(
+                      FirebaseAuth.instance.currentUser?.email ?? "",
+                      FirebaseAuth.instance.currentUser?.uid ?? "",
+                      0,
+                      context,
+                    );
+
+                print("livestream channel id??? ${channelId}");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (ctx) => LivestreamScreen(
+                          role: ClientRoleType.clientRoleBroadcaster,
+                          channelId: channelId,
+                        ),
+                  ),
+                );
               },
             ),
           ],
