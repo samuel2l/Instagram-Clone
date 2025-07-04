@@ -177,6 +177,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
         leading: IconButton(
           onPressed: () async {
             print("Ending live stream");
+            
             await endStream();
             if (mounted) Navigator.pop(context);
           },

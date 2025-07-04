@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/models/livestream.dart';
 import 'package:instagram/utils/utils.dart';
-import 'package:uuid/uuid.dart';
 
 final isLiveProvider = StreamProvider<bool>((ref) {
   final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -150,4 +149,25 @@ class LivestreamRepository {
           return snapshot.docs.map((doc) => doc.data()).toList();
         });
   }
+
+  Stream<List<Map<String, dynamic>>> getLiveUsers() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('isLive', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+  }
+//   Stream<List<Map<String, dynamic>>> getLiveUsers() {
+//   return FirebaseFirestore.instance
+//       .collection('users')
+//       .snapshots()
+//       .map((snapshot) {
+//         final users = snapshot.docs.map((doc) => doc.data()).toList();
+//         // Print each user for debugging
+//         for (var user in users) {
+//           print(user);
+//         }
+//         return users;
+//       });
+// }
 }

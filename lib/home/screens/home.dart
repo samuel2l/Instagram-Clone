@@ -28,6 +28,126 @@ class Home extends ConsumerWidget {
             data: (user) {
               return Column(
                 children: [
+                  // Container(
+                  //   height: 160,
+                  //   color: Colors.red,
+                  //   child: StreamBuilder(
+                  //     stream:
+                  //         ref.watch(liveStreamRepositoryProvider).getLiveUsers(),
+                  //     builder: (context, snapshot) {
+                  //       if (snapshot.connectionState == ConnectionState.waiting) {
+                  //         return const Center(child: CircularProgressIndicator());
+                  //       }
+
+                  //       if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  //         return const Center(child: Text("No users are live"));
+                  //       }
+
+                  //       final liveUsers = snapshot.data!;
+                  //       print("ah users $liveUsers");
+
+                  //       return Expanded(
+                  //         child: ListView.builder(
+
+                  //           // scrollDirection: Axis.horizontal,
+                  //           itemCount: liveUsers.length,
+                  //           itemBuilder: (context, index) {
+                  //             final user = liveUsers[index];
+                  //             return ListTile(
+                  //               title: Text(user['email'] ?? 'Unknown'),
+                  //               subtitle: const Text('Live'),
+                  //               onTap: () {
+                  //                 Navigator.of(context).push(
+                  //                   MaterialPageRoute(
+                  //                     builder: (context) {
+                  //                       return LivestreamScreen(
+                  //                         role: ClientRoleType.clientRoleAudience,
+                  //                         channelId:
+                  //                             "${user["uid"]} ${user["email"]}", // replace with your correct field
+                  //                       );
+                  //                     },
+                  //                   ),
+                  //                 );
+                  //               },
+                  //             );
+                  //           },
+                  //         ),
+                  //       );
+                  //     },
+                  //   ),
+                  // ),
+                  StreamBuilder(
+                    stream:
+                        ref.watch(liveStreamRepositoryProvider).getLiveUsers(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text("No users are live"));
+                      }
+
+                      final liveUsers = snapshot.data!;
+
+                      return SizedBox(
+                        height:
+                            100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: liveUsers.length,
+                          itemBuilder: (context, index) {
+                            final user = liveUsers[index];
+                            
+                            print("${user["uid"]} ${user["email"]}");
+                            return SingleChildScrollView(
+                              child: Container(
+                                width:
+                                    100,
+                                margin: const EdgeInsets.symmetric(horizontal: 8),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return LivestreamScreen(
+                                            role:
+                                                ClientRoleType.clientRoleAudience,
+                                            channelId:
+                                                "${user["uid"]} ${user["email"]}",
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                  child: Card(
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.videocam, color: Colors.red),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            user['email'] ?? 'Unknown',
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const Text(
+                                            'Live',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
                   GestureDetector(
                     onTap: () {
                       ref.read(authRepositoryProvider).logoutUser(context);
