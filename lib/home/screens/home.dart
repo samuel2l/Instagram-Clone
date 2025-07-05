@@ -91,28 +91,30 @@ class Home extends ConsumerWidget {
                       final liveUsers = snapshot.data!;
 
                       return SizedBox(
-                        height:
-                            100,
+                        height: 100,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: liveUsers.length,
                           itemBuilder: (context, index) {
                             final user = liveUsers[index];
-                            
+
                             print("${user["uid"]} ${user["email"]}");
                             return SingleChildScrollView(
                               child: Container(
-                                width:
-                                    100,
-                                margin: const EdgeInsets.symmetric(horizontal: 8),
+                                width: 100,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 child: GestureDetector(
                                   onTap: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) {
+                                          ref.read(liveStreamRepositoryProvider);
                                           return LivestreamScreen(
                                             role:
-                                                ClientRoleType.clientRoleAudience,
+                                                ClientRoleType.clientRoleAudience
+                                                    ,
                                             channelId:
                                                 "${user["uid"]} ${user["email"]}",
                                           );
@@ -126,7 +128,10 @@ class Home extends ConsumerWidget {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.videocam, color: Colors.red),
+                                          Icon(
+                                            Icons.videocam,
+                                            color: Colors.red,
+                                          ),
                                           const SizedBox(height: 8),
                                           Text(
                                             user['email'] ?? 'Unknown',

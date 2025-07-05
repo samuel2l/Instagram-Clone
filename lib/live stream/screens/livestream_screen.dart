@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
+import 'package:instagram/utils/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
 
 class LivestreamScreen extends ConsumerStatefulWidget {
   final ClientRoleType role;
@@ -22,7 +26,9 @@ class LivestreamScreen extends ConsumerStatefulWidget {
 
 class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
   String? appId = dotenv.env["AGORA_APP_ID"];
-  String? token = dotenv.env["AGORA_TEMP_TOKEN"];
+
+  String baseUrl = "https://agora-token-generator-mtk5.onrender.com";
+  String? token;
   List<int> watchers = [];
   int? _remoteUid;
   bool _localUserJoined = false;
@@ -39,10 +45,28 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
     initAgora();
   }
 
+  getToken() async {
+    final res = await http.get(
+      Uri.parse(
+        "$baseUrl/rtc/${widget.channelId}/publisher/userAccount/${FirebaseAuth.instance.currentUser?.uid}/",
+      ),
+    );
+    if (res.statusCode == 200) {
+      setState(() {
+        token = res.body;
+        token = jsonDecode(token!)["rtcToken"];
+      });
+    } else {
+      token = "undefined";
+      showSnackBar(context: context, content: "Unable to join live");
+    }
+  }
+
   Future<void> initAgora() async {
     await [Permission.microphone, Permission.camera].request();
 
     _engine = createAgoraRtcEngine();
+    await getToken();
 
     await _engine.initialize(
       RtcEngineContext(
@@ -55,23 +79,23 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           print("Local user ${connection.localUid} joined");
-          if (mounted) {
-            setState(() {
-              _localUserJoined = true;
-            });
-          }
+          // if (mounted) {
+          setState(() {
+            _localUserJoined = true;
+          });
+          // }
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           print("Remote user $remoteUid joined");
-          if (mounted) {
-            setState(() {
-              watchers.add(remoteUid);
-              _remoteUid = remoteUid;
-              ref
-                  .read(liveStreamRepositoryProvider)
-                  .increaseViewerCount(widget.channelId);
-            });
-          }
+          // if (mounted) {
+          setState(() {
+            watchers.add(remoteUid);
+            _remoteUid = remoteUid;
+            ref
+                .read(liveStreamRepositoryProvider)
+                .increaseViewerCount(widget.channelId);
+          });
+          // }
         },
         onUserOffline: (
           RtcConnection connection,
@@ -89,14 +113,19 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
             });
           }
         },
-        onLeaveChannel: (connection, stats) {
+        onLeaveChannel: (connection, stats)async {
           print("Left channel: $stats");
           if (mounted) {
             setState(() {
               watchers.clear();
               _remoteUid = null;
             });
+            // await endStream();
           }
+        },
+        onTokenPrivilegeWillExpire: (connection, token) async {
+          await getToken();
+          await _engine.renewToken(token);
         },
       ),
     );
@@ -172,12 +201,12 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("watchersssss $watchers");
+    print("remote uid? $_remoteUid");
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: () async {
-            print("Ending live stream");
-            
             await endStream();
             if (mounted) Navigator.pop(context);
           },
