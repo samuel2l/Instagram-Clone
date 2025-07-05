@@ -113,7 +113,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
             });
           }
         },
-        onLeaveChannel: (connection, stats)async {
+        onLeaveChannel: (connection, stats) async {
           print("Left channel: $stats");
           if (mounted) {
             setState(() {
@@ -268,13 +268,32 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      "Watchers: ${watchers.length}",
-                      style: const TextStyle(color: Colors.white),
+                    child: StreamBuilder<int>(
+                      stream: ref
+                          .read(liveStreamRepositoryProvider)
+                          .getViewerCount(widget.channelId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Text(
+                            "Watchers: ...",
+                            style: TextStyle(color: Colors.white),
+                          );
+                        }
+                        if (!snapshot.hasData) {
+                          return const Text(
+                            "Watchers: 0",
+                            style: TextStyle(color: Colors.white),
+                          );
+                        }
+                        return Text(
+                          "Watchers: ${snapshot.data}",
+                          style: const TextStyle(color: Colors.white),
+                        );
+                      },
                     ),
                   ),
                 ),
-
                 Positioned(
                   bottom: 0,
                   left: 0,

@@ -113,6 +113,20 @@ class LivestreamRepository {
     }
   }
 
+  Stream<int> getViewerCount(String channelId) {
+  return firestore
+      .collection('livestreams')
+      .doc(channelId)
+      .snapshots()
+      .map((snapshot) {
+    if (snapshot.exists) {
+      return snapshot.data()?['viewerCount'] ?? 0;
+    } else {
+      return 0;
+    }
+  });
+}
+
   Future<void> addLivestreamComment({
     required String channelId,
     required String email,
