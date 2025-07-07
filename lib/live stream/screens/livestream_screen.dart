@@ -134,7 +134,9 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
     await _engine.enableVideo();
 
     if (widget.role == ClientRoleType.clientRoleBroadcaster) {
-      if (mounted) await _engine.startPreview();
+      if (mounted) {
+        await _engine.startPreview();
+      }
     }
 
     await _engine.joinChannelWithUserAccount(
@@ -201,8 +203,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("watchersssss $watchers");
-    print("remote uid? $_remoteUid");
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(

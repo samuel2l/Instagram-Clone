@@ -12,6 +12,8 @@ import 'package:instagram/chat/screens/remove_member.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
+import 'package:instagram/video%20calls/repository/video_call_repository.dart';
+import 'package:instagram/video%20calls/screens/video_call_screen.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -50,6 +52,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.chatData["isGroup"] == null) {
+      widget.chatData["isGroup"] = false;
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -72,25 +77,91 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                       );
                     },
-                    child: Text("remove"),
+                    child: const Text("remove"),
                   ),
-SizedBox(width: 10,),
+                  const SizedBox(width: 10),
                   GestureDetector(
                     onDoubleTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) {
-                            return AddMember(
-                              chatId: widget.chatData["chatId"],
-                            );
+                            return AddMember(chatId: widget.chatData["chatId"]);
                           },
                         ),
                       );
                     },
-                    child: Text("add"),
+                    child: const Text("add"),
                   ),
                 ]
-                : [],
+                : [
+                  StreamBuilder(
+                    stream: ref
+                        .watch(videoCallRepositoryProvider)
+                        .checkIncomingCalls(
+                          FirebaseAuth.instance.currentUser!.uid,
+                        ),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      }
+
+                      final callData = snapshot.data ?? {};
+                      print("$callData this is the call Data");
+
+                      if (callData.isEmpty) {
+                        return IconButton(
+                          onPressed: () {
+                            ref
+                                .read(videoCallRepositoryProvider)
+                                .sendCallData(
+                                  calleeId: widget.user["uid"],
+                                  callType: "video",
+                                  channelId:
+                                      "${FirebaseAuth.instance.currentUser?.uid} ${widget.user["uid"]}",
+                                );
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return VideoCallScreen(
+                                    channelId:
+                                        "${FirebaseAuth.instance.currentUser?.uid} ${widget.user["uid"]}",
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.call),
+                        );
+                      } else {
+                        return IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return VideoCallScreen(
+                                    channelId: callData['channelId'],
+                                  );
+                                },
+                              ),
+                            );
+                            // }, // <-- Fixed missing comma
+                            // title: Text(
+                            //   "Incoming call from ${callData['callerId']}",
+                            // ),
+                            // subtitle: Text("Channel: ${callData['channelId']}"
+                          
+                  
+                          },
+                          icon: Icon(Icons.home),
+                        );
+                      }
+                    },
+                  ),
+                ],
       ),
       body: Column(
         children: [

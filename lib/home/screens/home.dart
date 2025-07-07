@@ -156,6 +156,8 @@ class Home extends ConsumerWidget {
                   GestureDetector(
                     onTap: () {
                       ref.read(authRepositoryProvider).logoutUser(context);
+                      ref.invalidate(getUserProvider);
+                     
                     },
                     child: Text("Logout"),
                   ),

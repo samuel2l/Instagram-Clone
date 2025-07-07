@@ -162,7 +162,10 @@ class AuthRepository {
 
   Future<void> logoutUser(BuildContext context) async {
     try {
-      await FirebaseAuth.instance.signOut();
+      final auth=FirebaseAuth.instance;
+      print(auth.currentUser);
+      await auth.signOut();
+      print("ah logout??? ${auth.currentUser}");
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) {

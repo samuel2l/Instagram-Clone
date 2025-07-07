@@ -149,6 +149,7 @@
 import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -157,14 +158,13 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/firebase_options.dart';
 import 'package:instagram/home/screens/home.dart';
-import 'package:instagram/live%20stream/screens/start_livestream.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
 
 String? appId = dotenv.env["AGORA_APP_ID"];
 String? token = dotenv.env["AGORA_TEMP_TOKEN"];
-String channel = "testt";
+String channel = "testtt";
 
 void main() async {
   await dotenv.load();
@@ -204,124 +204,50 @@ class MyApp extends ConsumerWidget {
             error: (error, stackTrace) => Center(child: Text(error.toString())),
             loading: () => Center(child: CircularProgressIndicator()),
           ),
-
+      // home: VideoCallScreen(channelId: "mych",),
     );
   }
 }
 
-class ChooseVideoCallScreen extends StatelessWidget {
-  const ChooseVideoCallScreen({super.key});
+
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) {
-                return MyApp();
-              },
-            ),
-          );
-        },
-        child: Center(child: Text("go to video call")),
-      ),
-    );
-  }
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class VideoCallScreen extends StatefulWidget {
-  const VideoCallScreen({super.key});
-
-  @override
-  State<VideoCallScreen> createState() => _VideoCallScreenState();
-}
-
-class _VideoCallScreenState extends State<VideoCallScreen> {
-  int? _remoteUid;
-  bool _localUserJoined = false;
-  late RtcEngine _engine;
-
+class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
-    super.initState();
     initAgora();
-  }
-
-  Future<void> initAgora() async {
-    // retrieve permissions
-    await [Permission.microphone, Permission.camera].request();
-
-    //create the engine
-    _engine = createAgoraRtcEngine();
-    await _engine.initialize(
-      RtcEngineContext(
-        appId: appId,
-        channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
-      ),
-    );
-
-    _engine.registerEventHandler(
-      RtcEngineEventHandler(
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          debugPrint("local user ${connection.localUid} joined");
-          setState(() {
-            _localUserJoined = true;
-          });
-        },
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          debugPrint("remote user $remoteUid joined");
-          setState(() {
-            _remoteUid = remoteUid;
-          });
-        },
-        onUserOffline: (
-          RtcConnection connection,
-          int remoteUid,
-          UserOfflineReasonType reason,
-        ) {
-          debugPrint("remote user $remoteUid left channel");
-          setState(() {
-            _remoteUid = null;
-          });
-        },
-        onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
-          debugPrint(
-            '[onTokenPrivilegeWillExpire] connection: ${connection.toJson()}, token: $token',
-          );
-        },
-      ),
-    );
-
-    await _engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
-    await _engine.enableVideo();
-    await _engine.startPreview();
-
-    await _engine.joinChannel(
-      token: token!,
-      channelId: channel,
-      uid: 0,
-      options: const ChannelMediaOptions(),
-    );
+    super.initState();
   }
 
   @override
   void dispose() {
-    super.dispose();
-
     _dispose();
-  }
-
-  Future<void> _dispose() async {
-    await _engine.leaveChannel();
-    await _engine.release();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Agora Video Call')),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+
+        title: Text("widget.title"),
+      ),
       body: Stack(
         children: [
           Center(child: _remoteVideo()),
@@ -332,7 +258,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               height: 150,
               child: Center(
                 child:
-                    _localUserJoined
+                    localUserJoined
                         ? AgoraVideoView(
                           controller: VideoViewController(
                             rtcEngine: _engine,
@@ -348,7 +274,76 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     );
   }
 
-  // Display remote user's video
+  late RtcEngine _engine;
+  int? _remoteUid;
+  bool localUserJoined = false;
+
+  Future<void> initAgora() async {
+    await [Permission.microphone, Permission.camera].request();
+    _engine = createAgoraRtcEngine();
+    // Initialize RtcEngine and set the channel profile to communication
+    await _engine.initialize(
+      RtcEngineContext(
+        appId: appId,
+        channelProfile: ChannelProfileType.channelProfileCommunication,
+      ),
+    );
+    // Enable the video module
+    await _engine.enableVideo();
+    // Enable local video preview
+    await _engine.startPreview();
+    await _engine.joinChannel(
+      // Join a channel using a temporary token and channel name
+      token: token!,
+      channelId: channel,
+      options: const ChannelMediaOptions(
+        // Automatically subscribe to all video streams
+        autoSubscribeVideo: true,
+        // Automatically subscribe to all audio streams
+        autoSubscribeAudio: true,
+        // Publish camera video
+        publishCameraTrack: true,
+        // Publish microphone audio
+        publishMicrophoneTrack: true,
+        // Set user role to clientRoleBroadcaster (broadcaster) or clientRoleAudience (audience)
+        clientRoleType: ClientRoleType.clientRoleBroadcaster,
+      ),
+      uid:
+          0, // When you set uid to 0, a user name is randomly generated by the engine
+    );
+    // Add an event handler
+    _engine.registerEventHandler(
+      RtcEngineEventHandler(
+        // Occurs when the local user joins the channel successfully
+        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+          debugPrint("local user ${connection.localUid} joined");
+          setState(() {
+            localUserJoined = true;
+          });
+        },
+        // Occurs when a remote user join the channel
+        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
+          debugPrint("remote user $remoteUid joined");
+          setState(() {
+            _remoteUid = remoteUid;
+          });
+        },
+        // Occurs when a remote user leaves the channel
+        onUserOffline: (
+          RtcConnection connection,
+          int remoteUid,
+          UserOfflineReasonType reason,
+        ) {
+          debugPrint("remote user $remoteUid left channel");
+          setState(() {
+            _remoteUid = null;
+          });
+        },
+      ),
+    );
+  }
+
+  // Widget to display remote video
   Widget _remoteVideo() {
     if (_remoteUid != null) {
       return AgoraVideoView(
@@ -364,5 +359,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         textAlign: TextAlign.center,
       );
     }
+  }
+
+  Future<void> _dispose() async {
+    await _engine.leaveChannel(); // Leave the channel
+    await _engine.release(); // Release resources
   }
 }
