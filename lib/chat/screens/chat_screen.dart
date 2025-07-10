@@ -129,6 +129,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   return VideoCallScreen(
                                     channelId:
                                         "${FirebaseAuth.instance.currentUser?.uid} ${widget.user["uid"]}",
+                                        calleeId: widget.user["uid"],
+
                                   );
                                 },
                               ),
@@ -144,6 +146,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return VideoCallScreen(
                                     channelId: callData['channelId'],
+                                    calleeId: widget.user["uid"],
                                   );
                                 },
                               ),

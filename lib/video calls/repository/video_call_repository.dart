@@ -40,7 +40,9 @@ class VideoCallRepository {
 
     await firestore.collection('calls').doc(calleeId).set(callData);
     await firestore.collection('calls').doc(currentUser.uid).set(callData);
+
     print("sent to calls???");
+
     await firestore
         .collection('users')
         .doc(currentUser.uid)
@@ -52,7 +54,9 @@ class VideoCallRepository {
           'timestamp': FieldValue.serverTimestamp(),
           'direction': 'outgoing',
         });
+
     print("now why tf wont you send to call_logs?");
+
     await firestore
         .collection('users')
         .doc(calleeId)
@@ -64,6 +68,24 @@ class VideoCallRepository {
           'timestamp': FieldValue.serverTimestamp(),
           'direction': 'incoming',
         });
+  }
+
+  Future<void> endCall({
+    required String calleeId,
+    required String channelId,
+  }) async {
+    final currentUser = auth.currentUser;
+
+    if (currentUser == null) {
+      throw Exception("No authenticated user found.");
+    }
+
+    await firestore.collection('calls').doc(calleeId).update({
+      "hasDialled": false,
+    });
+    await firestore.collection('calls').doc(currentUser.uid).update({
+      "hasDialled": false,
+    });
   }
 
   Stream<Map<String, dynamic>?> checkIncomingCalls(String uid) {
@@ -85,4 +107,25 @@ class VideoCallRepository {
           return null;
         });
   }
+
+    Stream<Map<String, dynamic>?> checkCallEnded(String uid) {
+    return FirebaseFirestore.instance
+        .collection('calls')
+        .doc(uid)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.exists) {
+            final data = snapshot.data();
+            if (data != null && !data['hasDialled']) {
+              return {
+                'callerId': data['callerId'],
+                'channelId': data['channelId'],
+                'timestamp': data['timestamp'],
+              };
+            }
+          }
+          return null;
+        });
+  }
+
 }

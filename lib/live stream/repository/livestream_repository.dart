@@ -85,10 +85,8 @@ class LivestreamRepository {
   }
 
   endLiveStream(String uid, String channelId, BuildContext context) async {
-    print("ending livestream with $channelId");
     await deleteLivestreamComments(channelId);
     await firestore.collection("livestreams").doc(channelId).delete();
-    print("ah ending live stream?????????");
     await firestore.collection('users').doc(uid).update({'isLive': false});
     showSnackBar(context: context, content: "Live Stream ended");
   }
@@ -109,7 +107,7 @@ class LivestreamRepository {
         "viewerCount": FieldValue.increment(-1),
       });
     } catch (e) {
-      print(e);
+      (e);
     }
   }
 
