@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,26 +9,26 @@ import 'package:instagram/utils/utils.dart';
 import 'package:instagram/video%20calls/repository/video_call_repository.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class VideoCallScreen extends ConsumerStatefulWidget {
-  const VideoCallScreen({
+class GroupVideoCallScreen extends ConsumerStatefulWidget {
+  const GroupVideoCallScreen({
     super.key,
     required this.channelId,
     required this.calleeId,
+
   });
   final String channelId;
   final String calleeId;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
-      _VideoCallScreenState();
+      _GroupVideoCallScreenState();
 }
 
-class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
-  int? _remoteUid;
+class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
+  final List<int> _remoteUids = [];
   bool _localUserJoined = false;
-  late RtcEngine _engine;
+  RtcEngine? _engine; // ✅ Made nullable
   String? appId = dotenv.env["AGORA_APP_ID"];
-
   String baseUrl = "https://agora-token-generator-mtk5.onrender.com";
   String? token;
 
@@ -48,12 +47,9 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
-      if (mounted){
       setState(() {
         token = data["rtcToken"];
       });
-
-      }
     } else {
       throw Exception("Unable to get token");
     }
@@ -62,17 +58,18 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   Future<void> initAgora() async {
     await [Permission.microphone, Permission.camera].request();
 
-    _engine = createAgoraRtcEngine();
-    await getToken();
+    await getToken(); // ✅ Get token first
 
-    await _engine.initialize(
+    _engine = createAgoraRtcEngine(); // ✅ Then create engine
+
+    await _engine!.initialize(
       RtcEngineContext(
         appId: appId,
         channelProfile: ChannelProfileType.channelProfileCommunication,
       ),
     );
 
-    _engine.registerEventHandler(
+    _engine!.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           debugPrint("local user ${connection.localUid} joined");
@@ -83,7 +80,7 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           debugPrint("remote user $remoteUid joined");
           setState(() {
-            _remoteUid = remoteUid;
+            _remoteUids.add(remoteUid);
           });
         },
         onUserOffline: (
@@ -93,22 +90,22 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
         ) {
           debugPrint("remote user $remoteUid left channel");
           setState(() {
-            _remoteUid = null;
+            _remoteUids.remove(remoteUid);
           });
         },
         onTokenPrivilegeWillExpire: (connection, token) async {
           await getToken();
-          await _engine.renewToken(token);
+          await _engine!.renewToken(token);
         },
       ),
     );
 
-    await _engine.enableVideo();
-    await _engine.startPreview();
+    await _engine!.enableVideo();
+    await _engine!.startPreview();
 
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
-    await _engine.joinChannelWithUserAccount(
+    await _engine!.joinChannelWithUserAccount(
       token: token!,
       channelId: widget.channelId,
       userAccount: userId,
@@ -122,51 +119,80 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   }
 
   Future<void> _dispose() async {
-    await _engine.leaveChannel();
-    await _engine.release();
+    if (_engine != null) {
+      await _engine!.leaveChannel();
+      await _engine!.release();
+    }
+  }
+
+  Widget _buildVideoView(int uid) {
+    if (_engine == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return AgoraVideoView(
+      controller: VideoViewController.remote(
+        rtcEngine: _engine!,
+        canvas: VideoCanvas(uid: uid),
+        connection: RtcConnection(channelId: widget.channelId),
+      ),
+    );
+  }
+
+  Widget _buildLocalVideo() {
+    if (_engine == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return AgoraVideoView(
+      controller: VideoViewController(
+        rtcEngine: _engine!,
+        canvas: const VideoCanvas(uid: 0),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_engine == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final views = <Widget>[
+      _buildLocalVideo(),
+      ..._remoteUids.map(_buildVideoView),
+    ];
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Agora Video Call')),
+      appBar: AppBar(title: const Text('Agora Group Video Call')),
       body: StreamBuilder(
         stream: ref
             .watch(videoCallRepositoryProvider)
-            .checkCallEnded(FirebaseAuth.instance.currentUser!.uid),
+            .checkCallEnded(widget.calleeId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
             showSnackBar(
               context: context,
-              content: "An unexpected error occured",
+              content: "An unexpected error occurred",
             );
           }
           final data = snapshot.data ?? {};
-          print("what data was gottne in viedeo call screen???? $data");
+          print("data in group call ield???? $data");
           if (data.isEmpty) {
             return Stack(
               children: [
-                Center(child: _remoteVideo()),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: SizedBox(
-                    width: 100,
-                    height: 150,
-                    child: Center(
-                      child:
-                          _localUserJoined
-                              ? AgoraVideoView(
-                                controller: VideoViewController(
-                                  rtcEngine: _engine,
-                                  canvas: const VideoCanvas(uid: 0),
-                                ),
-                              )
-                              : const CircularProgressIndicator(),
-                    ),
+                GridView.builder(
+                  itemCount: views.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // adjust based on your layout design
                   ),
+                  itemBuilder: (context, index) {
+                    return Container(
+                      margin: const EdgeInsets.all(4),
+                      child: views[index],
+                    );
+                  },
                 ),
                 Align(
                   alignment: Alignment.bottomRight,
@@ -183,14 +209,13 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                             );
                         Navigator.of(context).pop("call ended");
                       },
-                      icon: Icon(Icons.call),
+                      icon: const Icon(Icons.call),
                     ),
                   ),
                 ),
               ],
             );
           } else {
-            // showSnackBar(context: context, content: "Call ended");
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Navigator.of(context).pop();
             });
@@ -199,22 +224,5 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
         },
       ),
     );
-  }
-
-  Widget _remoteVideo() {
-    if (_remoteUid != null) {
-      return AgoraVideoView(
-        controller: VideoViewController.remote(
-          rtcEngine: _engine,
-          canvas: VideoCanvas(uid: _remoteUid),
-          connection: RtcConnection(channelId: widget.channelId),
-        ),
-      );
-    } else {
-      return const Text(
-        'Please wait for remote user to join',
-        textAlign: TextAlign.center,
-      );
-    }
   }
 }

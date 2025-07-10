@@ -13,6 +13,7 @@ import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 import 'package:instagram/video%20calls/repository/video_call_repository.dart';
+import 'package:instagram/video%20calls/screens/group_video_call_screen.dart';
 import 'package:instagram/video%20calls/screens/video_call_screen.dart';
 import 'package:swipe_to/swipe_to.dart';
 
@@ -55,6 +56,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (widget.chatData["isGroup"] == null) {
       widget.chatData["isGroup"] = false;
     }
+    print("ah the chatdat????? ${widget.chatData}");
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -92,6 +94,81 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     },
                     child: const Text("add"),
                   ),
+                  StreamBuilder(
+                    stream: ref
+                        .watch(videoCallRepositoryProvider)
+                        .checkIncomingCalls(
+                          widget.chatData["chatId"],
+                        ),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      }
+
+                      final callData = snapshot.data ?? {};
+                      print("$callData this is the group call Data");
+
+                      if (callData.isEmpty) {
+                        return IconButton(
+                          onPressed: () async {
+                            ref
+                                .read(videoCallRepositoryProvider)
+                                .sendCallData(
+                                  calleeId: widget.chatData["chatId"],
+                                  callType: "video",
+                                  channelId:
+                                      "${widget.chatData["chatId"]} ${widget.chatData["groupName"]}",
+                                );
+
+                            String? res;
+                            res = await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return GroupVideoCallScreen(
+                                    channelId:
+                                        "${widget.chatData["chatId"]} ${widget.chatData["groupName"]}",
+                                        calleeId: widget.chatData["chatId"]
+                                  );
+                                },
+                              ),
+                            );
+                            if (res == "call ended") {
+                              showSnackBar(
+                                context: context,
+                                content: "Call ended",
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.call),
+                        );
+                      } else {
+                        return IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return GroupVideoCallScreen(
+                                    channelId: callData['channelId'],
+                                    calleeId:widget.chatData["chatId"],
+                                  );
+                                },
+                              ),
+                            );
+                            // }, // <-- Fixed missing comma
+                            // title: Text(
+                            //   "Incoming call from ${callData['callerId']}",
+                            // ),
+                            // subtitle: Text("Channel: ${callData['channelId']}"
+                          },
+                          icon: Icon(Icons.home),
+                        );
+                      }
+                    },
+                  ),
                 ]
                 : [
                   StreamBuilder(
@@ -114,7 +191,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
                       if (callData.isEmpty) {
                         return IconButton(
-                          onPressed: () {
+                          onPressed: () async {
                             ref
                                 .read(videoCallRepositoryProvider)
                                 .sendCallData(
@@ -123,18 +200,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   channelId:
                                       "${FirebaseAuth.instance.currentUser?.uid} ${widget.user["uid"]}",
                                 );
-                            Navigator.of(context).push(
+
+                            String? res;
+                            res = await Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) {
                                   return VideoCallScreen(
                                     channelId:
                                         "${FirebaseAuth.instance.currentUser?.uid} ${widget.user["uid"]}",
-                                        calleeId: widget.user["uid"],
-
+                                    calleeId: widget.user["uid"],
                                   );
                                 },
                               ),
                             );
+                            if (res == "call ended") {
+                              showSnackBar(
+                                context: context,
+                                content: "Call ended",
+                              );
+                            }
                           },
                           icon: const Icon(Icons.call),
                         );
@@ -156,8 +240,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             //   "Incoming call from ${callData['callerId']}",
                             // ),
                             // subtitle: Text("Channel: ${callData['channelId']}"
-                          
-                  
                           },
                           icon: Icon(Icons.home),
                         );

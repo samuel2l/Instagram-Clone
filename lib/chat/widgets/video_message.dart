@@ -15,7 +15,7 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
   bool isPlay = false;
   @override
   void initState() {
-    // TODO: implement initState
+
     super.initState();
     controller = CachedVideoPlayerPlusController.networkUrl(
         Uri.parse(widget.url),
@@ -25,7 +25,10 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
       ..initialize().then((value) async {
         await controller.setLooping(false);
         // controller.play();
+        if (mounted){
+
         setState(() {});
+        }
       });
   }
 

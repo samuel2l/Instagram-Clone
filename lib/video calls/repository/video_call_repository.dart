@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 final videoCallRepositoryProvider = Provider((ref) {
   return VideoCallRepository(
@@ -20,6 +19,7 @@ class VideoCallRepository {
     required String calleeId,
     required String callType,
     required String channelId,
+    bool isGroup = false,
   }) async {
     final currentUser = auth.currentUser;
 
@@ -37,9 +37,13 @@ class VideoCallRepository {
       'timestamp': FieldValue.serverTimestamp(),
       'hasDialled': true,
     };
-
+    if(!isGroup){
     await firestore.collection('calls').doc(calleeId).set(callData);
     await firestore.collection('calls').doc(currentUser.uid).set(callData);
+    }else{
+    await firestore.collection('calls').doc(calleeId).set(callData);
+
+    }
 
     print("sent to calls???");
 
@@ -73,20 +77,31 @@ class VideoCallRepository {
   Future<void> endCall({
     required String calleeId,
     required String channelId,
+    bool isGroup=false
   }) async {
+    print("ah ending call??????");
     final currentUser = auth.currentUser;
 
     if (currentUser == null) {
       throw Exception("No authenticated user found.");
     }
-
+    if(!isGroup){
     await firestore.collection('calls').doc(calleeId).update({
       "hasDialled": false,
     });
+    print("updated to false???");
     await firestore.collection('calls').doc(currentUser.uid).update({
       "hasDialled": false,
     });
+
+    }else{
+      await firestore.collection('calls').doc(calleeId).update({
+      "hasDialled": false,
+    });
+    }
+
   }
+
 
   Stream<Map<String, dynamic>?> checkIncomingCalls(String uid) {
     return FirebaseFirestore.instance
@@ -108,7 +123,9 @@ class VideoCallRepository {
         });
   }
 
-    Stream<Map<String, dynamic>?> checkCallEnded(String uid) {
+
+
+  Stream<Map<String, dynamic>?> checkCallEnded(String uid) {
     return FirebaseFirestore.instance
         .collection('calls')
         .doc(uid)
@@ -127,5 +144,4 @@ class VideoCallRepository {
           return null;
         });
   }
-
 }
