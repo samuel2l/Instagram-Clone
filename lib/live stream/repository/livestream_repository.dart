@@ -169,17 +169,4 @@ class LivestreamRepository {
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }
 
-  //   Stream<List<Map<String, dynamic>>> getLiveUsers() {
-  //   return FirebaseFirestore.instance
-  //       .collection('users')
-  //       .snapshots()
-  //       .map((snapshot) {
-  //         final users = snapshot.docs.map((doc) => doc.data()).toList();
-  //         // Print each user for debugging
-  //         for (var user in users) {
-  //           print(user);
-  //         }
-  //         return users;
-  //       });
-  // }
 }

@@ -98,7 +98,7 @@ class Home extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             final user = liveUsers[index];
 
-                            print("${user["uid"]} ${user["email"]}");
+                            // print("${user["uid"]} ${user["email"]}");
                             return SingleChildScrollView(
                               child: Container(
                                 width: 100,

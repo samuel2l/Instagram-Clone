@@ -75,13 +75,13 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     _engine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          debugPrint("local user ${connection.localUid} joined");
+          // debugPrint("local user ${connection.localUid} joined");
           setState(() {
             _localUserJoined = true;
           });
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          debugPrint("remote user $remoteUid joined");
+          // debugPrint("remote user $remoteUid joined");
           setState(() {
             _remoteUid = remoteUid;
           });
@@ -91,7 +91,7 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
           int remoteUid,
           UserOfflineReasonType reason,
         ) {
-          debugPrint("remote user $remoteUid left channel");
+          // debugPrint("remote user $remoteUid left channel");
           setState(() {
             _remoteUid = null;
           });
@@ -145,7 +145,7 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
             );
           }
           final data = snapshot.data ?? {};
-          print("what data was gottne in viedeo call screen???? $data");
+
           if (data.isEmpty) {
             return Stack(
               children: [

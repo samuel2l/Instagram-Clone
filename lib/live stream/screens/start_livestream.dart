@@ -10,7 +10,7 @@ class StartLivestreamScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    TextEditingController titleController = TextEditingController();
+
 
     return Scaffold(
       appBar: AppBar(title: const Text("Start Livestream")),
@@ -33,7 +33,7 @@ class StartLivestreamScreen extends ConsumerWidget {
                       context,
                     );
 
-                print("livestream channel id??? ${channelId}");
+                // print("livestream channel id??? ${channelId}");
                 Navigator.push(
                   context,
                   MaterialPageRoute(

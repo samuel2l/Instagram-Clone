@@ -78,7 +78,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
     _engine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          print("Local user ${connection.localUid} joined");
+          // print("Local user ${connection.localUid} joined");
           // if (mounted) {
           setState(() {
             _localUserJoined = true;
@@ -86,7 +86,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
           // }
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          print("Remote user $remoteUid joined");
+          // print("Remote user $remoteUid joined");
           // if (mounted) {
           setState(() {
             watchers.add(remoteUid);
@@ -102,7 +102,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
           int remoteUid,
           UserOfflineReasonType reason,
         ) {
-          print("Remote user $remoteUid left channel");
+          // print("Remote user $remoteUid left channel");
           if (mounted) {
             setState(() {
               watchers.remove(remoteUid);
@@ -114,7 +114,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
           }
         },
         onLeaveChannel: (connection, stats) async {
-          print("Left channel: $stats");
+          // print("Left channel: $stats");
           if (mounted) {
             setState(() {
               watchers.clear();

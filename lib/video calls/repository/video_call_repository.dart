@@ -45,7 +45,6 @@ class VideoCallRepository {
 
     }
 
-    print("sent to calls???");
 
     await firestore
         .collection('users')
@@ -59,7 +58,6 @@ class VideoCallRepository {
           'direction': 'outgoing',
         });
 
-    print("now why tf wont you send to call_logs?");
 
     await firestore
         .collection('users')

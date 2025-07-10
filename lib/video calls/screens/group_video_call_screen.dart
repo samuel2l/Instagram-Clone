@@ -72,13 +72,13 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
     _engine!.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          debugPrint("local user ${connection.localUid} joined");
+          // debugPrint("local user ${connection.localUid} joined");
           setState(() {
             _localUserJoined = true;
           });
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          debugPrint("remote user $remoteUid joined");
+          // debugPrint("remote user $remoteUid joined");
           setState(() {
             _remoteUids.add(remoteUid);
           });
@@ -88,7 +88,7 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
           int remoteUid,
           UserOfflineReasonType reason,
         ) {
-          debugPrint("remote user $remoteUid left channel");
+          // debugPrint("remote user $remoteUid left channel");
           setState(() {
             _remoteUids.remove(remoteUid);
           });

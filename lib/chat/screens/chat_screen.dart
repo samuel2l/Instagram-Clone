@@ -56,7 +56,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (widget.chatData["isGroup"] == null) {
       widget.chatData["isGroup"] = false;
     }
-    print("ah the chatdat????? ${widget.chatData}");
+    // print("ah the chatdat????? ${widget.chatData}");
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -110,7 +110,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       }
 
                       final callData = snapshot.data ?? {};
-                      print("$callData this is the group call Data");
+                      // print("$callData this is the group call Data");
 
                       if (callData.isEmpty) {
                         return IconButton(
@@ -187,7 +187,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       }
 
                       final callData = snapshot.data ?? {};
-                      print("$callData this is the call Data");
+                      // print("$callData this is the call Data");
 
                       if (callData.isEmpty) {
                         return IconButton(
