@@ -22,7 +22,9 @@ class StoryRepository {
       final userDoc = firestore.collection('stories').doc(userId);
 
       final storyDataMap = storyData.map((item) => item.toMap()).toList();
-
+      await userDoc.set({
+        'lastUpdated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
       await userDoc.collection('userStories').add({
         'mediaUrl': mediaUrl,
         "storyData": storyDataMap,
@@ -35,34 +37,48 @@ class StoryRepository {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getActiveStories() async {
-    final snapshot = await firestore.collection('stories').get();
-    final now = DateTime.now();
-    final List<Map<String, dynamic>> activeStories = [];
+  Future<Map<String, dynamic>> getValidStories() async {
+    final firestore = FirebaseFirestore.instance;
 
-    for (var userDoc in snapshot.docs) {
-      final userId = userDoc.id;
-      final storiesSnapshot =
-          await userDoc.reference
-              .collection('userStories')
-              // .orderBy('timestamp', descending: true)
-              .get();
+    Map<String, List> allStories = {};
 
-      final validStories =
-          storiesSnapshot.docs
-              .where((storyDoc) {
-                final timestamp = (storyDoc['timestamp'] as Timestamp).toDate();
-                return now.difference(timestamp).inHours < 24;
-              })
-              .map((doc) {
-                return doc.data();
-              })
-              .toList();
+    try {
+      // Get all users with stories
+      final storiesSnapshot = await firestore.collection('stories').get();
+      print("get stories???");
+      print(storiesSnapshot.docs);
 
-      if (validStories.isNotEmpty) {
-        activeStories.add({'userId': userId, 'storyList': validStories});
+      for (final userDoc in storiesSnapshot.docs) {
+        print("ah? $userDoc");
+        // Get all userStories for this user, ordered by timestamp descending
+        final userStoriesSnapshot =
+            await userDoc.reference
+                .collection('userStories')
+                .orderBy('timestamp', descending: true)
+                .get();
+        print("user snapshot? $userStoriesSnapshot");
+
+        for (final storyDoc in userStoriesSnapshot.docs) {
+          if (allStories.containsKey(userDoc.id)) {
+            allStories[userDoc.id]!.add({
+              'storyId': storyDoc.id,
+              ...storyDoc.data(),
+            });
+          } else {
+            allStories[userDoc.id] = [
+              {
+                'storyId': storyDoc.id,
+                ...storyDoc.data(),
+              },
+            ];
+          }
+        }
       }
+      print("eiI?? $allStories");
+      return allStories;
+    } catch (e) {
+      print('Error fetching stories: $e');
+      return {};
     }
-    return activeStories;
   }
 }
