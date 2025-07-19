@@ -18,9 +18,7 @@ class StoryEditor extends StatefulWidget {
 }
 
 class _StoryEditorState extends State<StoryEditor> {
-  @override
   EditableItem? _activeItem;
-
   late Offset _initPos;
   late Offset _currentPos;
   late double _currentScale;
@@ -28,16 +26,16 @@ class _StoryEditorState extends State<StoryEditor> {
   bool _inAction = false;
 
   List<EditableItem> mockData = [];
+  bool isCaption = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     mockData = [
       EditableItem()
         ..type = ItemType.image
-        ..value =
-            'https://fifpro.org/media/ovzgbezo/messi_w11_2024.jpg?width=1000&height=640&rnd=133781565917900000'
+        // ..value =
+        //     'https://fifpro.org/media/ovzgbezo/messi_w11_2024.jpg?width=1000&height=640&rnd=133781565917900000'
         ..currImage = widget.selectedImage,
       EditableItem()
         ..type = ItemType.text
@@ -55,6 +53,18 @@ class _StoryEditorState extends State<StoryEditor> {
     print(mockData[0].rotation);
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            onPressed: () {
+              isCaption = !isCaption;
+              setState(() {});
+            },
+            icon: Icon(Icons.abc),
+          ),
+        ],
+      ),
       body: GestureDetector(
         onScaleStart: (details) {
           if (_activeItem == null) return;
@@ -84,6 +94,23 @@ class _StoryEditorState extends State<StoryEditor> {
           children: [
             Container(color: Colors.black),
             ...mockData.map(_buildItemWidget),
+            isCaption
+                ? Center(
+                  child: TextField(
+                    onSubmitted: (value) {
+
+                      setState(() {
+                        isCaption = false;
+                        mockData.add(
+                          EditableItem()
+                            ..type = ItemType.text
+                            ..value = value,
+                        );
+                      });
+                    },
+                  ),
+                )
+                : SizedBox.shrink(),
           ],
         ),
       ),
@@ -91,7 +118,6 @@ class _StoryEditorState extends State<StoryEditor> {
   }
 
   Widget _buildItemWidget(EditableItem e) {
-    print("currently moving????? ${e.type} ${e.value} ${e.currImage}");
     final screen = MediaQuery.of(context).size;
 
     Widget widget;
