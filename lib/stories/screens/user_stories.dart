@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/stories/screens/view_story.dart';
+import 'package:instagram/stories/widgets/progress_bar.dart';
 
 class UserStories extends ConsumerStatefulWidget {
   const UserStories({super.key, required this.userStories});
@@ -12,9 +13,10 @@ class UserStories extends ConsumerStatefulWidget {
 }
 
 class _UserStoriesState extends ConsumerState<UserStories> {
+  int currentStoryIndex = 0;
+  List<List<EditableItem>> userStoriesCast = [];
   @override
   Widget build(BuildContext context) {
-    List<List<EditableItem>> userStoriesCast = [];
     print("the stories ${widget.userStories}");
     for (int index = 0; index < widget.userStories.length; index++) {
       final currStory = widget.userStories[index];
@@ -51,34 +53,47 @@ class _UserStoriesState extends ConsumerState<UserStories> {
     print("now watch story data??? $userStoriesCast");
     return Scaffold(
       appBar: AppBar(),
-      body: ListView.builder(
-        itemCount: widget.userStories.length,
-        itemBuilder: (context, index) {
-          final currStory = widget.userStories[index];
-          print("the curr story??? $currStory");
-          if (currStory["storyData"][0]["type"] == "image") {
-            return GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return ViewStory(storyData: userStoriesCast[index],mediaUrl:currStory["mediaUrl"] ,);
-                    },
-                  ),
-                );
-              },
-              child: SizedBox(
-                height: 40,
-                child: Image.network(currStory["mediaUrl"]),
-              ),
-            );
-          } else {
-            return SizedBox(
-              height: 40,
-              child: Text(currStory["storyData"][0]["value"]),
-            );
-          }
-        },
+      body:
+      // ListView.builder(
+      //   itemCount: widget.userStories.length,
+      //   itemBuilder: (context, index) {
+      //     final currStory = widget.userStories[index];
+      //     print("the curr story??? $currStory");
+      //     if (currStory["storyData"][0]["type"] == "image") {
+      //       return GestureDetector(
+      //         onTap: () {
+      //           Navigator.of(context).push(
+      //             MaterialPageRoute(
+      //               builder: (context) {
+      //                 return ViewStory(
+      //                   storyData: userStoriesCast[index],
+      //                   mediaUrl: currStory["mediaUrl"],
+      //                 );
+      //               },
+      //             ),
+      //           );
+      //         },
+      //         child: SizedBox(
+      //           height: 40,
+      //           child: Image.network(currStory["mediaUrl"]),
+      //         ),
+      //       );
+      //     } else {
+      //       return SizedBox(
+      //         height: 40,
+      //         child: Text(currStory["storyData"][0]["value"]),
+      //       );
+      //     }
+      //   },
+      // ),
+      Stack(
+        children: [
+          ViewStory(
+            storyData: userStoriesCast[currentStoryIndex],
+            mediaUrl: widget.userStories[currentStoryIndex]["mediaUrl"],
+          ),
+          ProgressBar()
+        ],
       ),
     );
   }

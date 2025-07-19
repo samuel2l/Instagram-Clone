@@ -11,18 +11,24 @@ class ViewStory extends StatefulWidget {
 }
 
 class _ViewStoryState extends State<ViewStory> {
-
   Widget _buildItemWidget(EditableItem e) {
     final screen = MediaQuery.of(context).size;
 
     Widget displayWidget;
     switch (e.type) {
       case ItemType.text:
-        displayWidget = Text(e.value!, style: const TextStyle(color: Colors.white));
+        displayWidget = Text(
+          e.value!,
+          style: const TextStyle(color: Colors.white),
+        );
         break;
       case ItemType.image:
         // widget = Image.file(e.currImage!);
-        displayWidget = Image.network(widget.mediaUrl!);
+        if (widget.mediaUrl != null) {
+          displayWidget = Image.network(widget.mediaUrl!);
+        } else {
+          displayWidget = Text("No image available");
+        }
         break;
     }
 
@@ -38,20 +44,16 @@ class _ViewStoryState extends State<ViewStory> {
 
   @override
   void initState() {
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Stack(
-        children: [
-          Container(color: Colors.black),
-          ...widget.storyData.map(_buildItemWidget),
-        ],
-      ),
+    return Stack(
+      children: [
+        Container(color: Colors.black),
+        ...widget.storyData.map(_buildItemWidget),
+      ],
     );
   }
 }
