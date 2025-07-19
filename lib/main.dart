@@ -8,6 +8,7 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/firebase_options.dart';
 import 'package:instagram/home/screens/home.dart';
+import 'package:instagram/stories/screens/post_story.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
@@ -45,15 +46,16 @@ class MyApp extends ConsumerWidget {
 
       // home: DraggableCaption(caption: "my drag"),
       // home: Story(),
-      home: ref
-          .watch(getUserProvider)
-          .when(
-            data: (data) {
-              return data == null ? const SignUp() : Home();
-            },
-            error: (error, stackTrace) => Center(child: Text(error.toString())),
-            loading: () => Center(child: CircularProgressIndicator()),
-          ),
+      // home: ref
+      //     .watch(getUserProvider)
+      //     .when(
+      //       data: (data) {
+      //         return data == null ? const SignUp() : Home();
+      //       },
+      //       error: (error, stackTrace) => Center(child: Text(error.toString())),
+      //       loading: () => Center(child: CircularProgressIndicator()),
+      //     ),
+      home: StoryEditor(),
       // home: VideoCallScreen(channelId: "mych",),
     );
   }

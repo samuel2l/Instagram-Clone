@@ -17,10 +17,8 @@ class StoryRepository {
   }) async {
     final userDoc = firestore.collection('stories').doc(userId);
 
-
     await userDoc.set({
       'lastUpdated': FieldValue.serverTimestamp(),
-      
     }, SetOptions(merge: true));
 
     await userDoc.collection('userStories').add({
@@ -55,16 +53,10 @@ class StoryRepository {
               })
               .toList();
 
-
       if (validStories.isNotEmpty) {
-        activeStories.add({
-          'userId': userId,
-          // Include username/profile info if stored at root level
-          'storyList': validStories,
-        });
+        activeStories.add({'userId': userId, 'storyList': validStories});
       }
     }
-
     return activeStories;
   }
 }
