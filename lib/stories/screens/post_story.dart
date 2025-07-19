@@ -25,32 +25,23 @@ class _StoryEditorState extends State<StoryEditor> {
   late double _currentRotation;
   bool _inAction = false;
 
-  List<EditableItem> mockData = [];
+  List<EditableItem> storyData = [];
   bool isCaption = false;
 
   @override
   void initState() {
     super.initState();
-    mockData = [
-      EditableItem()
-        ..type = ItemType.image
-        // ..value =
-        //     'https://fifpro.org/media/ovzgbezo/messi_w11_2024.jpg?width=1000&height=640&rnd=133781565917900000'
-        ..currImage = widget.selectedImage,
-      EditableItem()
-        ..type = ItemType.text
-        ..value = 'Hello',
-      EditableItem()
-        ..type = ItemType.text
-        ..value = 'World',
-    ];
+    EditableItem firstItem = EditableItem();
+    firstItem.currImage = widget.selectedImage;
+    firstItem.type = ItemType.image;
+    storyData.add(firstItem);
   }
 
   @override
   Widget build(BuildContext context) {
     final screen = MediaQuery.of(context).size;
-    print(mockData[0].position);
-    print(mockData[0].rotation);
+    print(storyData[0].position);
+    print(storyData[0].rotation);
 
     return Scaffold(
       appBar: AppBar(
@@ -93,15 +84,14 @@ class _StoryEditorState extends State<StoryEditor> {
         child: Stack(
           children: [
             Container(color: Colors.black),
-            ...mockData.map(_buildItemWidget),
+            ...storyData.map(_buildItemWidget),
             isCaption
                 ? Center(
                   child: TextField(
                     onSubmitted: (value) {
-
                       setState(() {
                         isCaption = false;
-                        mockData.add(
+                        storyData.add(
                           EditableItem()
                             ..type = ItemType.text
                             ..value = value,
