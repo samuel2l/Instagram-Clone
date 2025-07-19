@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 
-class ProgressBar extends StatefulWidget {
-  const ProgressBar({super.key});
+class ProgressBar extends StatelessWidget {
+  const ProgressBar({super.key, required this.percentageCovered});
 
-  @override
-  State<ProgressBar> createState() => _ProgressBarState();
-}
+  final double percentageCovered;
 
-class _ProgressBarState extends State<ProgressBar> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return LinearPercentIndicator(lineHeight: 15, percent: percentageCovered);
   }
 }
