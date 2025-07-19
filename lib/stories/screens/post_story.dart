@@ -2,12 +2,8 @@
 
 import 'dart:io';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:instagram/utils/utils.dart';
+import 'package:instagram/stories/screens/view_story.dart';
 
 class StoryEditor extends StatefulWidget {
   const StoryEditor({super.key, this.selectedImage});
@@ -103,6 +99,17 @@ class _StoryEditorState extends State<StoryEditor> {
                 : SizedBox.shrink(),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) {
+                return ViewStory(storyData: storyData);
+              },
+            ),
+          );
+        },
       ),
     );
   }
