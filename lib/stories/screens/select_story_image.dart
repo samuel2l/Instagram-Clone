@@ -18,6 +18,7 @@ class _SelectStoryImageState extends State<SelectStoryImage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: Center(
         child: IconButton(
           onPressed: () async {

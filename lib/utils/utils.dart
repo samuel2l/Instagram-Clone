@@ -37,8 +37,8 @@ Future<String?> pickVideoFromGallery(BuildContext context) async {
 Future<String> uploadImageToCloudinary(path) async {
   try {
     final cloudinary = CloudinaryPublic(
-      dotenv.env["CLOUDINARY_KEY1"]!,
       dotenv.env["CLOUDINARY_KEY2"]!,
+      dotenv.env["CLOUDINARY_KEY1"]!,
     );
 
     CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
@@ -50,6 +50,7 @@ Future<String> uploadImageToCloudinary(path) async {
     );
     return cloudinaryResponse.secureUrl;
   } catch (e) {
+    print("there is an error??? ${e.toString()}");
     return "";
   }
 }
@@ -91,4 +92,3 @@ Future<GiphyGif?> pickGIF(BuildContext context) async {
   }
   return null;
 }
-

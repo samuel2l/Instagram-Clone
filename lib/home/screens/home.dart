@@ -12,6 +12,7 @@ import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/live%20stream/screens/start_livestream.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
+import 'package:instagram/stories/screens/select_story_image.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
@@ -316,25 +317,6 @@ class Home extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () async {
-                      final imgPath = await pickImageFromGallery(context);
-                      if (imgPath != null && imgPath.isNotEmpty) {
-                        var mediaUrl = await uploadImageToCloudinary(imgPath);
-
-                        final uid = FirebaseAuth.instance.currentUser?.uid;
-                        ref
-                            .watch(storyRepositoryProvider)
-                            .uploadStory(
-                              uid!,
-                              caption: "first story upload",
-                              mediaType: image,
-                              mediaUrl: "mediaUrl",
-                            );
-                      }
-                    },
-                    child: Text("Add Image"),
-                  ),
-                  TextButton(
-                    onPressed: () async {
                       // final imgPath = await geFromGallery(context);
                       // if (imgPath != null && imgPath.isNotEmpty) {
                       //   var mediaUrl = await uploadImageToCloudinary(imgPath);
@@ -349,6 +331,13 @@ class Home extends ConsumerWidget {
                       //         mediaUrl: mediaUrl,
                       //       );
                       // }
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return SelectStoryImage();
+                          },
+                        ),
+                      );
                     },
                     child: Text("Add Image"),
                   ),

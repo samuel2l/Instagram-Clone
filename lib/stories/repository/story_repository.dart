@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/stories/screens/post_story.dart';
+import 'package:instagram/utils/utils.dart';
 
 final storyRepositoryProvider = Provider<StoryRepository>((ref) {
   return StoryRepository(firestore: FirebaseFirestore.instance);
@@ -9,24 +12,27 @@ class StoryRepository {
   final FirebaseFirestore firestore;
 
   StoryRepository({required this.firestore});
-  Future<void> uploadStory(
+  Future<bool> uploadStory(
     String userId, {
     required String mediaUrl,
-    required String mediaType,
-    String caption = "",
+    required List<EditableItem> storyData,
+    required BuildContext context,
   }) async {
-    final userDoc = firestore.collection('stories').doc(userId);
+    try {
+      final userDoc = firestore.collection('stories').doc(userId);
 
-    await userDoc.set({
-      'lastUpdated': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+      final storyDataMap = storyData.map((item) => item.toMap()).toList();
 
-    await userDoc.collection('userStories').add({
-      'mediaUrl': mediaUrl,
-      'mediaType': mediaType,
-      'caption': caption,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+      await userDoc.collection('userStories').add({
+        'mediaUrl': mediaUrl,
+        "storyData": storyDataMap,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      showSnackBar(context: context, content: e.toString());
+      return false;
+    }
   }
 
   Future<List<Map<String, dynamic>>> getActiveStories() async {

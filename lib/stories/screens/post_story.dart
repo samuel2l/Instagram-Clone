@@ -2,18 +2,21 @@
 
 import 'dart:io';
 import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/stories/screens/view_story.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/stories/repository/story_repository.dart';
+import 'package:instagram/utils/utils.dart';
 
-class StoryEditor extends StatefulWidget {
+class StoryEditor extends ConsumerStatefulWidget {
   const StoryEditor({super.key, this.selectedImage});
   final File? selectedImage;
 
   @override
-  State<StoryEditor> createState() => _StoryEditorState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _StoryEditorState();
 }
 
-class _StoryEditorState extends State<StoryEditor> {
+class _StoryEditorState extends ConsumerState<StoryEditor> {
   EditableItem? _activeItem;
   late Offset _initPos;
   late Offset _currentPos;
@@ -41,6 +44,8 @@ class _StoryEditorState extends State<StoryEditor> {
 
     return Scaffold(
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
+
         backgroundColor: Colors.black,
         actions: [
           IconButton(
@@ -87,11 +92,10 @@ class _StoryEditorState extends State<StoryEditor> {
                     onSubmitted: (value) {
                       setState(() {
                         isCaption = false;
-                        storyData.add(
-                          EditableItem()
-                            ..type = ItemType.text
-                            ..value = value,
-                        );
+                        EditableItem nextItem = EditableItem();
+                        nextItem.value = value;
+                        nextItem.type = ItemType.text;
+                        storyData.add(nextItem);
                       });
                     },
                   ),
@@ -101,14 +105,36 @@ class _StoryEditorState extends State<StoryEditor> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) {
-                return ViewStory(storyData: storyData);
-              },
-            ),
+        onPressed: () async {
+          // Navigator.of(context).push(
+          //   MaterialPageRoute(
+          //     builder: (context) {
+          //       return ViewStory(storyData: storyData);
+          //     },
+          //   ),
+          // );
+          print("the path??? ${widget.selectedImage!.path}");
+          String mediaUrl = await uploadImageToCloudinary(
+            widget.selectedImage!.path,
           );
+          print("string from cloudingary??? $mediaUrl");
+          if (mediaUrl.isNotEmpty) {
+            final status = await ref
+                .read(storyRepositoryProvider)
+                .uploadStory(
+                  FirebaseAuth.instance.currentUser!.uid,
+                  mediaUrl: mediaUrl,
+                  storyData: storyData,
+                  context: context,
+                );
+            if (status) {
+              showSnackBar(
+                context: context,
+                content: "story uploaded successfully",
+              );
+              Navigator.pop(context);
+            }
+          }
         },
       ),
     );
@@ -165,4 +191,14 @@ class EditableItem {
   late ItemType type;
   String? value;
   File? currImage;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'position': {'dx': position.dx, 'dy': position.dy},
+      'scale': scale,
+      'rotation': rotation,
+      'type': type.name,
+      'value': value,
+    };
+  }
 }
