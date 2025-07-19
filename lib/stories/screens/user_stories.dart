@@ -80,24 +80,53 @@ class _UserStoriesState extends ConsumerState<UserStories> {
       percentageCoveredList.add(0);
     }
     _startWatching();
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(backgroundColor: Colors.transparent),
-      body: Stack(
-        children: [
-          ViewStory(
-            storyData: userStoriesCast[currentStoryIndex],
-            mediaUrl: widget.userStories[currentStoryIndex]["mediaUrl"],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-            // child: ProgressBar(percentageCovered: 0.4,),
-            child: StoryBars(
-              storiesLength: widget.userStories.length,
-              percentageCoveredList: percentageCoveredList,
+    return GestureDetector(
+      onTapDown: (details) {
+        final width = MediaQuery.of(context).size.width;
+        final dx = details.globalPosition.dx;
+        //dx lets us know if you are on the right or left
+        // we get the full width of screen and divide into two if dx < screensize//2 then you on left side you get it
+        if (dx < width / 2) {
+          if (currentStoryIndex > 0) {
+  
+            percentageCoveredList[currentStoryIndex] = 0;
+            percentageCoveredList[currentStoryIndex-1] = 0;
+
+            currentStoryIndex -= 1;
+          }
+          setState(() {});
+        }else{
+          if (currentStoryIndex < widget.userStories.length-1) {
+  
+            percentageCoveredList[currentStoryIndex] = 1;
+            percentageCoveredList[currentStoryIndex+1] = 0;
+
+            currentStoryIndex += 1;
+          }else{
+              percentageCoveredList[currentStoryIndex] = 1;
+          }
+          setState(() {});
+        }
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: Stack(
+          children: [
+            ViewStory(
+              storyData: userStoriesCast[currentStoryIndex],
+              mediaUrl: widget.userStories[currentStoryIndex]["mediaUrl"],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+              // child: ProgressBar(percentageCovered: 0.4,),
+              child: StoryBars(
+                storiesLength: widget.userStories.length,
+                percentageCoveredList: percentageCoveredList,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
