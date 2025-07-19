@@ -110,11 +110,13 @@ class Home extends ConsumerWidget {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) {
-                                          ref.read(liveStreamRepositoryProvider);
+                                          ref.read(
+                                            liveStreamRepositoryProvider,
+                                          );
                                           return LivestreamScreen(
                                             role:
-                                                ClientRoleType.clientRoleAudience
-                                                    ,
+                                                ClientRoleType
+                                                    .clientRoleAudience,
                                             channelId:
                                                 "${user["uid"]} ${user["email"]}",
                                           );
@@ -157,7 +159,6 @@ class Home extends ConsumerWidget {
                     onTap: () {
                       ref.read(authRepositoryProvider).logoutUser(context);
                       ref.invalidate(getUserProvider);
-                     
                     },
                     child: Text("Logout"),
                   ),
@@ -334,7 +335,7 @@ class Home extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () async {
-                      // final imgPath = await pickImageFromGallery(context);
+                      // final imgPath = await geFromGallery(context);
                       // if (imgPath != null && imgPath.isNotEmpty) {
                       //   var mediaUrl = await uploadImageToCloudinary(imgPath);
 

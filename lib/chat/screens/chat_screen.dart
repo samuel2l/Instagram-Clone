@@ -97,9 +97,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   StreamBuilder(
                     stream: ref
                         .watch(videoCallRepositoryProvider)
-                        .checkIncomingCalls(
-                          widget.chatData["chatId"],
-                        ),
+                        .checkIncomingCalls(widget.chatData["chatId"]),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -131,7 +129,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   return GroupVideoCallScreen(
                                     channelId:
                                         "${widget.chatData["chatId"]} ${widget.chatData["groupName"]}",
-                                        calleeId: widget.chatData["chatId"]
+                                    calleeId: widget.chatData["chatId"],
                                   );
                                 },
                               ),
@@ -153,7 +151,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return GroupVideoCallScreen(
                                     channelId: callData['channelId'],
-                                    calleeId:widget.chatData["chatId"],
+                                    calleeId: widget.chatData["chatId"],
                                   );
                                 },
                               ),

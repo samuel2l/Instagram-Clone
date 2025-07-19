@@ -1,32 +1,58 @@
-// 
+//
 
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:instagram/utils/utils.dart';
 
 class StoryEditor extends StatefulWidget {
-  const StoryEditor({Key? key}) : super(key: key);
+  const StoryEditor({super.key, this.selectedImage});
+  final File? selectedImage;
 
   @override
   State<StoryEditor> createState() => _StoryEditorState();
 }
 
 class _StoryEditorState extends State<StoryEditor> {
+  @override
   EditableItem? _activeItem;
 
   late Offset _initPos;
   late Offset _currentPos;
   late double _currentScale;
   late double _currentRotation;
-
   bool _inAction = false;
+
+  List<EditableItem> mockData = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    mockData = [
+      EditableItem()
+        ..type = ItemType.image
+        ..value =
+            'https://fifpro.org/media/ovzgbezo/messi_w11_2024.jpg?width=1000&height=640&rnd=133781565917900000'
+        ..currImage = widget.selectedImage,
+      EditableItem()
+        ..type = ItemType.text
+        ..value = 'Hello',
+      EditableItem()
+        ..type = ItemType.text
+        ..value = 'World',
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final screen = MediaQuery.of(context).size;
+    print(mockData[0].position);
+    print(mockData[0].rotation);
 
     return Scaffold(
       body: GestureDetector(
@@ -48,14 +74,16 @@ class _StoryEditorState extends State<StoryEditor> {
           setState(() {
             _activeItem!.position = Offset(left, top);
             _activeItem!.rotation = details.rotation + _currentRotation;
-            _activeItem!.scale =
-                max(min(details.scale * _currentScale, 3), 0.2);
+            _activeItem!.scale = max(
+              min(details.scale * _currentScale, 3),
+              0.2,
+            );
           });
         },
         child: Stack(
           children: [
-            Container(color: Colors.black26),
-            ...mockData.map(_buildItemWidget)
+            Container(color: Colors.black),
+            ...mockData.map(_buildItemWidget),
           ],
         ),
       ),
@@ -63,18 +91,17 @@ class _StoryEditorState extends State<StoryEditor> {
   }
 
   Widget _buildItemWidget(EditableItem e) {
+    print("currently moving????? ${e.type} ${e.value} ${e.currImage}");
     final screen = MediaQuery.of(context).size;
 
     Widget widget;
     switch (e.type) {
-      case ItemType.Text:
-        widget = Text(
-          e.value,
-          style: const TextStyle(color: Colors.white),
-        );
+      case ItemType.text:
+        widget = Text(e.value!, style: const TextStyle(color: Colors.white));
         break;
-      case ItemType.Image:
-        widget = Image.network(e.value);
+      case ItemType.image:
+        widget = Image.file(e.currImage!);
+        // widget = Image.network(e.value!);
         break;
     }
 
@@ -106,25 +133,13 @@ class _StoryEditorState extends State<StoryEditor> {
   }
 }
 
-enum ItemType { Image, Text }
+enum ItemType { image, text }
 
 class EditableItem {
   Offset position = const Offset(0.1, 0.1);
   double scale = 1.0;
   double rotation = 0.0;
   late ItemType type;
-  late String value;
+  String? value;
+  File? currImage;
 }
-
-final mockData = [
-  EditableItem()
-    ..type = ItemType.Image
-    ..value =
-        'https://fifpro.org/media/ovzgbezo/messi_w11_2024.jpg?width=1000&height=640&rnd=133781565917900000',
-  EditableItem()
-    ..type = ItemType.Text
-    ..value = 'Hello',
-  EditableItem()
-    ..type = ItemType.Text
-    ..value = 'World',
-];
