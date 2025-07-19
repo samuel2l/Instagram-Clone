@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/stories/screens/post_story.dart';
@@ -18,22 +17,66 @@ class UserStories extends ConsumerStatefulWidget {
 class _UserStoriesState extends ConsumerState<UserStories> {
   int currentStoryIndex = 0;
   List<double> percentageCoveredList = [];
-
   List<List<EditableItem>> userStoriesCast = [];
+  bool isHolding = false;
+  Timer? storyTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize userStoriesCast and percentageCoveredList
+    for (int index = 0; index < widget.userStories.length; index++) {
+      final currStory = widget.userStories[index];
+      List<EditableItem> storyData = [];
+
+      final storyDataFromFirebase = currStory["storyData"] as List;
+
+      for (var storyComponent in storyDataFromFirebase) {
+        final editable = EditableItem();
+        editable.position = Offset(
+          storyComponent["position"]["dx"],
+          storyComponent["position"]["dy"],
+        );
+        editable.rotation = storyComponent["rotation"];
+        editable.scale = storyComponent["scale"];
+
+        if (storyComponent["type"] == "image") {
+          editable.type = ItemType.image;
+        } else if (storyComponent["type"] == "text") {
+          editable.type = ItemType.text;
+        }
+
+        editable.value = storyComponent["value"];
+        storyData.add(editable);
+      }
+      userStoriesCast.add(storyData);
+    }
+
+    percentageCoveredList = List.filled(widget.userStories.length, 0);
+    _startWatching();
+  }
 
   void _startWatching() {
-    Timer.periodic(Duration(milliseconds: 700), (timer) {
+    storyTimer?.cancel(); // Cancel any existing timer
+
+    storyTimer = Timer.periodic(Duration(milliseconds: 700), (timer) {
+      if (!mounted) return;
+
       setState(() {
-        if (percentageCoveredList[currentStoryIndex] + 0.01 < 1) {
-          percentageCoveredList[currentStoryIndex] += 0.01;
-        } else {
-          percentageCoveredList[currentStoryIndex] = 1;
-          timer.cancel();
-          if (currentStoryIndex < widget.userStories.length - 1) {
-            currentStoryIndex++;
-            _startWatching();
+        if (!isHolding) {
+          if (percentageCoveredList[currentStoryIndex] + 0.01 < 1) {
+            percentageCoveredList[currentStoryIndex] += 0.01;
           } else {
-            // Navigator.pop(context);
+            percentageCoveredList[currentStoryIndex] = 1;
+            timer.cancel();
+            if (currentStoryIndex < widget.userStories.length - 1) {
+              currentStoryIndex++;
+              _startWatching();
+            } else {
+              // Pop the screen when last story ends
+              Navigator.pop(context);
+            }
           }
         }
       });
@@ -41,72 +84,45 @@ class _UserStoriesState extends ConsumerState<UserStories> {
   }
 
   @override
+  void dispose() {
+    storyTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    print("the stories ${widget.userStories}");
-    for (int index = 0; index < widget.userStories.length; index++) {
-      final currStory = widget.userStories[index];
-      List<EditableItem> storyData = [];
-
-      final storyDataFromFirebase = currStory["storyData"] as List;
-      print(storyDataFromFirebase.length);
-
-      for (
-        int storyComponentIndex = 0;
-        storyComponentIndex < storyDataFromFirebase.length;
-        storyComponentIndex++
-      ) {
-        final editable = EditableItem();
-        editable.position = Offset(
-          storyDataFromFirebase[storyComponentIndex]["position"]["dx"],
-          storyDataFromFirebase[storyComponentIndex]["position"]["dy"],
-        );
-        editable.rotation =
-            storyDataFromFirebase[storyComponentIndex]["rotation"];
-        editable.scale = storyDataFromFirebase[storyComponentIndex]["scale"];
-        if (storyDataFromFirebase[storyComponentIndex]["type"] == "image") {
-          editable.type = ItemType.image;
-        } else if (storyDataFromFirebase[storyComponentIndex]["type"] ==
-            "text") {
-          editable.type = ItemType.text;
-        }
-        editable.value = storyDataFromFirebase[storyComponentIndex]["value"];
-
-        storyData.add(editable);
-      }
-      userStoriesCast.add(storyData);
-    }
-    print("now watch story data??? $userStoriesCast");
-    for (int i = 0; i < widget.userStories.length; i++) {
-      percentageCoveredList.add(0);
-    }
-    _startWatching();
     return GestureDetector(
       onTapDown: (details) {
+        isHolding = true;
+
         final width = MediaQuery.of(context).size.width;
         final dx = details.globalPosition.dx;
-        //dx lets us know if you are on the right or left
-        // we get the full width of screen and divide into two if dx < screensize//2 then you on left side you get it
+
         if (dx < width / 2) {
           if (currentStoryIndex > 0) {
-  
             percentageCoveredList[currentStoryIndex] = 0;
-            percentageCoveredList[currentStoryIndex-1] = 0;
-
+            percentageCoveredList[currentStoryIndex - 1] = 0;
             currentStoryIndex -= 1;
+            _startWatching();
           }
-          setState(() {});
-        }else{
-          if (currentStoryIndex < widget.userStories.length-1) {
-  
+        } else {
+          if (currentStoryIndex < widget.userStories.length - 1) {
             percentageCoveredList[currentStoryIndex] = 1;
-            percentageCoveredList[currentStoryIndex+1] = 0;
-
+            percentageCoveredList[currentStoryIndex + 1] = 0;
             currentStoryIndex += 1;
-          }else{
-              percentageCoveredList[currentStoryIndex] = 1;
+            _startWatching();
+          } else {
+            percentageCoveredList[currentStoryIndex] = 1;
+            Navigator.pop(context); // Pop if tapping forward on last story
           }
-          setState(() {});
         }
+        setState(() {});
+      },
+      onTapUp: (_) {
+        isHolding = false;
+      },
+      onTapCancel: () {
+        isHolding = false;
       },
       child: Scaffold(
         extendBodyBehindAppBar: true,
@@ -119,7 +135,6 @@ class _UserStoriesState extends ConsumerState<UserStories> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-              // child: ProgressBar(percentageCovered: 0.4,),
               child: StoryBars(
                 storiesLength: widget.userStories.length,
                 percentageCoveredList: percentageCoveredList,
