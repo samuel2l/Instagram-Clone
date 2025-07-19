@@ -13,12 +13,15 @@ import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/live%20stream/screens/start_livestream.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
+import 'package:instagram/stories/screens/user_stories.dart';
 
 class Home extends ConsumerWidget {
   const Home({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Map<String, dynamic> stories = {};
+
     return Scaffold(
       appBar: AppBar(title: Text("Home")),
       body: ref
@@ -339,11 +342,85 @@ class Home extends ConsumerWidget {
                     },
                     child: Text("Add Image"),
                   ),
-                  TextButton(
-                    onPressed: () async {
-                      await ref.read(storyRepositoryProvider).getValidStories();
+                  // TextButton(
+                  //   onPressed: () async {
+                  //     stories =
+                  //         await ref
+                  //             .read(storyRepositoryProvider)
+                  //             .getValidStories();
+                  //     print("gotten stories????? $stories");
+                  //     print(stories.keys);
+                  //   },
+                  //   child: Text("see stories"),
+                  // ),
+                  // // sdf,
+                  // ListView.builder(
+                  //   itemCount: stories.keys.length,
+                  //   itemBuilder: (context, index) {
+                  //     final users = stories.keys.toList();
+                  //     final currUser=users[index];
+                  //     return Container(
+                  //       height: 100,
+                  //       width: 100,
+                  //       decoration: BoxDecoration(shape: BoxShape.circle),
+                  //       child: Text(currUser),
+                  //     );
+                  //   },
+                  // ),
+                  FutureBuilder(
+                    future: ref.read(storyRepositoryProvider).getValidStories(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Unexpected error"));
+                      }
+
+                      final stories = snapshot.data ?? {};
+                      List users = stories.keys.toList();
+                      print("okay uysers?? $users");
+
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return Container(
+                          height: 140,
+                          width: double.infinity,
+                          color: Colors.red,
+                          child: ListView.builder(
+                            itemCount: users.length,
+                            scrollDirection: Axis.horizontal,
+
+                            itemBuilder: (context, index) {
+                              final currUser = users[index];
+                              print("this users data????");
+                              print(stories[currUser]);
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return UserStories(userStories: stories[currUser]);
+                                      },
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  height: 100,
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(child: Text(currUser)),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      }
+                      return Text("unexpected error");
                     },
-                    child: Text("see stories"),
                   ),
                 ],
               );
