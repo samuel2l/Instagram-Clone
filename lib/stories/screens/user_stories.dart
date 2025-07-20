@@ -74,7 +74,6 @@ class _UserStoriesState extends ConsumerState<UserStories> {
               currentStoryIndex++;
               _startWatching();
             } else {
-              // Pop the screen when last story ends
               Navigator.pop(context);
             }
           }
