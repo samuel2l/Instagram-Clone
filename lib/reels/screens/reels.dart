@@ -38,17 +38,15 @@ class _ReelsState extends State<Reels> {
 
     newController.addListener(() {
       if (newController.value.position >= newController.value.duration) {
-        // Restart video when finished
         newController.seekTo(Duration.zero);
         newController.play();
       }
-      setState(() {}); // Ensures progress bar updates in real-time
+      setState(() {});
     });
 
     await newController.setLooping(false);
     await newController.play();
 
-    // Dispose old controller if exists
     controller?.dispose();
 
     setState(() {
@@ -105,7 +103,7 @@ class _ReelsState extends State<Reels> {
                     child: controller != null
                         ? VideoProgressIndicator(
                             controller!,
-                            key: ValueKey(controller), // forces rebuild on controller change
+                            key: ValueKey(controller), 
                             allowScrubbing: true,
                             padding: const EdgeInsets.symmetric(vertical: 5),
                             colors: const VideoProgressColors(

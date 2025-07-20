@@ -48,16 +48,16 @@ class MyApp extends ConsumerWidget {
 
       // home: DraggableCaption(caption: "my drag"),
       // home: Story(),
-      // home: ref
-      //     .watch(getUserProvider)
-      //     .when(
-      //       data: (data) {
-      //         return data == null ? const SignUp() : Home();
-      //       },
-      //       error: (error, stackTrace) => Center(child: Text(error.toString())),
-      //       loading: () => Center(child: CircularProgressIndicator()),
-      //     ),
-      home: Reels(),
+      home: ref
+          .watch(getUserProvider)
+          .when(
+            data: (data) {
+              return data == null ? const SignUp() : Home();
+            },
+            error: (error, stackTrace) => Center(child: Text(error.toString())),
+            loading: () => Center(child: CircularProgressIndicator()),
+          ),
+      // home: Reels(),
       // home: SelectStoryImage(),
       // home: VideoCallScreen(channelId: "mych",),
     );
