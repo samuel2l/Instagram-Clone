@@ -2,26 +2,36 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:instagram/profile/models/profile.dart';
 
 class AppUserModel {
   final String email;
   final String firebaseUID;
+  final String username;
   final String createdAt;
+  final Profile profile;
+
   AppUserModel({
     required this.email,
     required this.firebaseUID,
     required this.createdAt,
+    required this.username,
+    required this.profile
   });
 
   AppUserModel copyWith({
     String? email,
     String? firebaseUID,
     String? createdAt,
+    String? username,
+    Profile? profile
   }) {
     return AppUserModel(
       email: email ?? this.email,
       firebaseUID: firebaseUID ?? this.firebaseUID,
       createdAt: createdAt ?? this.createdAt,
+      username: username ?? this.username,
+      profile: profile ?? this.profile,
     );
   }
 
@@ -38,6 +48,8 @@ class AppUserModel {
       email: map['email'] as String,
       firebaseUID: map['uid'] as String,
       createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(),
+      username: map['username'] as String,
+      profile:Profile(bio: map["bio"],name: map["name"],followers: map["followers"],following: map["following"],posts: map["posts"])
     );
   }
 
