@@ -10,6 +10,7 @@ class Reels extends StatefulWidget {
 
 class _ReelsState extends State<Reels> {
   late PageController pageController;
+  CachedVideoPlayerPlusController? controller;
 
   final List<String> reels = [
     "https://res.cloudinary.com/dvsd4zjxfyg87t78/video/upload/v1748286053/sama29571%40gmail.com/ayxcimjxxtwdwhemc0pb.mov",
@@ -18,78 +19,115 @@ class _ReelsState extends State<Reels> {
     "https://res.cloudinary.com/dvsd4zjxfyg87t78/video/upload/v1748286053/sama29571%40gmail.com/ayxcimjxxtwdwhemc0pb.mov",
     "https://res.cloudinary.com/dvsd4zjxfyg87t78/video/upload/v1748286053/sama29571%40gmail.com/ayxcimjxxtwdwhemc0pb.mov",
   ];
-
-  List<CachedVideoPlayerPlusController> controllers = [];
+  
+  int currentVideoIndex = 0;
+  bool isHolding = false;
 
   @override
   void initState() {
     super.initState();
     pageController = PageController();
+    _initializeAndPlay(currentVideoIndex);
+  }
 
-    // Initialize controllers for all reels
-    for (var url in reels) {
-      final controller = CachedVideoPlayerPlusController.networkUrl(
-        Uri.parse(url),
-        httpHeaders: {'Connection': 'keep-alive'},
-        invalidateCacheIfOlderThan: const Duration(days: 10),
-      );
-      controller.initialize().then((_) {
-        controller.setLooping(true);
-        setState(() {}); // Refresh UI after initialization
-      });
-      controllers.add(controller);
-    }
+  Future<void> _initializeAndPlay(int index) async {
+    final newController = CachedVideoPlayerPlusController.networkUrl(
+      Uri.parse(reels[index]),
+    );
+    await newController.initialize();
 
-    // Start playing the first video
-    controllers[0].play();
+    newController.addListener(() {
+      if (newController.value.position >= newController.value.duration) {
+        // Restart video when finished
+        newController.seekTo(Duration.zero);
+        newController.play();
+      }
+      setState(() {}); // Ensures progress bar updates in real-time
+    });
+
+    await newController.setLooping(false);
+    await newController.play();
+
+    // Dispose old controller if exists
+    controller?.dispose();
+
+    setState(() {
+      controller = newController;
+      currentVideoIndex = index;
+    });
   }
 
   @override
   void dispose() {
     pageController.dispose();
-    for (var controller in controllers) {
-      controller.dispose();
-    }
+    controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView.builder(
-        scrollDirection: Axis.vertical,
-        controller: pageController,
-        onPageChanged: (index) {
-          for (int i = 0; i < controllers.length; i++) {
-            if (i == index) {
-              controllers[i].play();
-            } else {
-              controllers[i].pause();
-            }
-          }
-        },
-        itemCount: reels.length,
-        itemBuilder: (context, index) {
-          final controller = controllers[index];
-
-          return controller.value.isInitialized
-              ? Stack(
+      body: controller != null && controller!.value.isInitialized
+          ? GestureDetector(
+              onLongPress: () {
+                controller?.pause();
+                setState(() {
+                  isHolding = true;
+                });
+              },
+              onLongPressUp: () {
+                controller?.play();
+                setState(() {
+                  isHolding = false;
+                });
+              },
+              child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  CachedVideoPlayerPlus(controller),
-                  Positioned(
-                    bottom: 50,
-                    left: 20,
-                    child: Text(
-                      'Reel ${index + 1}',
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    ),
+                  PageView.builder(
+                    scrollDirection: Axis.vertical,
+                    controller: pageController,
+                    onPageChanged: (index) {
+                      _initializeAndPlay(index);
+                    },
+                    itemCount: reels.length,
+                    itemBuilder: (context, index) {
+                      return controller != null &&
+                              controller!.value.isInitialized
+                          ? CachedVideoPlayerPlus(controller!)
+                          : const Center(child: CircularProgressIndicator());
+                    },
                   ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: controller != null
+                        ? VideoProgressIndicator(
+                            controller!,
+                            key: ValueKey(controller), // forces rebuild on controller change
+                            allowScrubbing: true,
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            colors: const VideoProgressColors(
+                              playedColor: Colors.red,
+                              bufferedColor: Colors.grey,
+                              backgroundColor: Colors.black26,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  if (isHolding)
+                    const Center(
+                      child: Icon(
+                        Icons.pause_circle_filled,
+                        color: Colors.white,
+                        size: 80,
+                      ),
+                    ),
                 ],
-              )
-              : Center(child: CircularProgressIndicator());
-        },
-      ),
+              ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }
