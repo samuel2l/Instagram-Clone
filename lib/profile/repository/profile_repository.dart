@@ -23,12 +23,18 @@ class ProfileRepository {
     String? name,
     String? bio,
     BuildContext? context,
+    bool isNew = true,
   }) async {
     try {
       Map<String, dynamic> dataToUpdate = {};
 
       if (name != null) dataToUpdate['name'] = name;
       if (bio != null) dataToUpdate['bio'] = bio;
+
+      if (isNew) {
+        dataToUpdate["follwers"] = [];
+        dataToUpdate["follwing"] = [];
+      }
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -49,28 +55,26 @@ class ProfileRepository {
   }
 
   Future<Map<String, dynamic>?> getUserProfile({
-  required String uid,
-  BuildContext? context,
-}) async {
-  try {
-    final docSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
+    required String uid,
+    BuildContext? context,
+  }) async {
+    try {
+      final docSnapshot =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
-    if (docSnapshot.exists) {
-      return docSnapshot.data();
-    } else {
+      if (docSnapshot.exists) {
+        return docSnapshot.data();
+      } else {
+        if (context != null) {
+          showSnackBar(context: context, content: 'User profile not found.');
+        }
+        return null;
+      }
+    } catch (e) {
       if (context != null) {
-        showSnackBar(context: context, content: 'User profile not found.');
+        showSnackBar(context: context, content: 'Error fetching profile: $e');
       }
       return null;
     }
-  } catch (e) {
-    if (context != null) {
-      showSnackBar(context: context, content: 'Error fetching profile: $e');
-    }
-    return null;
   }
-}
 }
