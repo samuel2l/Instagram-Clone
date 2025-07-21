@@ -32,8 +32,8 @@ class ProfileRepository {
       if (bio != null) dataToUpdate['bio'] = bio;
 
       if (isNew) {
-        dataToUpdate["follwers"] = [];
-        dataToUpdate["follwing"] = [];
+        dataToUpdate["followers"] = [];
+        dataToUpdate["following"] = [];
       }
 
       await FirebaseFirestore.instance

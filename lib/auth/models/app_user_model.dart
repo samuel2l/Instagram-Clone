@@ -44,17 +44,21 @@ class AppUserModel {
   }
 
   factory AppUserModel.fromMap(Map<String, dynamic> map) {
+    print("the type>??????");
+    print((map["followers"]).runtimeType);
     return AppUserModel(
       email: map['email'] as String,
       firebaseUID: map['uid'] as String,
       createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(),
-      username: map['username']??"",
+      username: map['username'] ?? "",
       profile: Profile(
-        bio: map["bio"]??"",
-        name: map["name"]??"",
-        followers: map["followers"]??[],
-        following: map["following"]??[],
-        dp: map["dp"]??"https://plus.unsplash.com/premium_photo-1669748157617-a3a83cc8ea23?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmVhdXRpZnVsJTIwdmlld3N8ZW58MHx8MHx8fDA%3D"
+        bio: map["bio"] ?? "",
+        name: map["name"] ?? "",
+        followers:  List<String>.from(map["followers"]??[]) ,
+        following: List<String>.from(map["following"]??[]),
+        dp:
+            map["dp"] ??
+            "https://plus.unsplash.com/premium_photo-1669748157617-a3a83cc8ea23?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmVhdXRpZnVsJTIwdmlld3N8ZW58MHx8MHx8fDA%3D",
       ),
     );
   }

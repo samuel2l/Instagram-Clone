@@ -179,6 +179,61 @@ class Home extends ConsumerWidget {
                     },
                     child: Text("Create profile sharp sharp"),
                   ),
+
+                  // GestureDetector(
+                  //   onTap: () async {
+                  //     await ref
+                  //         .read(profileRepositoryProvider)
+                  //         .getUserProfile(
+                  //           uid: FirebaseAuth.instance.currentUser!.uid,
+                  //           context: context,
+                  //         );
+                  //   },
+                  //   child: Text("see prpfile"),
+                  // ),
+                  FutureBuilder(
+                    future: ref.read(authRepositoryProvider).getUser(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Text("error fetching profile");
+                      }
+                      if (snapshot.hasData) {
+                        final userData = snapshot.data;
+
+                        return Column(
+                          children: [
+                            Row(
+                              children: [
+                                Column(
+                                  children: [
+                                    Text("Followers"),
+                                    Text(
+                                      "${userData!.profile.followers.length}",
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    Text("Following"),
+                                    Text(
+                                      "${userData.profile.following.length}",
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Text(userData.profile.bio),
+                            CircleAvatar(
+                              // minRadius: 50,
+                              backgroundImage: NetworkImage(userData.profile.dp),
+                            )
+                          ],
+                        );
+                      }
+                      return Center(child: CircularProgressIndicator());
+                    },
+                  ),
+
                   SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
