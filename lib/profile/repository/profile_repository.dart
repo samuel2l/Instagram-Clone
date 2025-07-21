@@ -4,9 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:instagram/auth/models/app_user_model.dart';
-import 'package:instagram/auth/screens/sign_up.dart';
-import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/utils/utils.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>(
@@ -16,96 +13,64 @@ final profileRepositoryProvider = Provider<ProfileRepository>(
   ),
 );
 
-
 class ProfileRepository {
   final FirebaseAuth auth;
   final FirebaseFirestore firestore;
 
   ProfileRepository({required this.auth, required this.firestore});
-  Future<void> createUser(
-    String email,
-    String password,
-    BuildContext context,
-  ) async {
+  Future<void> createOrUpdateUserProfile({
+    required String uid,
+    String? name,
+    String? bio,
+    BuildContext? context,
+  }) async {
     try {
-      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      // showSnackBar(
-      //   context: context,
-      //   content: "User created: ${userCredential.user?.uid}",
-      // );
-      //             await FirebaseFirestore.instance.collection('users').doc(res.user!.uid).set({
-      //   'uid': res.user!.uid,
-      //   'email': res.user!.email,
-      //   'createdAt': FieldValue.serverTimestamp(),
-      // });
+      Map<String, dynamic> dataToUpdate = {};
 
-      await firestore.collection('users').doc(userCredential.user!.uid).set({
-        'uid': userCredential.user!.uid,
-        'email': email,
+      if (name != null) dataToUpdate['name'] = name;
+      if (bio != null) dataToUpdate['bio'] = bio;
 
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set(dataToUpdate, SetOptions(merge: true));
 
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) {
-            return Home();
-          },
-        ),
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
+      if (context != null) {
         showSnackBar(
           context: context,
-          content: 'The password provided is too weak.',
-        );
-      } else if (e.code == 'email-already-in-use') {
-        showSnackBar(
-          context: context,
-          content: 'The account already exists for that email.',
-        );
-      } else {
-        showSnackBar(context: context, content: 'Error: ${e.message}');
-      }
-    } catch (e) {
-      showSnackBar(context: context, content: 'Unexpected error: $e');
-    }
-  }
-
-
-  Future<void> signUp(
-    String email,
-    String password,
-    BuildContext context,
-  ) async {
-    try {
-      await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (context) => Home()));
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        showSnackBar(
-          context: context,
-          content: 'No user found for that email.',
-        );
-      } else if (e.code == 'wrong-password') {
-        showSnackBar(context: context, content: 'Wrong password provided.');
-      } else {
-        showSnackBar(
-          context: context,
-          content: 'Authentication error: ${e.message}',
+          content: 'Profile updated successfully.',
         );
       }
     } catch (e) {
-      showSnackBar(context: context, content: 'Unexpected error: $e');
+      if (context != null) {
+        showSnackBar(context: context, content: 'Error updating profile: $e');
+      }
     }
   }
+
+  Future<Map<String, dynamic>?> getUserProfile({
+  required String uid,
+  BuildContext? context,
+}) async {
+  try {
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    if (docSnapshot.exists) {
+      return docSnapshot.data();
+    } else {
+      if (context != null) {
+        showSnackBar(context: context, content: 'User profile not found.');
+      }
+      return null;
+    }
+  } catch (e) {
+    if (context != null) {
+      showSnackBar(context: context, content: 'Error fetching profile: $e');
+    }
+    return null;
+  }
+}
 }

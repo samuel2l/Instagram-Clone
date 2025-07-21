@@ -16,7 +16,7 @@ class AppUserModel {
     required this.firebaseUID,
     required this.createdAt,
     required this.username,
-    required this.profile
+    required this.profile,
   });
 
   AppUserModel copyWith({
@@ -24,7 +24,7 @@ class AppUserModel {
     String? firebaseUID,
     String? createdAt,
     String? username,
-    Profile? profile
+    Profile? profile,
   }) {
     return AppUserModel(
       email: email ?? this.email,
@@ -49,7 +49,13 @@ class AppUserModel {
       firebaseUID: map['uid'] as String,
       createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(),
       username: map['username'] as String,
-      profile:Profile(bio: map["bio"],name: map["name"],followers: map["followers"],following: map["following"],posts: map["posts"])
+      profile: Profile(
+        bio: map["bio"],
+        name: map["name"],
+        followers: map["followers"],
+        following: map["following"],
+        dp: map["dp"]
+      ),
     );
   }
 
