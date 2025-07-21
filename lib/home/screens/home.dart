@@ -11,6 +11,7 @@ import 'package:instagram/home/screens/find_users.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/live%20stream/screens/start_livestream.dart';
+import 'package:instagram/profile/repository/profile_repository.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
@@ -164,7 +165,21 @@ class Home extends ConsumerWidget {
                     },
                     child: Text("Logout"),
                   ),
-
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () async {
+                      await ref
+                          .read(profileRepositoryProvider)
+                          .createOrUpdateUserProfile(
+                            uid: FirebaseAuth.instance.currentUser!.uid,
+                            bio: "first user of app",
+                            name: "Samuel Adams",
+                            context: context,
+                          );
+                    },
+                    child: Text("Create profile sharp sharp"),
+                  ),
+                  SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(
@@ -399,7 +414,9 @@ class Home extends ConsumerWidget {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) {
-                                        return UserStories(userStories: stories[currUser]);
+                                        return UserStories(
+                                          userStories: stories[currUser],
+                                        );
                                       },
                                     ),
                                   );

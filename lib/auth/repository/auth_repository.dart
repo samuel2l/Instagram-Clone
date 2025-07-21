@@ -146,6 +146,7 @@ class AuthRepository {
 
   Future<AppUserModel?> getUser() async {
     final curr = auth.currentUser;
+
     if (curr == null) {
       return null;
     }
@@ -156,13 +157,14 @@ class AuthRepository {
     if (userData.data() != null) {
       user = AppUserModel.fromMap(userData.data()!);
     }
+    print("gotten user?? $user");
 
     return user;
   }
 
   Future<void> logoutUser(BuildContext context) async {
     try {
-      final auth=FirebaseAuth.instance;
+      final auth = FirebaseAuth.instance;
       // print(auth.currentUser);
       await auth.signOut();
       // print("ah logout??? ${auth.currentUser}");
