@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/stories/screens/view_story.dart';
-import 'package:instagram/stories/widgets/progress_bar.dart';
 import 'package:instagram/stories/widgets/story_bars.dart';
 
 class UserStories extends ConsumerStatefulWidget {
@@ -25,7 +24,6 @@ class _UserStoriesState extends ConsumerState<UserStories> {
   void initState() {
     super.initState();
 
-    // Initialize userStoriesCast and percentageCoveredList
     for (int index = 0; index < widget.userStories.length; index++) {
       final currStory = widget.userStories[index];
       List<EditableItem> storyData = [];
@@ -58,7 +56,7 @@ class _UserStoriesState extends ConsumerState<UserStories> {
   }
 
   void _startWatching() {
-    storyTimer?.cancel(); // Cancel any existing timer
+    storyTimer?.cancel(); 
 
     storyTimer = Timer.periodic(Duration(milliseconds: 700), (timer) {
       if (!mounted) return;
@@ -112,7 +110,7 @@ class _UserStoriesState extends ConsumerState<UserStories> {
             _startWatching();
           } else {
             percentageCoveredList[currentStoryIndex] = 1;
-            Navigator.pop(context); // Pop if tapping forward on last story
+            Navigator.pop(context); 
           }
         }
         setState(() {});

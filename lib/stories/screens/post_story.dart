@@ -106,18 +106,9 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // Navigator.of(context).push(
-          //   MaterialPageRoute(
-          //     builder: (context) {
-          //       return ViewStory(storyData: storyData);
-          //     },
-          //   ),
-          // );
-          print("the path??? ${widget.selectedImage!.path}");
           String mediaUrl = await uploadImageToCloudinary(
             widget.selectedImage!.path,
           );
-          print("string from cloudingary??? $mediaUrl");
           if (mediaUrl.isNotEmpty) {
             final status = await ref
                 .read(storyRepositoryProvider)
