@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
+import 'package:instagram/profile/screens/profile_details.dart';
 
 class FindUsers extends ConsumerStatefulWidget {
   const FindUsers({super.key});
@@ -41,7 +42,8 @@ class _FindUsersState extends ConsumerState<FindUsers> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) {
-                        return ChatScreen(chatData: {},user: user);
+                        // return ChatScreen(chatData: {},user: user);
+                        return ProfileDetails(uid: user["uid"]);
                       },
                     ),
                   );

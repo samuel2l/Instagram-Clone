@@ -172,8 +172,8 @@ class Home extends ConsumerWidget {
                           .read(profileRepositoryProvider)
                           .createOrUpdateUserProfile(
                             uid: FirebaseAuth.instance.currentUser!.uid,
-                            bio: "first user of app",
-                            name: "Samuel Adams",
+                            bio: "seventh user of app",
+                            name: "Saani Deishini",
                             context: context,
                           );
                     },
@@ -225,8 +225,10 @@ class Home extends ConsumerWidget {
                             Text(userData.profile.bio),
                             CircleAvatar(
                               // minRadius: 50,
-                              backgroundImage: NetworkImage(userData.profile.dp),
-                            )
+                              backgroundImage: NetworkImage(
+                                userData.profile.dp,
+                              ),
+                            ),
                           ],
                         );
                       }
