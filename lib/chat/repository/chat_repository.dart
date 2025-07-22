@@ -51,6 +51,49 @@ class ChatRepository {
         });
   }
 
+  Future<Map<String, dynamic>?> getChatByParticipants(
+    List<String> userIds,
+    String currentUserId,
+  ) async {
+    userIds.sort();
+    final querySnap =
+        await firestore
+            .collection('chats')
+            .where('participants', isEqualTo: userIds)
+            .limit(1)
+            .get();
+
+    if (querySnap.docs.isNotEmpty) {
+      final doc = querySnap.docs.first;
+      final chatData = doc.data();
+      chatData['chatId'] = doc.id;
+
+      if (chatData["isGroup"]) {
+        return chatData;
+      } else {
+        String otherUserId = userIds.firstWhere((id) => id != currentUserId);
+
+        final userSnap =
+            await firestore
+                .collection('users')
+                .where('uid', isEqualTo: otherUserId)
+                .limit(1)
+                .get();
+
+        if (userSnap.docs.isNotEmpty) {
+          final userData = userSnap.docs.first.data();
+          chatData['email'] = userData['email'];
+          chatData['name'] = userData['name'];
+          chatData['profilePic'] = userData['profilePic'];
+        }
+
+        return chatData;
+      }
+    } else {
+      return null;
+    }
+  }
+
   Stream<List<Map<String, dynamic>>> getUsers() {
     var users = firestore
         .collection('users')
@@ -69,6 +112,7 @@ class ChatRepository {
 
     return snapshot.docs.first.data();
   }
+
   Future<String> getOrCreateChatId(
     List<String> userIds, {
     bool isGroup = false,

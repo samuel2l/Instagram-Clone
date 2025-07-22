@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
+import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
 
 class ProfileDetails extends ConsumerStatefulWidget {
@@ -59,7 +61,19 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                         "Followers: ${profileData.profile.followers}",
                         style: TextStyle(fontSize: 16),
                       ),
+                      TextButton(
+                        onPressed: () async {
+                          final chatData =await ref
+                              .watch(chatRepositoryProvider)
+                              .getChatByParticipants([
+                                FirebaseAuth.instance.currentUser!.uid,
+                                profileData!.firebaseUID,
+                              ], FirebaseAuth.instance.currentUser!.uid);
 
+                          print("gotten chat data? $chatData");
+                        },
+                        child: Text("Message"),
+                      ),
                     ],
                   ),
                 )

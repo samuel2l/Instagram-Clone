@@ -298,6 +298,7 @@ class Home extends ConsumerWidget {
                           );
                         }
                         final chats = snapshot.data ?? [];
+                        print("user chats?????? $chats");
                         if (chats.isEmpty) {
                           return Center(
                             child: Text(
@@ -390,20 +391,7 @@ class Home extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () async {
-                      // final imgPath = await geFromGallery(context);
-                      // if (imgPath != null && imgPath.isNotEmpty) {
-                      //   var mediaUrl = await uploadImageToCloudinary(imgPath);
-
-                      //   final uid = FirebaseAuth.instance.currentUser?.uid;
-                      //   ref
-                      //       .watch(storyRepositoryProvider)
-                      //       .uploadStory(
-                      //         uid!,
-                      //         caption: "first story upload",
-                      //         mediaType: image,
-                      //         mediaUrl: mediaUrl,
-                      //       );
-                      // }
+     
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) {
@@ -414,31 +402,6 @@ class Home extends ConsumerWidget {
                     },
                     child: Text("Add Image"),
                   ),
-                  // TextButton(
-                  //   onPressed: () async {
-                  //     stories =
-                  //         await ref
-                  //             .read(storyRepositoryProvider)
-                  //             .getValidStories();
-                  //     print("gotten stories????? $stories");
-                  //     print(stories.keys);
-                  //   },
-                  //   child: Text("see stories"),
-                  // ),
-                  // // sdf,
-                  // ListView.builder(
-                  //   itemCount: stories.keys.length,
-                  //   itemBuilder: (context, index) {
-                  //     final users = stories.keys.toList();
-                  //     final currUser=users[index];
-                  //     return Container(
-                  //       height: 100,
-                  //       width: 100,
-                  //       decoration: BoxDecoration(shape: BoxShape.circle),
-                  //       child: Text(currUser),
-                  //     );
-                  //   },
-                  // ),
                   FutureBuilder(
                     future: ref.read(storyRepositoryProvider).getValidStories(),
                     builder: (context, snapshot) {
