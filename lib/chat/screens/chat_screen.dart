@@ -34,6 +34,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController scrollController = ScrollController();
   bool showReply = false;
   Map<String, dynamic> messageToReply = {};
+  late Map<String, dynamic> localChatData;
 
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
@@ -42,6 +43,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     // getChatId();
+    localChatData = Map.from(widget.chatData);
   }
 
   @override
@@ -74,7 +76,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         MaterialPageRoute(
                           builder: (context) {
                             return RemoveMember(
-                              chatId: widget.chatData["chatId"],
+                              chatId: localChatData["chatId"],
                             );
                           },
                         ),
@@ -88,7 +90,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) {
-                            return AddMember(chatId: widget.chatData["chatId"]);
+                            return AddMember(chatId: localChatData["chatId"]);
                           },
                         ),
                       );
@@ -98,7 +100,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   StreamBuilder(
                     stream: ref
                         .watch(videoCallRepositoryProvider)
-                        .checkIncomingCalls(widget.chatData["chatId"]),
+                        .checkIncomingCalls(localChatData["chatId"]),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -117,10 +119,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ref
                                 .read(videoCallRepositoryProvider)
                                 .sendCallData(
-                                  calleeId: widget.chatData["chatId"],
+                                  calleeId: localChatData["chatId"],
                                   callType: "video",
                                   channelId:
-                                      "${widget.chatData["chatId"]} ${widget.chatData["groupName"]}",
+                                      "${localChatData["chatId"]} ${widget.chatData["groupName"]}",
                                 );
 
                             String? res;
@@ -129,8 +131,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return GroupVideoCallScreen(
                                     channelId:
-                                        "${widget.chatData["chatId"]} ${widget.chatData["groupName"]}",
-                                    calleeId: widget.chatData["chatId"],
+                                        "${localChatData["chatId"]} ${widget.chatData["groupName"]}",
+                                    calleeId: localChatData["chatId"],
                                   );
                                 },
                               ),
@@ -152,7 +154,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return GroupVideoCallScreen(
                                     channelId: callData['channelId'],
-                                    calleeId: widget.chatData["chatId"],
+                                    calleeId: localChatData["chatId"],
                                   );
                                 },
                               ),
@@ -253,7 +255,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: StreamBuilder<List<Map<String, dynamic>>>(
               stream: ref
                   .watch(chatRepositoryProvider)
-                  .getMessages(widget.chatData["chatId"] ?? ""),
+                  .getMessages(localChatData["chatId"] ?? ""),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -266,7 +268,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 if (messages.isEmpty) {
                   return Center(child: Text("No messages with this user"));
                 }
-                // scroll to bottom on new message ie everytime new messag new message is added to the stream
                 SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
                   scrollController.jumpTo(
                     scrollController.position.minScrollExtent,
@@ -288,7 +289,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ref
                           .read(chatRepositoryProvider)
                           .updateSeen(
-                            widget.chatData["chatId"] ?? "123",
+                            localChatData["chatId"] ?? "123",
                             messages[index]["id"],
                           );
                     }
@@ -644,7 +645,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: widget.chatData["chatId"] ?? "",
+                                    chatId: localChatData["chatId"] ?? "",
                                     messageType: image,
                                     imageUrl: mediaFilePath!,
                                     repliedTo:
@@ -664,7 +665,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: widget.chatData["chatId"] ?? "",
+                                    chatId: localChatData["chatId"] ?? "",
                                     messageType: image,
                                     imageUrl: mediaFilePath!,
                                   );
@@ -687,7 +688,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: widget.chatData["chatId"] ?? "",
+                                    chatId: localChatData["chatId"] ?? "",
                                     messageType: GIF,
                                     imageUrl: gif.images?.original?.url ?? "",
                                     repliedTo:
@@ -707,7 +708,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     receiverId: widget.user["uid"] ?? "",
                                     senderId:
                                         FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: widget.chatData["chatId"] ?? "",
+                                    chatId: localChatData["chatId"] ?? "",
                                     messageType: GIF,
                                     imageUrl: gif.images?.original?.url ?? "",
                                   );
@@ -734,7 +735,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                               .instance
                                               .currentUser!
                                               .uid,
-                                      chatId: widget.chatData["chatId"] ?? "",
+                                      chatId: localChatData["chatId"] ?? "",
                                       messageType: video,
                                       imageUrl: mediaFilePath!,
                                       repliedTo:
@@ -757,7 +758,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                               .instance
                                               .currentUser!
                                               .uid,
-                                      chatId: widget.chatData["chatId"] ?? "",
+                                      chatId: localChatData["chatId"] ?? "",
                                       messageType: video,
                                       imageUrl: mediaFilePath!,
                                     );
@@ -771,40 +772,54 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                     IconButton(
                       icon: Icon(Icons.send),
-                      onPressed: () {
+                      onPressed: () async {
                         final text = messageController.text.trim();
 
                         if (text.isNotEmpty) {
-                          showReply
-                              ? ref
-                                  .read(chatRepositoryProvider)
-                                  .sendMessage(
-                                    receiverId: widget.user["uid"] ?? "" ?? "",
-                                    senderId:
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                    messageText: text,
-                                    chatId: widget.chatData["chatId"] ?? "",
-                                    repliedTo:
-                                        FirebaseAuth
-                                                    .instance
-                                                    .currentUser
-                                                    ?.uid ==
-                                                messageToReply["senderId"]
-                                            ? "Me"
-                                            : messageToReply["senderId"],
-                                    reply: messageToReply["text"],
-                                    replyType: messageToReply["type"],
-                                  )
-                              : ref
-                                  .read(chatRepositoryProvider)
-                                  .sendMessage(
-                                    receiverId: widget.user["uid"] ?? "" ?? "",
-                                    senderId:
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                    messageText: text,
-                                    chatId: widget.chatData["chatId"] ?? "",
-                                  );
+                          final chatData =
+                              showReply
+                                  ? await ref
+                                      .read(chatRepositoryProvider)
+                                      .sendMessage(
+                                        receiverId:
+                                            widget.user["uid"] ?? "" ?? "",
+                                        senderId:
+                                            FirebaseAuth
+                                                .instance
+                                                .currentUser!
+                                                .uid,
+                                        messageText: text,
+                                        chatId: localChatData["chatId"] ?? "",
+                                        repliedTo:
+                                            FirebaseAuth
+                                                        .instance
+                                                        .currentUser
+                                                        ?.uid ==
+                                                    messageToReply["senderId"]
+                                                ? "Me"
+                                                : messageToReply["senderId"],
+                                        reply: messageToReply["text"],
+                                        replyType: messageToReply["type"],
+                                      )
+                                  : await ref
+                                      .read(chatRepositoryProvider)
+                                      .sendMessage(
+                                        receiverId:
+                                            widget.user["uid"] ?? "" ?? "",
+                                        senderId:
+                                            FirebaseAuth
+                                                .instance
+                                                .currentUser!
+                                                .uid,
+                                        messageText: text,
+                                        chatId: localChatData["chatId"] ?? "",
+                                      );
                           messageController.clear();
+                          print("sent so the returned chatdata???? $chatData ");
+                          if (localChatData["chatId"] == null &&
+                              chatData != "") {
+                            localChatData["chatId"] = chatData;
+                          }
                         }
                         messageToReply = {};
                         showReply = false;

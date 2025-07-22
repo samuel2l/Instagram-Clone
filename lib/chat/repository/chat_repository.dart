@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/utils/constants.dart';
+import 'package:instagram/utils/utils.dart';
 
 final chatRepositoryProvider = Provider((ref) {
   return ChatRepository(firestore: FirebaseFirestore.instance);
@@ -215,7 +216,7 @@ class ChatRepository {
     }
   }
 
-  Future<void> sendMessage({
+  Future<String> sendMessage({
     required String receiverId,
     required String senderId,
     required String messageText,
@@ -228,29 +229,40 @@ class ChatRepository {
     List<String> participants = const [],
     String groupName = "",
   }) async {
-    if (chatId.isEmpty) {
-      chatId = await getOrCreateChatId([senderId, receiverId]);
+    try {
+      if (chatId.isEmpty) {
+        chatId = await getOrCreateChatId([senderId, receiverId]);
+      }
+      final messageDoc =
+          firestore
+              .collection('chats')
+              .doc(chatId)
+              .collection('messages')
+              .doc();
+
+      final messageData = {
+        'senderId': senderId,
+        'text': messageText,
+        "type": text,
+        "repliedTo": repliedTo,
+        "reply": reply,
+        "replyType": replyType,
+        "isSeen": false,
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+
+      await messageDoc.set(messageData);
+
+      await firestore.collection('chats').doc(chatId).update({
+        'lastMessage': messageText,
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      });
+      return chatId;
+    } catch (e) {
+      // showSnackBar(context: context, content: content)
+      print("error come $e");
+      return "";
     }
-    final messageDoc =
-        firestore.collection('chats').doc(chatId).collection('messages').doc();
-
-    final messageData = {
-      'senderId': senderId,
-      'text': messageText,
-      "type": text,
-      "repliedTo": repliedTo,
-      "reply": reply,
-      "replyType": replyType,
-      "isSeen": false,
-      'createdAt': FieldValue.serverTimestamp(),
-    };
-
-    await messageDoc.set(messageData);
-
-    await firestore.collection('chats').doc(chatId).update({
-      'lastMessage': messageText,
-      'lastMessageTime': FieldValue.serverTimestamp(),
-    });
   }
 
   Stream<List<Map<String, dynamic>>> getMessages(String chatId) {
