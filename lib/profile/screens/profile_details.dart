@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
+import 'package:instagram/chat/screens/chat_screen.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
 
 class ProfileDetails extends ConsumerStatefulWidget {
@@ -63,7 +64,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                       ),
                       TextButton(
                         onPressed: () async {
-                          final chatData =await ref
+                          final chatData = await ref
                               .watch(chatRepositoryProvider)
                               .getChatByParticipants([
                                 FirebaseAuth.instance.currentUser!.uid,
@@ -71,7 +72,22 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                               ], FirebaseAuth.instance.currentUser!.uid);
 
                           print("gotten chat data? $chatData");
+                          // if(chatData==null)
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return ChatScreen(
+                                  user: {
+                                    "email": profileData!.email,
+                                    "uid": profileData.firebaseUID,
+                                  },
+                                  chatData: chatData ?? {},
+                                );
+                              },
+                            ),
+                          );
                         },
+
                         child: Text("Message"),
                       ),
                     ],

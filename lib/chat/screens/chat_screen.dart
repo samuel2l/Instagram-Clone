@@ -53,6 +53,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("how user looks like??? ${widget.user}");
     if (widget.chatData["isGroup"] == null) {
       widget.chatData["isGroup"] = false;
     }
