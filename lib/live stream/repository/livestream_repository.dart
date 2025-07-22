@@ -151,10 +151,10 @@ class LivestreamRepository {
         .orderBy('createdAt', descending: false)
         .snapshots()
         .map((snapshot) {
-          // Print each comment for debugging
-          for (var doc in snapshot.docs) {
-            print('Comment: ${doc.data()}');
-          }
+
+          // for (var doc in snapshot.docs) {
+          //   // print('Comment: ${doc.data()}');
+          // }
 
           // Return as a list of maps
           return snapshot.docs.map((doc) => doc.data()).toList();

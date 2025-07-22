@@ -44,8 +44,7 @@ class AppUserModel {
   }
 
   factory AppUserModel.fromMap(Map<String, dynamic> map) {
-    print("the type>??????");
-    print((map["followers"]).runtimeType);
+
     return AppUserModel(
       email: map['email'] as String,
       firebaseUID: map['uid'] as String,

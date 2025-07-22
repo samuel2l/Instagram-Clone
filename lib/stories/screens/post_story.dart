@@ -39,8 +39,6 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
   @override
   Widget build(BuildContext context) {
     final screen = MediaQuery.of(context).size;
-    print(storyData[0].position);
-    print(storyData[0].rotation);
 
     return Scaffold(
       appBar: AppBar(

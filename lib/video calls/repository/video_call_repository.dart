@@ -77,7 +77,7 @@ class VideoCallRepository {
     required String channelId,
     bool isGroup=false
   }) async {
-    print("ah ending call??????");
+
     final currentUser = auth.currentUser;
 
     if (currentUser == null) {
@@ -87,7 +87,7 @@ class VideoCallRepository {
     await firestore.collection('calls').doc(calleeId).update({
       "hasDialled": false,
     });
-    print("updated to false???");
+
     await firestore.collection('calls').doc(currentUser.uid).update({
       "hasDialled": false,
     });

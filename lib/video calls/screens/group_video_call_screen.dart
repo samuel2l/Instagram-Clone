@@ -178,7 +178,7 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
             );
           }
           final data = snapshot.data ?? {};
-          print("data in group call ield???? $data");
+
           if (data.isEmpty) {
             return Stack(
               children: [

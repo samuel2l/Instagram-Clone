@@ -45,18 +45,14 @@ class StoryRepository {
     try {
       // Get all users with stories
       final storiesSnapshot = await firestore.collection('stories').get();
-      print("get stories???");
-      print(storiesSnapshot.docs);
 
       for (final userDoc in storiesSnapshot.docs) {
-        print("ah? $userDoc");
         // Get all userStories for this user, ordered by timestamp descending
         final userStoriesSnapshot =
             await userDoc.reference
                 .collection('userStories')
                 .orderBy('timestamp', descending: true)
                 .get();
-        print("user snapshot? $userStoriesSnapshot");
 
         for (final storyDoc in userStoriesSnapshot.docs) {
           if (allStories.containsKey(userDoc.id)) {
@@ -74,7 +70,7 @@ class StoryRepository {
           }
         }
       }
-      print("eiI?? $allStories");
+
       return allStories;
     } catch (e) {
       print('Error fetching stories: $e');

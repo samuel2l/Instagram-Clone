@@ -157,7 +157,7 @@ class AuthRepository {
     if (userData.data() != null) {
       user = AppUserModel.fromMap(userData.data()!);
     }
-    print("gotten user?? $user");
+
 
     return user;
   }

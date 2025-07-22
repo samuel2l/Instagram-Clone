@@ -50,7 +50,7 @@ Future<String> uploadImageToCloudinary(path) async {
     );
     return cloudinaryResponse.secureUrl;
   } catch (e) {
-    print("there is an error??? ${e.toString()}");
+
     return "";
   }
 }

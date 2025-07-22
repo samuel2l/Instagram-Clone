@@ -32,7 +32,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
             return Text("error loading user profile");
           }
           if (snapshot.hasData) {
-            print("profile data????? ${snapshot.data}");
+
             AppUserModel? profileData;
             if (snapshot.data != null) {
               profileData = AppUserModel.fromMap(snapshot.data!);
@@ -71,7 +71,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 profileData!.firebaseUID,
                               ], FirebaseAuth.instance.currentUser!.uid);
 
-                          print("gotten chat data? $chatData");
+
                           // if(chatData==null)
                           Navigator.of(context).push(
                             MaterialPageRoute(

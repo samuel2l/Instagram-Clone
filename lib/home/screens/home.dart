@@ -298,7 +298,7 @@ class Home extends ConsumerWidget {
                           );
                         }
                         final chats = snapshot.data ?? [];
-                        print("user chats?????? $chats");
+
                         if (chats.isEmpty) {
                           return Center(
                             child: Text(
@@ -414,7 +414,6 @@ class Home extends ConsumerWidget {
 
                       final stories = snapshot.data ?? {};
                       List users = stories.keys.toList();
-                      print("okay uysers?? $users");
 
                       if (snapshot.connectionState == ConnectionState.done) {
                         return Container(
@@ -427,8 +426,7 @@ class Home extends ConsumerWidget {
 
                             itemBuilder: (context, index) {
                               final currUser = users[index];
-                              print("this users data????");
-                              print(stories[currUser]);
+
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.of(context).push(

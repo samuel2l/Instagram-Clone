@@ -55,7 +55,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("how user looks like??? ${widget.user}");
+
     if (widget.chatData["isGroup"] == null) {
       widget.chatData["isGroup"] = false;
     }
@@ -815,7 +815,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         chatId: localChatData["chatId"] ?? "",
                                       );
                           messageController.clear();
-                          print("sent so the returned chatdata???? $chatData ");
                           if (localChatData["chatId"] == null &&
                               chatData != "") {
                             localChatData["chatId"] = chatData;
