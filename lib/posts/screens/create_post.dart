@@ -1,6 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/posts/repository/post_repository.dart';
+import 'package:instagram/utils/utils.dart';
 
 class CreatePost extends ConsumerStatefulWidget {
   const CreatePost({super.key});
@@ -10,12 +12,12 @@ class CreatePost extends ConsumerStatefulWidget {
 }
 
 class _CreatePostState extends ConsumerState<CreatePost> {
-   List<PlatformFile> selectedFiles = [];
-
+  List<PlatformFile> selectedFiles = [];
+TextEditingController captionController=TextEditingController();
   Future<void> pickFiles() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
-      type: FileType.media, // images & videos
+      type: FileType.media,
     );
 
     if (result != null) {
@@ -37,6 +39,9 @@ class _CreatePostState extends ConsumerState<CreatePost> {
             onPressed: pickFiles,
             child: const Text("Pick Images/Videos"),
           ),
+TextField(
+  controller: captionController,
+),
           Expanded(
             child: ListView.builder(
               itemCount: selectedFiles.length,
@@ -48,10 +53,34 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                 );
               },
             ),
-          )
+          ),
         ],
       ),
-      
+      bottomSheet: TextButton(
+        onPressed: () async {
+          if (selectedFiles.isNotEmpty) {
+            String mediaPath = "";
+            List<String> mediaUrls = [];
+            for (int i = 0; i < selectedFiles.length; i++) {
+              if (selectedFiles[i].extension != ".png" &&
+                  selectedFiles[i].extension != ".png") {
+                mediaPath = await uploadVideoToCloudinary(
+                  selectedFiles[i].path,
+                );
+              } else {
+                mediaPath = await uploadImageToCloudinary(
+                  selectedFiles[i].path,
+                );
+              }
+              mediaUrls.add(mediaPath);
+            }
+            ref
+                .read(postRepositoryProvider)
+                .createPost(caption: captionController.text.trim(), imageUrls: mediaUrls);
+          }
+        },
+        child: Text("Post"),
+      ),
     );
   }
 }
