@@ -88,26 +88,36 @@ Future<bool> hasLikedPost(String postId) async {
   }
 }
 
-  Future<void> addComment({
-    required String postId,
-    required String commentText,
-  }) async {
-    try {
-      String uid = auth.currentUser!.uid;
-      final commentRef = firestore
-          .collection('posts')
-          .doc(postId)
-          .collection('comments')
-          .doc();
+   Future<void> addCommentToPost({
+  required String postId,
+  required String email,
+  required String dp,
+  required String commentText,
+}) async {
+  final commentData = {
+    'text': commentText,
+    'email': email,
+    'dp': dp,
+    'createdAt': FieldValue.serverTimestamp(),
+    'uid': auth.currentUser!.uid,
+  };
 
-      await commentRef.set({
-        'commentId': commentRef.id,
-        'uid': uid,
-        'text': commentText,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      throw Exception('Error adding comment: $e');
-    }
-  }
+  await firestore
+      .collection('posts')
+      .doc(postId)
+      .collection('comments')
+      .add(commentData);
+}
+
+Stream<List<Map<String, dynamic>>> getPostComments(String postId) {
+  return firestore
+      .collection('posts')
+      .doc(postId)
+      .collection('comments')
+      .orderBy('createdAt', descending: false)
+      .snapshots()
+      .map((snapshot) =>
+          snapshot.docs.map((doc) => doc.data()).toList());
+}
+
 }
