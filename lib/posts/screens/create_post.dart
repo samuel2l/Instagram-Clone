@@ -13,7 +13,7 @@ class CreatePost extends ConsumerStatefulWidget {
 
 class _CreatePostState extends ConsumerState<CreatePost> {
   List<PlatformFile> selectedFiles = [];
-TextEditingController captionController=TextEditingController();
+  TextEditingController captionController = TextEditingController();
   Future<void> pickFiles() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
@@ -39,9 +39,7 @@ TextEditingController captionController=TextEditingController();
             onPressed: pickFiles,
             child: const Text("Pick Images/Videos"),
           ),
-TextField(
-  controller: captionController,
-),
+          TextField(controller: captionController),
           Expanded(
             child: ListView.builder(
               itemCount: selectedFiles.length,
@@ -62,8 +60,10 @@ TextField(
             String mediaPath = "";
             List<String> mediaUrls = [];
             for (int i = 0; i < selectedFiles.length; i++) {
-              if (selectedFiles[i].extension != ".png" &&
-                  selectedFiles[i].extension != ".png") {
+
+              if (selectedFiles[i].extension != "jpeg" &&
+                  selectedFiles[i].extension != "png" &&
+                  selectedFiles[i].extension != "jpg") {
                 mediaPath = await uploadVideoToCloudinary(
                   selectedFiles[i].path,
                 );
@@ -76,7 +76,11 @@ TextField(
             }
             ref
                 .read(postRepositoryProvider)
-                .createPost(caption: captionController.text.trim(), imageUrls: mediaUrls);
+                .createPost(
+                  caption: captionController.text.trim(),
+                  imageUrls: mediaUrls,
+                  context: context,
+                );
           }
         },
         child: Text("Post"),

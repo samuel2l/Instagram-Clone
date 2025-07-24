@@ -58,8 +58,8 @@ Future<String> uploadImageToCloudinary(path) async {
 Future<String> uploadVideoToCloudinary(path) async {
   try {
     final cloudinary = CloudinaryPublic(
-      dotenv.env["CLOUDINARY_KEY1"]!,
       dotenv.env["CLOUDINARY_KEY2"]!,
+      dotenv.env["CLOUDINARY_KEY1"]!,
     );
 
     CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
@@ -72,6 +72,7 @@ Future<String> uploadVideoToCloudinary(path) async {
 
     return cloudinaryResponse.secureUrl;
   } catch (e) {
+
     return "";
   }
 }

@@ -11,6 +11,7 @@ import 'package:instagram/home/screens/find_users.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/live%20stream/screens/start_livestream.dart';
+import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
@@ -250,11 +251,11 @@ class Home extends ConsumerWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => StartLivestreamScreen(),
+                          builder: (context) => CreatePost(),
                         ),
                       );
                     },
-                    child: Text("Create Group"),
+                    child: Text("Post"),
                   ),
 
                   GestureDetector(

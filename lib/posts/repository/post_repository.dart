@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/utils/utils.dart';
 
 final postRepositoryProvider = Provider<PostRepository>(
   (ref) => PostRepository(
@@ -18,7 +20,7 @@ class PostRepository {
   Future<void> createPost({
     required String caption,
     required List<String> imageUrls,
-    
+    required BuildContext context
   }) async {
     try {
       String uid = auth.currentUser!.uid;
@@ -32,6 +34,7 @@ class PostRepository {
         'createdAt': FieldValue.serverTimestamp(),
         'likes': [],
       });
+      showSnackBar(context: context, content: "posted successfully");
     } catch (e) {
       throw Exception('Error creating post: $e');
     }
@@ -45,79 +48,77 @@ class PostRepository {
     }
   }
 
-Stream<int> getLikesCount(String postId) {
-  DocumentReference postRef = firestore.collection('posts').doc(postId);
-  return postRef.snapshots().map((doc) {
-    List likes = doc['likes'] ?? [];
-    return likes.length;
-  });
-}
-
-Future<void> toggleLikePost(String postId) async {
-  String uid = auth.currentUser!.uid;
-  DocumentReference postRef = firestore.collection('posts').doc(postId);
-
-  try {
-    DocumentSnapshot snapshot = await postRef.get();
-    List likes = snapshot['likes'] ?? [];
-
-    if (likes.contains(uid)) {
-      await postRef.update({
-        'likes': FieldValue.arrayRemove([uid]),
-      });
-    } else {
-
-      await postRef.update({
-        'likes': FieldValue.arrayUnion([uid]),
-      });
-    }
-  } catch (e) {
-    throw Exception('Error toggling like: $e');
+  Stream<int> getLikesCount(String postId) {
+    DocumentReference postRef = firestore.collection('posts').doc(postId);
+    return postRef.snapshots().map((doc) {
+      List likes = doc['likes'] ?? [];
+      return likes.length;
+    });
   }
-}
 
-Future<bool> hasLikedPost(String postId) async {
-  try {
+  Future<void> toggleLikePost(String postId) async {
     String uid = auth.currentUser!.uid;
-    DocumentSnapshot snapshot = await firestore.collection('posts').doc(postId).get();
-    List likes = snapshot['likes'] ?? [];
+    DocumentReference postRef = firestore.collection('posts').doc(postId);
 
-    return likes.contains(uid);
-  } catch (e) {
-    throw Exception('Error checking if user liked post: $e');
+    try {
+      DocumentSnapshot snapshot = await postRef.get();
+      List likes = snapshot['likes'] ?? [];
+
+      if (likes.contains(uid)) {
+        await postRef.update({
+          'likes': FieldValue.arrayRemove([uid]),
+        });
+      } else {
+        await postRef.update({
+          'likes': FieldValue.arrayUnion([uid]),
+        });
+      }
+    } catch (e) {
+      throw Exception('Error toggling like: $e');
+    }
   }
-}
 
-   Future<void> addCommentToPost({
-  required String postId,
-  required String email,
-  required String dp,
-  required String commentText,
-}) async {
-  final commentData = {
-    'text': commentText,
-    'email': email,
-    'dp': dp,
-    'createdAt': FieldValue.serverTimestamp(),
-    'uid': auth.currentUser!.uid,
-  };
+  Future<bool> hasLikedPost(String postId) async {
+    try {
+      String uid = auth.currentUser!.uid;
+      DocumentSnapshot snapshot =
+          await firestore.collection('posts').doc(postId).get();
+      List likes = snapshot['likes'] ?? [];
 
-  await firestore
-      .collection('posts')
-      .doc(postId)
-      .collection('comments')
-      .add(commentData);
-}
+      return likes.contains(uid);
+    } catch (e) {
+      throw Exception('Error checking if user liked post: $e');
+    }
+  }
 
-Stream<List<Map<String, dynamic>>> getPostComments(String postId) {
-  return firestore
-      .collection('posts')
-      .doc(postId)
-      .collection('comments')
-      .orderBy('createdAt', descending: false)
-      .snapshots()
-      .map((snapshot) =>
-          snapshot.docs.map((doc) => doc.data()).toList());
-}
+  Future<void> addCommentToPost({
+    required String postId,
+    required String email,
+    required String dp,
+    required String commentText,
+  }) async {
+    final commentData = {
+      'text': commentText,
+      'email': email,
+      'dp': dp,
+      'createdAt': FieldValue.serverTimestamp(),
+      'uid': auth.currentUser!.uid,
+    };
 
+    await firestore
+        .collection('posts')
+        .doc(postId)
+        .collection('comments')
+        .add(commentData);
+  }
+
+  Stream<List<Map<String, dynamic>>> getPostComments(String postId) {
+    return firestore
+        .collection('posts')
+        .doc(postId)
+        .collection('comments')
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+  }
 }

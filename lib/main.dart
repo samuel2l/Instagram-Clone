@@ -48,17 +48,17 @@ class MyApp extends ConsumerWidget {
       supportedLocales: [Locale("en"), Locale("fr")],
 
 
-      // home: ref
-      //     .watch(getUserProvider)
-      //     .when(
-      //       data: (data) {
-      //         return data == null ? const SignUp() : Home();
-      //       },
-      //       error: (error, stackTrace) => Center(child: Text(error.toString())),
-      //       loading: () => Center(child: CircularProgressIndicator()),
-      //     ),
+      home: ref
+          .watch(getUserProvider)
+          .when(
+            data: (data) {
+              return data == null ? const SignUp() : Home();
+            },
+            error: (error, stackTrace) => Center(child: Text(error.toString())),
+            loading: () => Center(child: CircularProgressIndicator()),
+          ),
 
-      home: CreatePost(),
+      // home: CreatePost(),
  
     );
   }
