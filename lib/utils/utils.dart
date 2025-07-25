@@ -57,6 +57,7 @@ Future<String> uploadImageToCloudinary(path) async {
 
 Future<String> uploadVideoToCloudinary(path) async {
   try {
+    
     final cloudinary = CloudinaryPublic(
       dotenv.env["CLOUDINARY_KEY2"]!,
       dotenv.env["CLOUDINARY_KEY1"]!,

@@ -121,4 +121,20 @@ class PostRepository {
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }
+
+Stream<List<Map<String, dynamic>>> getUserPosts(String userId) {
+  try {
+    return firestore
+        .collection('posts')
+        .where('uid', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) => doc.data()).toList();
+        });
+  } catch (e) {
+    throw Exception('Error getting posts by user: $e');
+  }
+}
+
 }
