@@ -24,7 +24,7 @@ class _UserPostsState extends ConsumerState<UserPosts> {
             return CircularProgressIndicator();
           }
           if (snapshot.hasData) {
-            print("gotten data????? ${snapshot.data}");
+            print("gotten data??? ${snapshot.data}");
           }
           return Text("unexpected error");
         },
