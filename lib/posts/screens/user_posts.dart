@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
+import 'package:instagram/posts/screens/post_details.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class UserPosts extends ConsumerStatefulWidget {
@@ -60,9 +61,20 @@ class _UserPostsState extends ConsumerState<UserPosts> {
                     } else if (snapshot.hasError) {
                       return Icon(Icons.error);
                     } else {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: snapshot.data!,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return PostDetails(post: post);
+                              },
+                            ),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: snapshot.data!,
+                        ),
                       );
                     }
                   },

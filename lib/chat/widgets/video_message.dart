@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class VideoMessage extends ConsumerStatefulWidget {
-  const VideoMessage({super.key, required this.url, required this.isSender});
+  const VideoMessage({
+    super.key,
+    required this.url,
+    required this.isSender,
+    this.playOnInit = false,
+  });
   final String url;
   final bool isSender;
+  final bool playOnInit;
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _VideoMessageState();
 }
@@ -15,7 +21,6 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
   bool isPlay = false;
   @override
   void initState() {
-
     super.initState();
     controller = CachedVideoPlayerPlusController.networkUrl(
         Uri.parse(widget.url),
@@ -24,10 +29,12 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
       )
       ..initialize().then((value) async {
         await controller.setLooping(false);
-        // controller.play();
-        if (mounted){
-
-        setState(() {});
+        
+        if (widget.playOnInit==true){
+controller.play();
+        }
+        if (mounted) {
+          setState(() {});
         }
       });
   }
