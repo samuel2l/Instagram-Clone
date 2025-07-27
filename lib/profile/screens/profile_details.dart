@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
+import 'package:instagram/posts/screens/user_posts.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
 
 class ProfileDetails extends ConsumerStatefulWidget {
@@ -90,10 +91,13 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
 
                         child: Text("Message"),
                       ),
+                    Expanded(child: UserPosts(userId: profileData.firebaseUID))
                     ],
+                    
                   ),
                 )
                 : Center(child: Text("no profile data available"));
+          
           }
           return Center(child: CircularProgressIndicator());
         },

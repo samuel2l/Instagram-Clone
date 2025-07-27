@@ -258,7 +258,7 @@ class Home extends ConsumerWidget {
                     },
                     child: Text("Post"),
                   ),
-                  UserPosts(userId: FirebaseAuth.instance.currentUser!.uid),
+                  // UserPosts(userId: FirebaseAuth.instance.currentUser!.uid),
 
                   GestureDetector(
                     onTap: () {
