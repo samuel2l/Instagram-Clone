@@ -1,7 +1,9 @@
+import 'dart:typed_data';
 import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class UserPosts extends ConsumerStatefulWidget {
   const UserPosts({super.key, required this.userId});
@@ -23,44 +25,73 @@ class _UserPostsState extends ConsumerState<UserPosts> {
           return Text("Something went wrong: ${snapshot.error}");
         } else if (snapshot.hasData) {
           final posts = snapshot.data!;
-          print("posts $posts");
 
           if (posts.isEmpty) {
             return Text("User has no posts");
           } else {
-            return 
-            GridView.builder(
-          padding: EdgeInsets.all(10),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // Number of columns
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: posts.length,
-          itemBuilder: (context, index) {
-            Map<String,dynamic> post=posts[index];
-            return Container(
-              color: Colors.red,
-              child: Center(
-                child: 
-                // Text(
-                //   '$index',
-                //   style: TextStyle(color: Colors.white, fontSize: 20),
-                // ),
-                // post["imageUrls"][0].endsWith('.jpg') || post["imageUrls"][0].endsWith('.jpeg')||post["imageUrls"][0].endsWith('.png')||post["imageUrls"][0].endsWith('.webp')? 
-                Image.network(post["imageUrls"][0])
-                // :
+            return GridView.builder(
+              padding: EdgeInsets.all(10),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
               ),
-            );
-          },
-        )
-      ;
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                final post = posts[index];
+                final firstUrl = post["imageUrls"][1] as String;
 
+                final isImage =
+                    firstUrl.endsWith('.jpg') ||
+                    firstUrl.endsWith('.jpeg') ||
+                    firstUrl.endsWith('.png') ||
+                    firstUrl.endsWith('.webp');
+
+                return FutureBuilder<Widget>(
+                  future:
+                      isImage
+                          ? Future.value(
+                            Image.network(firstUrl, fit: BoxFit.cover),
+                          )
+                          : _buildVideoThumbnail(firstUrl),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container(color: Colors.grey.shade300);
+                    } else if (snapshot.hasError) {
+                      return Icon(Icons.error);
+                    } else {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: snapshot.data!,
+                      );
+                    }
+                  },
+                );
+              },
+            );
           }
         } else {
           return Text("Unexpected error");
         }
       },
     );
+  }
+
+  Future<Widget> _buildVideoThumbnail(String videoUrl) async {
+    print("ah building thumbnail???");
+    final Uint8List? thumbnailBytes = await VideoThumbnail.thumbnailData(
+      video: videoUrl,
+      imageFormat: ImageFormat.JPEG,
+      maxWidth: 128,
+      quality: 25,
+    );
+    print("building video thumbnail????? $thumbnailBytes");
+
+    if (thumbnailBytes != null) {
+      print("thumbanail bytes???? $thumbnailBytes");
+      return Image.memory(thumbnailBytes, fit: BoxFit.cover);
+    } else {
+      return Icon(Icons.videocam_off);
+    }
   }
 }
