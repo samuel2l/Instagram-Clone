@@ -11,6 +11,15 @@ class PostVideo extends ConsumerStatefulWidget {
 
 class _PostVideoState extends ConsumerState<PostVideo> {
   late CachedVideoPlayerPlusController controller;
+  bool isMuted = false;
+
+  void toggleMute() {
+    setState(() {
+      isMuted = !isMuted;
+      controller.setVolume(isMuted ? 0.0 : 1.0);
+    });
+  }
+
   bool isPlay = false;
   @override
   void initState() {
@@ -39,7 +48,12 @@ class _PostVideoState extends ConsumerState<PostVideo> {
   @override
   Widget build(BuildContext context) {
     return controller.value.isInitialized
-        ? CachedVideoPlayerPlus(controller)
+        ? GestureDetector(
+          onTap: () {
+            toggleMute();
+          },
+          child: CachedVideoPlayerPlus(controller),
+        )
         : const CircularProgressIndicator.adaptive();
   }
 }
