@@ -55,12 +55,12 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        "Following: ${profileData.profile.following}",
+                        "Following: ${profileData.profile.following.length}",
                         style: TextStyle(fontSize: 16),
                       ),
                       SizedBox(height: 10),
                       Text(
-                        "Followers: ${profileData.profile.followers}",
+                        "Followers: ${profileData.profile.followers.length}",
                         style: TextStyle(fontSize: 16),
                       ),
                       TextButton(

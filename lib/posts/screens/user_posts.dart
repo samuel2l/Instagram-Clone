@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'package:cached_video_player_plus/cached_video_player_plus.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
@@ -78,17 +78,14 @@ class _UserPostsState extends ConsumerState<UserPosts> {
   }
 
   Future<Widget> _buildVideoThumbnail(String videoUrl) async {
-    print("ah building thumbnail???");
     final Uint8List? thumbnailBytes = await VideoThumbnail.thumbnailData(
       video: videoUrl,
       imageFormat: ImageFormat.JPEG,
-      maxWidth: 128,
-      quality: 25,
+      maxWidth: 64,
+      quality: 15,
     );
-    print("building video thumbnail????? $thumbnailBytes");
 
     if (thumbnailBytes != null) {
-      print("thumbanail bytes???? $thumbnailBytes");
       return Image.memory(thumbnailBytes, fit: BoxFit.cover);
     } else {
       return Icon(Icons.videocam_off);
