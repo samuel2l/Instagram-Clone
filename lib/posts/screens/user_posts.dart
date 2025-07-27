@@ -39,7 +39,7 @@ class _UserPostsState extends ConsumerState<UserPosts> {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
-                final firstUrl = post["imageUrls"][1] as String;
+                final firstUrl = post["imageUrls"][0] as String;
 
                 final isImage =
                     firstUrl.endsWith('.jpg') ||

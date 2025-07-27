@@ -126,7 +126,6 @@ Stream<List<Map<String, dynamic>>> getUserPosts(String userId) {
   return firestore
       .collection('posts')
       .where('uid', isEqualTo: userId)
-      // .orderBy('createdAt', descending: true)
       .snapshots()
       .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
 }
