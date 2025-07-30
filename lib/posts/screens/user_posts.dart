@@ -1,10 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/post_details.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 class UserPosts extends ConsumerStatefulWidget {
   const UserPosts({super.key, required this.userId});
@@ -21,7 +18,7 @@ class _UserPostsState extends ConsumerState<UserPosts> {
       stream: ref.watch(postRepositoryProvider).getUserPosts(widget.userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator(color: Colors.red,));
         } else if (snapshot.hasError) {
           return Text("Something went wrong: ${snapshot.error}");
         } else if (snapshot.hasData) {
@@ -54,10 +51,12 @@ class _UserPostsState extends ConsumerState<UserPosts> {
                           ? Future.value(
                             Image.network(firstUrl, fit: BoxFit.cover),
                           )
-                          : _buildVideoThumbnail(firstUrl),
+                          : Future.value(
+                            Image.asset("assets/images/IMG_3846.JPG"),
+                          ),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Container(color: Colors.grey.shade300);
+                      return Center(child: CircularProgressIndicator(),);
                     } else if (snapshot.hasError) {
                       return Icon(Icons.error);
                     } else {
@@ -82,25 +81,26 @@ class _UserPostsState extends ConsumerState<UserPosts> {
               },
             );
           }
-        } else {
+        } 
+        else {
           return Text("Unexpected error");
         }
       },
     );
   }
 
-  Future<Widget> _buildVideoThumbnail(String videoUrl) async {
-    final Uint8List? thumbnailBytes = await VideoThumbnail.thumbnailData(
-      video: videoUrl,
-      imageFormat: ImageFormat.JPEG,
-      maxWidth: 64,
-      quality: 15,
-    );
+  // Future<Widget> _buildVideoThumbnail(String videoUrl) async {
+  //   final Uint8List? thumbnailBytes = await VideoThumbnail.thumbnailData(
+  //     video: videoUrl,
+  //     imageFormat: ImageFormat.JPEG,
+  //     maxWidth: 64,
+  //     quality: 15,
+  //   );
 
-    if (thumbnailBytes != null) {
-      return Image.memory(thumbnailBytes, fit: BoxFit.cover);
-    } else {
-      return Icon(Icons.videocam_off);
-    }
-  }
+  //   if (thumbnailBytes != null) {
+  //     return Image.memory(thumbnailBytes, fit: BoxFit.cover);
+  //   } else {
+  //     return Icon(Icons.videocam_off);
+  //   }
+  // }
 }

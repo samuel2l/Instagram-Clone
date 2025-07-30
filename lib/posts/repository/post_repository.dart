@@ -20,7 +20,7 @@ class PostRepository {
   Future<void> createPost({
     required String caption,
     required List<String> imageUrls,
-    required BuildContext context
+    required BuildContext context,
   }) async {
     try {
       String uid = auth.currentUser!.uid;
@@ -62,6 +62,7 @@ class PostRepository {
 
     try {
       DocumentSnapshot snapshot = await postRef.get();
+
       List likes = snapshot['likes'] ?? [];
 
       if (likes.contains(uid)) {
@@ -122,11 +123,11 @@ class PostRepository {
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }
 
-Stream<List<Map<String, dynamic>>> getUserPosts(String userId) {
-  return firestore
-      .collection('posts')
-      .where('uid', isEqualTo: userId)
-      .snapshots()
-      .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
-}
+  Stream<List<Map<String, dynamic>>> getUserPosts(String userId) {
+    return firestore
+        .collection('posts')
+        .where('uid', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+  }
 }

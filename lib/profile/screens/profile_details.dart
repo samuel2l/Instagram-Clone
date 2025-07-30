@@ -33,7 +33,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
             return Text("error loading user profile");
           }
           if (snapshot.hasData) {
-
             AppUserModel? profileData;
             if (snapshot.data != null) {
               profileData = AppUserModel.fromMap(snapshot.data!);
@@ -72,7 +71,6 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 profileData!.firebaseUID,
                               ], FirebaseAuth.instance.currentUser!.uid);
 
-
                           // if(chatData==null)
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -91,13 +89,13 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
 
                         child: Text("Message"),
                       ),
-                    Expanded(child: UserPosts(userId: profileData.firebaseUID))
+                      Expanded(
+                        child: UserPosts(userId: profileData.firebaseUID),
+                      ),
                     ],
-                    
                   ),
                 )
                 : Center(child: Text("no profile data available"));
-          
           }
           return Center(child: CircularProgressIndicator());
         },

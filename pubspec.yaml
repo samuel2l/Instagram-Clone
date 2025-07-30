@@ -62,7 +62,7 @@ dependencies:
   http: ^1.4.0
   percent_indicator: ^4.2.5
   file_picker: ^10.2.0
-  video_thumbnail: ^0.5.3k
+
 
 
 dev_dependencies:

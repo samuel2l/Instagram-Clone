@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:instagram/chat/widgets/video_message.dart';
+import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/widgets/post_video.dart';
 
 class PostDetails extends ConsumerStatefulWidget {
@@ -20,7 +20,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
       body: Column(
         children: [
           SizedBox(
-            height: 300, // adjust as needed
+            height: 400,
             child: PageView.builder(
               controller: _controller,
               itemCount: (widget.post["imageUrls"] as List).length,
@@ -34,11 +34,52 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       widget.post["imageUrls"][index],
                       fit: BoxFit.cover,
                     )
-                    : PostVideo(
-                      url: imageUrl,
-                    );
+                    : PostVideo(url: imageUrl);
               },
             ),
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  print("post data???? ${widget.post}");
+                  ref
+                      .read(postRepositoryProvider)
+                      .toggleLikePost(widget.post["postId"]);
+                },
+                icon: FutureBuilder<bool>(
+                  future: ref
+                      .watch(postRepositoryProvider)
+                      .hasLikedPost("${widget.post["postId"]}"),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Icon(
+                        Icons.favorite,
+                        color:
+                            snapshot.data == true ? Colors.red : Colors.white,
+                      );
+                    }
+                    return Icon(Icons.favorite, color: Colors.white);
+                  },
+                ),
+              ),
+
+              StreamBuilder(
+                stream: ref
+                    .watch(postRepositoryProvider)
+                    .getLikesCount(widget.post["postId"]),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text("${snapshot.data}");
+                  }
+
+                  return Text(" ");
+                },
+              ),
+              Text(
+                "Likes ${widget.post["likes"].length}  ${widget.post["caption"]}",
+              ),
+            ],
           ),
         ],
       ),
