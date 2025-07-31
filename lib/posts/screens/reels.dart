@@ -13,6 +13,7 @@ class Reels extends ConsumerStatefulWidget {
 class _ConsumerReelsState extends ConsumerState<Reels> {
   late PageController pageController;
   CachedVideoPlayerPlusController? controller;
+  List<dynamic>? reelData;
 
   List<dynamic>? reels;
 
@@ -27,13 +28,14 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
   }
 
   Future<void> _initializeAndPlay(int index) async {
-    List reelData = await ref.read(postRepositoryProvider).getReels();
-    for (int i = 0; i < reelData.length; i++) {
-      if (reels == null) {
-        reels = [reelData[i]["imageUrls"][0]];
-      }else{
-      reels!.add(reelData[i]["imageUrls"][0]);
-
+    reelData = await ref.read(postRepositoryProvider).getReels();
+    if (reelData != null) {
+      for (int i = 0; i < reelData!.length; i++) {
+        if (reels == null) {
+          reels = [reelData![i]["imageUrls"][0]];
+        } else {
+          reels!.add(reelData![i]["imageUrls"][0]);
+        }
       }
     }
 
@@ -101,7 +103,68 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                       itemBuilder: (context, index) {
                         return controller != null &&
                                 controller!.value.isInitialized
-                            ? CachedVideoPlayerPlus(controller!)
+                            ? Stack(
+                              children: [
+                                CachedVideoPlayerPlus(controller!),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 200,
+                                  child: Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          ref
+                                              .read(postRepositoryProvider)
+                                              .toggleLikePost(
+                                                reelData![index]["postId"],
+                                              );
+                                          setState(() {});
+                                        },
+                                        icon: FutureBuilder<bool>(
+                                          future: ref
+                                              .watch(postRepositoryProvider)
+                                              .hasLikedPost(
+                                                "${reelData![index]["postId"]}",
+                                              ),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              return snapshot.data == true
+                                                  ? Icon(
+                                                    Icons.favorite,
+                                                    color: Colors.red,
+                                                  )
+                                                  : Icon(
+                                                    Icons.favorite_outline,
+                                                    color: Colors.white,
+                                                  );
+                                            }
+                                            return Icon(
+                                              Icons.favorite_outline,
+                                              color: Colors.black,
+                                            );
+                                          },
+                                        ),
+                                      ),
+
+                                      StreamBuilder(
+                                        stream: ref
+                                            .watch(postRepositoryProvider)
+                                            .getLikesCount(
+                                              reelData![index]["postId"],
+                                            ),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            return Text("${snapshot.data}",style: TextStyle(color: Colors.white),);
+                                          }
+
+                                          return Text(" ");
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )
                             : const Center(child: CircularProgressIndicator());
                       },
                     ),
@@ -135,6 +198,12 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                           size: 80,
                         ),
                       ),
+
+                    Positioned(
+                      right: 0,
+                      bottom: 150,
+                      child: Icon(Icons.message, color: Colors.white),
+                    ),
                   ],
                 ),
               )
