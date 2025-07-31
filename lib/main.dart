@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,11 +6,6 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/firebase_options.dart';
 import 'package:instagram/home/screens/home.dart';
-import 'package:instagram/posts/screens/create_post.dart';
-import 'package:instagram/reels/screens/reels.dart';
-import 'package:instagram/stories/screens/post_story.dart';
-import 'package:instagram/stories/screens/select_story_image.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
 

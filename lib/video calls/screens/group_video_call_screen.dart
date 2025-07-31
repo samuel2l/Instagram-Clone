@@ -27,7 +27,7 @@ class GroupVideoCallScreen extends ConsumerStatefulWidget {
 class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
   final List<int> _remoteUids = [];
   bool _localUserJoined = false;
-  RtcEngine? _engine; // ✅ Made nullable
+  RtcEngine? _engine; 
   String? appId = dotenv.env["AGORA_APP_ID"];
   String baseUrl = "https://agora-token-generator-mtk5.onrender.com";
   String? token;
@@ -58,9 +58,9 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
   Future<void> initAgora() async {
     await [Permission.microphone, Permission.camera].request();
 
-    await getToken(); // ✅ Get token first
+    await getToken(); 
 
-    _engine = createAgoraRtcEngine(); // ✅ Then create engine
+    _engine = createAgoraRtcEngine(); 
 
     await _engine!.initialize(
       RtcEngineContext(

@@ -2,7 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/utils/constants.dart';
-import 'package:instagram/utils/utils.dart';
 
 final chatRepositoryProvider = Provider((ref) {
   return ChatRepository(firestore: FirebaseFirestore.instance);

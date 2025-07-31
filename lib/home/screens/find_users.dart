@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
-import 'package:instagram/chat/screens/chat_screen.dart';
 import 'package:instagram/profile/screens/profile_details.dart';
 
 class FindUsers extends ConsumerStatefulWidget {
