@@ -84,7 +84,7 @@ class AuthRepository {
     BuildContext context,
   ) async {
     try {
-      final res = await auth.signInWithEmailAndPassword(
+ await auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
