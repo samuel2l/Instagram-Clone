@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/widgets/post_video.dart';
 
@@ -13,6 +14,7 @@ class PostDetails extends ConsumerStatefulWidget {
 
 class _PostDetailsState extends ConsumerState<PostDetails> {
   final PageController _controller = PageController();
+  TextEditingController commentController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,8 +55,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       .hasLikedPost("${widget.post["postId"]}"),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      
-
                       return snapshot.data == true
                           ? Icon(Icons.favorite, color: Colors.red)
                           : Icon(Icons.favorite_outline, color: Colors.black);
@@ -76,10 +76,55 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                   return Text(" ");
                 },
               ),
-              Text(
-                "Likes ${widget.post["likes"].length}  ${widget.post["caption"]}",
-              ),
             ],
+          ),
+          TextField(
+            controller: commentController,
+            onSubmitted: (value) async {
+              final profileData =
+                  await ref.watch(authRepositoryProvider).getUser();
+              if (profileData != null) {
+                await ref
+                    .read(postRepositoryProvider)
+                    .addCommentToPost(
+                      postId: widget.post["postId"],
+                      email: profileData.email,
+                      dp: profileData.profile.dp,
+                      commentText: commentController.text.trim(),
+                    );
+              }
+            },
+          ),
+          Expanded(
+            child: StreamBuilder(
+              stream: ref
+                  .watch(postRepositoryProvider)
+                  .getPostComments(widget.post["postId"]),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                    print("comments data????? ${snapshot.data}");
+                    final commentData = snapshot.data!;
+                    return Expanded(
+                      child: ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          final comment = commentData[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(comment["dp"]),
+                            ),
+                            subtitle: Text("${comment["email"]}"),
+                            title: Text("${comment["text"]}"),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                }
+                return Center(child: Text("No comments yet"));
+              },
+            ),
           ),
         ],
       ),
