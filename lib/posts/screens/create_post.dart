@@ -29,6 +29,9 @@ class _CreatePostState extends ConsumerState<CreatePost> {
     }
   }
 
+  String? reelUrl;
+  String? reelPath;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +41,19 @@ class _CreatePostState extends ConsumerState<CreatePost> {
           ElevatedButton(
             onPressed: pickFiles,
             child: const Text("Pick Images/Videos"),
+          ),
+
+          ElevatedButton(
+            onPressed: () async {
+              reelPath = await pickVideoFromGallery(context);
+              print("reel path");
+              print(reelPath);
+
+              reelUrl = await uploadVideoToCloudinary(reelPath);
+              print("reel url?? $reelUrl");
+              setState(() {});
+            },
+            child: const Text("Post Reel"),
           ),
           TextField(controller: captionController),
           Expanded(
@@ -56,31 +72,46 @@ class _CreatePostState extends ConsumerState<CreatePost> {
       ),
       bottomSheet: TextButton(
         onPressed: () async {
-          if (selectedFiles.isNotEmpty) {
-            String mediaPath = "";
-            List<String> mediaUrls = [];
-            for (int i = 0; i < selectedFiles.length; i++) {
-
-              if (selectedFiles[i].extension != "jpeg" &&
-                  selectedFiles[i].extension != "png" &&
-                  selectedFiles[i].extension != "jpg") {
-                mediaPath = await uploadVideoToCloudinary(
-                  selectedFiles[i].path,
-                );
-              } else {
-                mediaPath = await uploadImageToCloudinary(
-                  selectedFiles[i].path,
-                );
+          if (captionController.text.isEmpty) {
+            showSnackBar(context: context, content: "add a caption");
+          } else {
+            if (reelUrl != null) {
+              print("reel url being sent?? $reelUrl");
+              await ref
+                  .read(postRepositoryProvider)
+                  .createPost(
+                    caption: captionController.text.trim(),
+                    imageUrls: [reelUrl!],
+                    context: context,
+                    postType: "reel",
+                  );
+            } else {
+              if (selectedFiles.isNotEmpty) {
+                String mediaPath = "";
+                List<String> mediaUrls = [];
+                for (int i = 0; i < selectedFiles.length; i++) {
+                  if (selectedFiles[i].extension != "jpeg" &&
+                      selectedFiles[i].extension != "png" &&
+                      selectedFiles[i].extension != "jpg") {
+                    mediaPath = await uploadVideoToCloudinary(
+                      selectedFiles[i].path,
+                    );
+                  } else {
+                    mediaPath = await uploadImageToCloudinary(
+                      selectedFiles[i].path,
+                    );
+                  }
+                  mediaUrls.add(mediaPath);
+                }
+                ref
+                    .read(postRepositoryProvider)
+                    .createPost(
+                      caption: captionController.text.trim(),
+                      imageUrls: mediaUrls,
+                      context: context,
+                    );
               }
-              mediaUrls.add(mediaPath);
             }
-            ref
-                .read(postRepositoryProvider)
-                .createPost(
-                  caption: captionController.text.trim(),
-                  imageUrls: mediaUrls,
-                  context: context,
-                );
           }
         },
         child: Text("Post"),

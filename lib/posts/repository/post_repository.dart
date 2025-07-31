@@ -21,6 +21,7 @@ class PostRepository {
     required String caption,
     required List<String> imageUrls,
     required BuildContext context,
+    String postType = "post",
   }) async {
     try {
       String uid = auth.currentUser!.uid;
@@ -33,10 +34,26 @@ class PostRepository {
         'imageUrls': imageUrls,
         'createdAt': FieldValue.serverTimestamp(),
         'likes': [],
+        "postType": postType,
       });
       showSnackBar(context: context, content: "posted successfully");
     } catch (e) {
       throw Exception('Error creating post: $e');
+    }
+  }
+
+  Future<List> getReels() async {
+    try {
+      final querySnapshot =
+          await firestore
+              .collection('posts')
+              .where('postType', isEqualTo: 'reel')
+              // .orderBy('createdAt', descending: true)
+              .get();
+
+      return querySnapshot.docs.map((doc) => doc.data()["imageUrls"]??[]).toList();
+    } catch (e) {
+      throw Exception('Error fetching reels: $e');
     }
   }
 
@@ -86,7 +103,6 @@ class PostRepository {
           await firestore.collection('posts').doc(postId).get();
       List likes = snapshot['likes'] ?? [];
 
-
       return likes.contains(uid);
     } catch (e) {
       throw Exception('Error checking if user liked post: $e');
@@ -124,10 +140,19 @@ class PostRepository {
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }
 
+  // Stream<List<Map<String, dynamic>>> getUserPosts(String userId) {
+  //   return firestore
+  //       .collection('posts')
+  //       .where('uid', isEqualTo: userId)
+  //       .snapshots()
+  //       .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+  // }
+
   Stream<List<Map<String, dynamic>>> getUserPosts(String userId) {
     return firestore
         .collection('posts')
         .where('uid', isEqualTo: userId)
+        .where('postType', isEqualTo: 'post')
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }

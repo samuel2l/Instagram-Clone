@@ -13,6 +13,7 @@ import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/live%20stream/screens/start_livestream.dart';
 import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
+import 'package:instagram/reels/screens/reels.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
@@ -402,7 +403,20 @@ class Home extends ConsumerWidget {
                         ),
                       );
                     },
-                    child: Text("Add Image"),
+                    child: Text("add imgs"),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+     
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return Reels();
+                          },
+                        ),
+                      );
+                    },
+                    child: Text("Watch reels"),
                   ),
                   FutureBuilder(
                     future: ref.read(storyRepositoryProvider).getValidStories(),
