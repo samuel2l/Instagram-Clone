@@ -46,11 +46,8 @@ class _CreatePostState extends ConsumerState<CreatePost> {
           ElevatedButton(
             onPressed: () async {
               reelPath = await pickVideoFromGallery(context);
-              print("reel path");
-              print(reelPath);
 
               reelUrl = await uploadVideoToCloudinary(reelPath);
-              print("reel url?? $reelUrl");
               setState(() {});
             },
             child: const Text("Post Reel"),
@@ -76,7 +73,6 @@ class _CreatePostState extends ConsumerState<CreatePost> {
             showSnackBar(context: context, content: "add a caption");
           } else {
             if (reelUrl != null) {
-              print("reel url being sent?? $reelUrl");
               await ref
                   .read(postRepositoryProvider)
                   .createPost(

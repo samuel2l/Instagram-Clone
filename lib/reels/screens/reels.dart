@@ -30,7 +30,7 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
     List reelData = await ref.read(postRepositoryProvider).getReels();
     reels = reelData.expand((innerList) => innerList).toList();
    
-    print("reels gotten $reels");
+
     setState(() {
       
     });
