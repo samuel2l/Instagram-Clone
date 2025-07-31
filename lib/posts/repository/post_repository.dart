@@ -85,7 +85,7 @@ class PostRepository {
       DocumentSnapshot snapshot =
           await firestore.collection('posts').doc(postId).get();
       List likes = snapshot['likes'] ?? [];
-      print("do you have the udddsdsd ${likes.contains(uid)}");
+
 
       return likes.contains(uid);
     } catch (e) {

@@ -103,7 +103,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                    print("comments data????? ${snapshot.data}");
                     final commentData = snapshot.data!;
                     return Expanded(
                       child: ListView.builder(
