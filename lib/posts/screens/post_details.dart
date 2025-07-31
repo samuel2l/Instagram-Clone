@@ -42,10 +42,10 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
             children: [
               IconButton(
                 onPressed: () {
-                  print("post data???? ${widget.post}");
                   ref
                       .read(postRepositoryProvider)
                       .toggleLikePost(widget.post["postId"]);
+                  setState(() {});
                 },
                 icon: FutureBuilder<bool>(
                   future: ref
@@ -53,13 +53,13 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       .hasLikedPost("${widget.post["postId"]}"),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return Icon(
-                        Icons.favorite,
-                        color:
-                            snapshot.data == true ? Colors.red : Colors.white,
-                      );
+                      
+
+                      return snapshot.data == true
+                          ? Icon(Icons.favorite, color: Colors.red)
+                          : Icon(Icons.favorite_outline, color: Colors.black);
                     }
-                    return Icon(Icons.favorite, color: Colors.white);
+                    return Icon(Icons.favorite_outline, color: Colors.black);
                   },
                 ),
               ),
