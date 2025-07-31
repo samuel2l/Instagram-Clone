@@ -29,11 +29,8 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
   Future<void> _initializeAndPlay(int index) async {
     List reelData = await ref.read(postRepositoryProvider).getReels();
     reels = reelData.expand((innerList) => innerList).toList();
-   
 
-    setState(() {
-      
-    });
+    setState(() {});
     final newController = CachedVideoPlayerPlusController.networkUrl(
       Uri.parse(reels![index]),
     );
@@ -70,7 +67,7 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
     return Scaffold(
       appBar: AppBar(),
       body:
-          controller != null && controller!.value.isInitialized && reels!=null
+          controller != null && controller!.value.isInitialized && reels != null
               ? GestureDetector(
                 onLongPress: () {
                   controller?.pause();
@@ -101,6 +98,7 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                             : const Center(child: CircularProgressIndicator());
                       },
                     ),
+
                     Positioned(
                       bottom: 20,
                       left: 20,
@@ -130,6 +128,7 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                           size: 80,
                         ),
                       ),
+                      
                   ],
                 ),
               )
