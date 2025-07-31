@@ -28,7 +28,14 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
 
   Future<void> _initializeAndPlay(int index) async {
     List reelData = await ref.read(postRepositoryProvider).getReels();
-    reels = reelData.expand((innerList) => innerList).toList();
+    for (int i = 0; i < reelData.length; i++) {
+      if (reels == null) {
+        reels = [reelData[i]["imageUrls"][0]];
+      }else{
+      reels!.add(reelData[i]["imageUrls"][0]);
+
+      }
+    }
 
     setState(() {});
     final newController = CachedVideoPlayerPlusController.networkUrl(
@@ -128,7 +135,6 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                           size: 80,
                         ),
                       ),
-                      
                   ],
                 ),
               )

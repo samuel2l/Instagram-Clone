@@ -11,6 +11,7 @@ import 'package:instagram/home/screens/find_users.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/live%20stream/screens/start_livestream.dart';
+import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
 import 'package:instagram/posts/screens/reels.dart';
@@ -168,6 +169,14 @@ class Home extends ConsumerWidget {
                     child: Text("Logout"),
                   ),
                   SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () async {
+                      final res =
+                          await ref.read(postRepositoryProvider).getReels();
+                      print("new get reels???? $res");
+                    },
+                    child: Text("data"),
+                  ),
                   GestureDetector(
                     onTap: () async {
                       await ref
@@ -251,15 +260,13 @@ class Home extends ConsumerWidget {
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => CreatePost(),
-                        ),
+                        MaterialPageRoute(builder: (context) => CreatePost()),
                       );
                     },
                     child: Text("Post"),
                   ),
-                  // UserPosts(userId: FirebaseAuth.instance.currentUser!.uid),
 
+                  // UserPosts(userId: FirebaseAuth.instance.currentUser!.uid),
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(
@@ -394,7 +401,6 @@ class Home extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () async {
-     
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) {
@@ -407,7 +413,6 @@ class Home extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () async {
-     
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) {

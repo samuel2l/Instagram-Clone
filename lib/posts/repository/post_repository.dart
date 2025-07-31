@@ -51,7 +51,7 @@ class PostRepository {
               // .orderBy('createdAt', descending: true)
               .get();
 
-      return querySnapshot.docs.map((doc) => doc.data()["imageUrls"]??[]).toList();
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
       throw Exception('Error fetching reels: $e');
     }
