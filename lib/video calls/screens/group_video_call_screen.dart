@@ -26,6 +26,7 @@ class GroupVideoCallScreen extends ConsumerStatefulWidget {
 
 class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
   final List<int> _remoteUids = [];
+  // ignore: unused_field
   bool _localUserJoined = false;
   RtcEngine? _engine; 
   String? appId = dotenv.env["AGORA_APP_ID"];

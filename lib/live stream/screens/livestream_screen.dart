@@ -31,6 +31,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
   String? token;
   List<int> watchers = [];
   int? _remoteUid;
+  // ignore: unused_field
   bool _localUserJoined = false;
   late RtcEngine _engine;
   bool _isEngineReady = false;
