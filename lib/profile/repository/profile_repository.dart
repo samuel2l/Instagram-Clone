@@ -118,7 +118,7 @@ class ProfileRepository {
   }
 }
 
-Stream<bool> isFollowingStream({
+Stream<bool> isFollowing({
   required String targetUid,
 }) {
   return FirebaseFirestore.instance
@@ -132,5 +132,43 @@ Stream<bool> isFollowingStream({
     final followers = List<String>.from(data['followers'] ?? []);
     return followers.contains(auth.currentUser!.uid);
   });
+}
+
+Future<void> unfollowUser({
+  required String targetUserId,
+  BuildContext? context,
+}) async {
+  try {
+    final firestore = FirebaseFirestore.instance;
+
+    final currentUserRef = firestore.collection('users').doc(auth.currentUser!.uid);
+    final targetUserRef = firestore.collection('users').doc(targetUserId);
+
+    final batch = firestore.batch();
+
+    batch.update(currentUserRef, {
+      'following': FieldValue.arrayRemove([targetUserId]),
+    });
+
+    batch.update(targetUserRef, {
+      'followers': FieldValue.arrayRemove([auth.currentUser!.uid]),
+    });
+
+    await batch.commit();
+
+    if (context != null) {
+      showSnackBar(
+        context: context,
+        content: "You have unfollowed this user",
+      );
+    }
+  } catch (e) {
+    if (context != null) {
+      showSnackBar(
+        context: context,
+        content: 'Error unfollowing user: $e',
+      );
+    }
+  }
 }
 }

@@ -62,32 +62,95 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                         "Followers: ${profileData.profile.followers.length}",
                         style: TextStyle(fontSize: 16),
                       ),
-                      TextButton(
-                        onPressed: () async {
-                          final chatData = await ref
-                              .watch(chatRepositoryProvider)
-                              .getChatByParticipants([
-                                FirebaseAuth.instance.currentUser!.uid,
-                                profileData!.firebaseUID,
-                              ], FirebaseAuth.instance.currentUser!.uid);
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () async {
+                              final chatData = await ref
+                                  .watch(chatRepositoryProvider)
+                                  .getChatByParticipants([
+                                    FirebaseAuth.instance.currentUser!.uid,
+                                    profileData!.firebaseUID,
+                                  ], FirebaseAuth.instance.currentUser!.uid);
 
-                          // if(chatData==null)
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ChatScreen(
-                                  user: {
-                                    "email": profileData!.email,
-                                    "uid": profileData.firebaseUID,
+                              // if(chatData==null)
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return ChatScreen(
+                                      user: {
+                                        "email": profileData!.email,
+                                        "uid": profileData.firebaseUID,
+                                      },
+                                      chatData: chatData ?? {},
+                                    );
                                   },
-                                  chatData: chatData ?? {},
-                                );
-                              },
-                            ),
-                          );
-                        },
+                                ),
+                              );
+                            },
 
-                        child: Text("Message"),
+                            child: Text("Message"),
+                          ),
+                          StreamBuilder(
+                            stream: ref
+                                .watch(profileRepositoryProvider)
+                                .isFollowing(targetUid: widget.uid),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                  onPressed: () {},
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                );
+                              }
+                              bool? isFollowing = snapshot.data;
+                              if (isFollowing != null) {
+                                return TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor:
+                                        isFollowing
+                                            ? Colors.white
+                                            : Colors.blue,
+                                  ),
+                                  onPressed: () {
+                                    if (!isFollowing) {
+                                      ref
+                                          .watch(profileRepositoryProvider)
+                                          .followUser(targetUserId: widget.uid);
+                                    }
+                                  },
+                                  child: Text(
+                                    isFollowing ? "Following" : "Follow",
+                                    style: TextStyle(
+                                      color:
+                                          isFollowing
+                                              ? Colors.black
+                                              : Colors.white,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                return TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                  onPressed: () {},
+                                  child: Text(
+                                    "Follow",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
                       ),
                       Expanded(
                         child: UserPosts(userId: profileData.firebaseUID),
