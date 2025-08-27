@@ -77,4 +77,45 @@ class ProfileRepository {
       return null;
     }
   }
+  
+  Future<void> followUser({
+
+  required String targetUserId,
+  BuildContext? context,
+}) async {
+  try {
+    final firestore = FirebaseFirestore.instance;
+
+
+    final currentUserRef = firestore.collection('users').doc(auth.currentUser!.uid);
+    final targetUserRef = firestore.collection('users').doc(targetUserId);
+
+    final batch = firestore.batch();
+
+    batch.update(currentUserRef, {
+      'following': FieldValue.arrayUnion([targetUserId]),
+    });
+
+    batch.update(targetUserRef, {
+      'followers': FieldValue.arrayUnion([auth.currentUser!.uid]),
+    });
+
+    await batch.commit();
+
+    if (context != null) {
+      showSnackBar(
+        context: context,
+        content: "You are now following this user",
+      );
+    }
+  } catch (e) {
+    if (context != null) {
+      showSnackBar(
+        context: context,
+        content: 'Error following user: $e',
+      );
+    }
+  }
+}
+
 }
