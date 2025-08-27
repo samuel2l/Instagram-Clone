@@ -118,4 +118,20 @@ class ProfileRepository {
   }
 }
 
+Stream<bool> isFollowingStream({
+  required String currentUid,
+  required String targetUid,
+}) {
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(currentUid)
+      .snapshots()
+      .map((doc) {
+    if (!doc.exists) return false;
+
+    final data = doc.data() as Map<String, dynamic>;
+    final following = List<String>.from(data['following'] ?? []);
+    return following.contains(targetUid);
+  });
+}
 }
