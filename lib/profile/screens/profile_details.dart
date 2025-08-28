@@ -124,6 +124,10 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                       ref
                                           .watch(profileRepositoryProvider)
                                           .followUser(targetUserId: widget.uid);
+                                    } else {
+                                      ref
+                                          .watch(profileRepositoryProvider)
+                                          .unfollowUser(targetUserId: widget.uid);
                                     }
                                   },
                                   child: Text(
