@@ -24,8 +24,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Profile Details")),
-      body: FutureBuilder(
-        future: ref
+      body: StreamBuilder(
+        stream: ref
             .watch(profileRepositoryProvider)
             .getUserProfile(uid: widget.uid),
         builder: (context, snapshot) {
@@ -127,7 +127,9 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                     } else {
                                       ref
                                           .watch(profileRepositoryProvider)
-                                          .unfollowUser(targetUserId: widget.uid);
+                                          .unfollowUser(
+                                            targetUserId: widget.uid,
+                                          );
                                     }
                                   },
                                   child: Text(

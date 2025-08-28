@@ -53,31 +53,27 @@ class ProfileRepository {
       }
     }
   }
+Stream<Map<String, dynamic>?> getUserProfile({
+  required String uid,
+  BuildContext? context,
+}) {
+  final firestore = FirebaseFirestore.instance;
 
-  Future<Map<String, dynamic>?> getUserProfile({
-    required String uid,
-    BuildContext? context,
-  }) async {
-    try {
-      final docSnapshot =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-
-      if (docSnapshot.exists) {
-        return docSnapshot.data();
-      } else {
-        if (context != null) {
-          showSnackBar(context: context, content: 'User profile not found.');
-        }
-        return null;
-      }
-    } catch (e) {
+  return firestore.collection('users').doc(uid).snapshots().map((docSnapshot) {
+    if (docSnapshot.exists) {
+      return docSnapshot.data();
+    } else {
       if (context != null) {
-        showSnackBar(context: context, content: 'Error fetching profile: $e');
+        showSnackBar(context: context, content: 'User profile not found.');
       }
       return null;
     }
-  }
-  
+  }).handleError((e) {
+    if (context != null) {
+      showSnackBar(context: context, content: 'Error fetching profile: $e');
+    }
+  });
+}  
   Future<void> followUser({
 
   required String targetUserId,
