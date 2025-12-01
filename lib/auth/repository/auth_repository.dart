@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
-import 'package:instagram/chat/screens/chats.dart';
 import 'package:instagram/home/home.dart';
 import 'package:instagram/utils/utils.dart';
 
@@ -158,7 +157,7 @@ class AuthRepository {
     if (userData.data() != null) {
       user = AppUserModel.fromMap(userData.data()!);
     }
-print("fetched user data? ${userData.data()}");
+
 
     return user;
   }

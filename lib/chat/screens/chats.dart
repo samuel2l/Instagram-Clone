@@ -167,14 +167,6 @@ class Chats extends ConsumerWidget {
                     child: Text("Logout"),
                   ),
                   SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () async {
-                      final res =
-                          await ref.read(postRepositoryProvider).getReels();
-                      print("new get reels???? $res");
-                    },
-                    child: Text("data"),
-                  ),
                   GestureDetector(
                     onTap: () async {
                       await ref

@@ -1,13 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
-import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
 import 'package:instagram/chat/screens/chats.dart';
