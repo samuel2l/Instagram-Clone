@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
+import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/stories/screens/view_story.dart';
 import 'package:instagram/stories/widgets/story_bars.dart';
 
 class UserStories extends ConsumerStatefulWidget {
   const UserStories({super.key, required this.userStories});
-  final List<Map<String,dynamic>> userStories;
+  final List<Map<String, dynamic>> userStories;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _UserStoriesState();
@@ -56,7 +58,18 @@ class _UserStoriesState extends ConsumerState<UserStories> {
   }
 
   void _startWatching() {
-    storyTimer?.cancel(); 
+    final currStory = widget.userStories[currentStoryIndex];
+    print(
+      "ADDING VIEWER TO STOR ${currStory["userProfile"]["uid"]} ${currStory["storyId"]} ${ref.read(getUserProvider).value?.firebaseUID ?? ""}",
+    );
+    ref
+        .read(storyRepositoryProvider)
+        .addStoryViewer(
+          ownerId: currStory["userProfile"]["uid"],
+          storyId: currStory["storyId"],
+          viewerId: ref.read(getUserProvider).value?.firebaseUID ?? "",
+        );
+    storyTimer?.cancel();
 
     storyTimer = Timer.periodic(Duration(milliseconds: 700), (timer) {
       if (!mounted) return;
@@ -66,7 +79,9 @@ class _UserStoriesState extends ConsumerState<UserStories> {
           if (percentageCoveredList[currentStoryIndex] + 0.01 < 1) {
             percentageCoveredList[currentStoryIndex] += 0.01;
           } else {
+            // done watching current story so add to viewer's list
             percentageCoveredList[currentStoryIndex] = 1;
+
             timer.cancel();
             if (currentStoryIndex < widget.userStories.length - 1) {
               currentStoryIndex++;
@@ -110,7 +125,7 @@ class _UserStoriesState extends ConsumerState<UserStories> {
             _startWatching();
           } else {
             percentageCoveredList[currentStoryIndex] = 1;
-            Navigator.pop(context); 
+            Navigator.pop(context);
           }
         }
         setState(() {});

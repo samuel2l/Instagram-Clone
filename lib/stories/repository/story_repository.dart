@@ -29,6 +29,7 @@ class StoryRepository {
         'mediaUrl': mediaUrl,
         "storyData": storyDataMap,
         'timestamp': FieldValue.serverTimestamp(),
+        'watchers': <String>[],
       });
       return true;
     } catch (e) {
@@ -99,5 +100,21 @@ class StoryRepository {
     print('Error fetching stories with user details: $e');
     return {};
   }
+}
+
+Future<void> addStoryViewer({
+  required String ownerId,
+  required String storyId,
+  required String viewerId,
+}) async {
+  final storyRef = FirebaseFirestore.instance
+      .collection('stories')
+      .doc(ownerId)
+      .collection('userStories')
+      .doc(storyId);
+
+  await storyRef.update({
+    'watchers': FieldValue.arrayUnion([viewerId]),
+  });
 }
   }
