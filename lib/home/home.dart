@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
 import 'package:instagram/chat/screens/chats.dart';
@@ -25,9 +26,34 @@ class _HomeState extends ConsumerState<Home> {
             fontSize: 34
           ),
         ),
-        actions: [
-          Icon(Icons.send_outlined)
-        ],
+  actions: [
+    // IconButton(
+    //   icon: const Icon(Icons.send),
+    //   onPressed: () {
+    //     Navigator.push(
+    //       context,
+    //       MaterialPageRoute(builder: (context) => const Chats()),
+    //     );
+    //   },
+    // ),
+      IconButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const Chats()),
+      );
+    },
+    icon: SvgPicture.asset(
+      "assets/svgs/send.svg",
+      height: 24,
+      width: 24,
+      colorFilter: const ColorFilter.mode(
+        Colors.black,
+        BlendMode.srcIn,
+      ),
+    ),
+  ),
+  ],
       ),
       body: Column(
         children: [
