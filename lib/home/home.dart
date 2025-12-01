@@ -172,76 +172,90 @@ class _HomeState extends ConsumerState<Home> {
                                       //use 2 containers, the outer one with gradient and inner one with circle avatar
                                       //use first containers padding to create the border thickness effect
                                       //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
-                                      Container(
-                                        width: 80, // 2 * radius + border
-                                        height: 80, // 2 * radius + border
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors:
-                                                index % 2 == 0
-                                                    ? [
-                                                      const Color.fromARGB(
-                                                        255,
-                                                        103,
-                                                        1,
-                                                        121,
-                                                      ),
-                                                      const Color.fromARGB(
-                                                        255,
-                                                        255,
-                                                        64,
-                                                        50,
-                                                      ),
-                                                    ]
-                                                    : [
-                                                      const Color.fromARGB(
-                                                        255,
-                                                        255,
-                                                        64,
-                                                        50,
-                                                      ),
-                                                      const Color.fromARGB(
-                                                        255,
-                                                        103,
-                                                        1,
-                                                        121,
-                                                      ),
-                                                    ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(
-                                            5,
-                                          ), // border thickness
+                                      FutureBuilder(
+                                        future: ref.read(storyRepositoryProvider).hasUserWatchedAllStories(ownerId: currUser, currentUserId: ref.read(getUserProvider).value?.firebaseUID ?? ""  ),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState == ConnectionState.waiting) {
+                                            return CircularProgressIndicator();
+                                          }
+                                          if (snapshot.hasError) {
+                                            return Text("error");
+                                          }
+                                          final hasWatchedAllStories = snapshot.data ?? false;
 
-                                          child: Container(
+                                          return Container(
+                                            width: 80, // 2 * radius + border
+                                            height: 80, // 2 * radius + border
                                             decoration: BoxDecoration(
-                                              color: Colors.white,
+                                              color: hasWatchedAllStories? const Color.fromARGB(255, 200, 199, 199) : null,
+                                              gradient:!hasWatchedAllStories? LinearGradient(
+                                                colors:
+                                                    index % 2 == 0
+                                                        ? [
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            103,
+                                                            1,
+                                                            121,
+                                                          ),
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            255,
+                                                            64,
+                                                            50,
+                                                          ),
+                                                        ]
+                                                        : [
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            255,
+                                                            64,
+                                                            50,
+                                                          ),
+                                                          const Color.fromARGB(
+                                                            255,
+                                                            103,
+                                                            1,
+                                                            121,
+                                                          ),
+                                                        ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ):null,
                                               shape: BoxShape.circle,
                                             ),
-                                            padding: const EdgeInsets.all(
-                                              5,
-                                            ), // border thickness trick again
-                                            child: CircleAvatar(
-                                              radius: 32,
-                                              backgroundImage: CachedNetworkImageProvider(
-                                                currUser ==
-                                                        ref
-                                                            .read(
-                                                              getUserProvider,
-                                                            )
-                                                            .value
-                                                            ?.firebaseUID
-                                                    ? currUserProfile['profile']['dp']
-                                                    : currUserProfile['dp'] ??
-                                                        'https://www.pngitem.com/pimgs/m/150-1503941_user-profile-default-image-png-clipart-png-download.png',
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(
+                                                5,
+                                              ), // border thickness
+                                          
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                padding: const EdgeInsets.all(
+                                                  5,
+                                                ), // border thickness trick again
+                                                child: CircleAvatar(
+                                                  radius: 32,
+                                                  backgroundImage: CachedNetworkImageProvider(
+                                                    currUser ==
+                                                            ref
+                                                                .read(
+                                                                  getUserProvider,
+                                                                )
+                                                                .value
+                                                                ?.firebaseUID
+                                                        ? currUserProfile['profile']['dp']
+                                                        : currUserProfile['dp'] ??
+                                                            'https://www.pngitem.com/pimgs/m/150-1503941_user-profile-default-image-png-clipart-png-download.png',
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
+                                          );
+                                        }
                                       ),
                             ),
                             SizedBox(height: 5),

@@ -58,20 +58,21 @@ class _UserStoriesState extends ConsumerState<UserStories> {
   }
 
   void _startWatching() {
+    final currentUserId = ref.read(getUserProvider).value?.firebaseUID ?? "";
+
     final currStory = widget.userStories[currentStoryIndex];
-    print(
-      "ADDING VIEWER TO STOR ${currStory["userProfile"]["uid"]} ${currStory["storyId"]} ${ref.read(getUserProvider).value?.firebaseUID ?? ""}",
-    );
+
     ref
         .read(storyRepositoryProvider)
         .addStoryViewer(
           ownerId: currStory["userProfile"]["uid"],
           storyId: currStory["storyId"],
-          viewerId: ref.read(getUserProvider).value?.firebaseUID ?? "",
+          viewerId: currentUserId,
         );
+
     storyTimer?.cancel();
 
-    storyTimer = Timer.periodic(Duration(milliseconds: 700), (timer) {
+    storyTimer = Timer.periodic(const Duration(milliseconds: 700), (timer) {
       if (!mounted) return;
 
       setState(() {
@@ -79,10 +80,9 @@ class _UserStoriesState extends ConsumerState<UserStories> {
           if (percentageCoveredList[currentStoryIndex] + 0.01 < 1) {
             percentageCoveredList[currentStoryIndex] += 0.01;
           } else {
-            // done watching current story so add to viewer's list
             percentageCoveredList[currentStoryIndex] = 1;
-
             timer.cancel();
+
             if (currentStoryIndex < widget.userStories.length - 1) {
               currentStoryIndex++;
               _startWatching();
