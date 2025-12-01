@@ -15,19 +15,17 @@ import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
 import 'package:instagram/posts/screens/reels.dart';
-import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
-import 'package:instagram/stories/screens/user_stories.dart';
 
-class Home extends ConsumerWidget {
-  const Home({super.key});
+class Chats extends ConsumerWidget {
+  const Chats({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Map<String, dynamic> stories = {};
 
     return Scaffold(
-      appBar: AppBar(title: Text("Home")),
+      appBar: AppBar(title: Text("Chats")),
       body: ref
           .watch(getUserProvider)
           .when(
@@ -422,61 +420,6 @@ class Home extends ConsumerWidget {
                       );
                     },
                     child: Text("Watch reels"),
-                  ),
-                  FutureBuilder(
-                    future: ref.read(storyRepositoryProvider).getValidStories(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text("Unexpected error"));
-                      }
-
-                      final stories = snapshot.data ?? {};
-                      List users = stories.keys.toList();
-
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return Container(
-                          height: 140,
-                          width: double.infinity,
-                          color: Colors.red,
-                          child: ListView.builder(
-                            itemCount: users.length,
-                            scrollDirection: Axis.horizontal,
-
-                            itemBuilder: (context, index) {
-                              final currUser = users[index];
-
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return UserStories(
-                                          userStories: stories[currUser],
-                                        );
-                                      },
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  height: 100,
-                                  width: 100,
-                                  decoration: BoxDecoration(
-                                    color: Colors.green,
-
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(child: Text(currUser)),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      }
-                      return Text("unexpected error");
-                    },
                   ),
                 ],
               );

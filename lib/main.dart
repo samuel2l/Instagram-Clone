@@ -5,9 +5,10 @@ import 'package:giphy_get/l10n.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/firebase_options.dart';
-import 'package:instagram/home/screens/home.dart';
+import 'package:instagram/chat/screens/chats.dart';
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
+import 'package:instagram/home/home.dart';
 
 String? appId = dotenv.env["AGORA_APP_ID"];
 String? token = dotenv.env["AGORA_TEMP_TOKEN"];
