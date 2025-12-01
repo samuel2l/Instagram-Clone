@@ -24,12 +24,14 @@ class ProfileRepository {
     String? bio,
     BuildContext? context,
     bool isNew = true,
+    String? dp
   }) async {
     try {
       Map<String, dynamic> dataToUpdate = {};
 
       if (name != null) dataToUpdate['name'] = name;
       if (bio != null) dataToUpdate['bio'] = bio;
+      if(dp!=null)dataToUpdate['dp']=dp;  
 
       if (isNew) {
         dataToUpdate["followers"] = [];

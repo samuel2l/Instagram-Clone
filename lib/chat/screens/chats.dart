@@ -181,9 +181,13 @@ class Chats extends ConsumerWidget {
                           .read(profileRepositoryProvider)
                           .createOrUpdateUserProfile(
                             uid: FirebaseAuth.instance.currentUser!.uid,
-                            bio: "seventh user of app",
-                            name: "Saani Deishini",
+                            bio: "nth user of app",
+                            name: "Evans Acheampong",
+                            dp: "https://plus.unsplash.com/premium_photo-1764435536930-c93558fa72c6?q=80&w=3023&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                             context: context,
+
+
+                            
                           );
                     },
                     child: Text("Create profile sharp sharp"),
@@ -233,7 +237,7 @@ class Chats extends ConsumerWidget {
                             ),
                             Text(userData.profile.bio),
                             CircleAvatar(
-                              // minRadius: 50,
+
                               backgroundImage: NetworkImage(
                                 userData.profile.dp,
                               ),

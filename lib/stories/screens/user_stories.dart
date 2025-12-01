@@ -7,7 +7,7 @@ import 'package:instagram/stories/widgets/story_bars.dart';
 
 class UserStories extends ConsumerStatefulWidget {
   const UserStories({super.key, required this.userStories});
-  final List userStories;
+  final List<Map<String,dynamic>> userStories;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _UserStoriesState();

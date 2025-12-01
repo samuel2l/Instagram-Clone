@@ -37,44 +37,47 @@ class StoryRepository {
     }
   }
 
-  Future<Map<String, dynamic>> getValidStories() async {
-    final firestore = FirebaseFirestore.instance;
+Future<Map<String, List<Map<String, dynamic>>>> getValidStories() async {
+  final firestore = FirebaseFirestore.instance;
 
-    Map<String, List> allStories = {};
+  Map<String, List<Map<String, dynamic>>> allStories = {};
 
-    try {
-      // Get all users with stories
-      final storiesSnapshot = await firestore.collection('stories').get();
+  try {
+    // Get all users with stories
+    final storiesSnapshot = await firestore.collection('stories').get();
 
-      for (final userDoc in storiesSnapshot.docs) {
-        // Get all userStories for this user, ordered by timestamp descending
-        final userStoriesSnapshot =
-            await userDoc.reference
-                .collection('userStories')
-                .orderBy('timestamp', descending: true)
-                .get();
+    for (final userDoc in storiesSnapshot.docs) {
+      // Fetch user profile once
+      final userProfileDoc = await firestore.collection('users').doc(userDoc.id).get();
 
-        for (final storyDoc in userStoriesSnapshot.docs) {
-          if (allStories.containsKey(userDoc.id)) {
-            allStories[userDoc.id]!.add({
-              'storyId': storyDoc.id,
-              ...storyDoc.data(),
-            });
-          } else {
-            allStories[userDoc.id] = [
-              {
-                'storyId': storyDoc.id,
-                ...storyDoc.data(),
-              },
-            ];
-          }
+      Map<String, dynamic>? userProfile = userProfileDoc.exists ? userProfileDoc.data() : null;
+      print("user profile doc? $userProfile"); 
+
+      // Get all userStories for this user, ordered by timestamp descending
+      final userStoriesSnapshot = await userDoc.reference
+          .collection('userStories')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      for (final storyDoc in userStoriesSnapshot.docs) {
+        final storyData = {
+          'storyId': storyDoc.id,
+          ...storyDoc.data(),
+          'userProfile': userProfile, // attach user profile here
+        };
+
+        if (allStories.containsKey(userDoc.id)) {
+          allStories[userDoc.id]!.add(storyData);
+        } else {
+          allStories[userDoc.id] = [storyData];
         }
       }
-
-      return allStories;
-    } catch (e) {
-      print('Error fetching stories: $e');
-      return {};
     }
+
+    return allStories;
+  } catch (e) {
+    print('Error fetching stories with user details: $e');
+    return {};
   }
+}
 }
