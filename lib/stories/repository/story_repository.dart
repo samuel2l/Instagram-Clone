@@ -37,22 +37,36 @@ class StoryRepository {
     }
   }
 
-Future<Map<String, List<Map<String, dynamic>>>> getValidStories(currentUserId) async {
+  Future<Map<String, List<Map<String, dynamic>>>> getValidStories(
+  String? currentUserId,
+) async {
   final firestore = FirebaseFirestore.instance;
- 
 
   Map<String, List<Map<String, dynamic>>> allStories = {};
 
   try {
-    // Get all users with stories
+    if (currentUserId == null) return {};
+
+    final currentUserDoc =
+        await firestore.collection('users').doc(currentUserId).get();
+
+    final List<String> following =
+        List<String>.from(currentUserDoc.data()?['following'] ?? []);
+
     final storiesSnapshot = await firestore.collection('stories').get();
 
     for (final userDoc in storiesSnapshot.docs) {
-      // Fetch user profile once
-      final userProfileDoc = await firestore.collection('users').doc(userDoc.id).get();
-      Map<String, dynamic>? userProfile = userProfileDoc.exists ? userProfileDoc.data() : null;
 
-      // Get all userStories for this user, ordered by timestamp descending
+      if (userDoc.id != currentUserId && !following.contains(userDoc.id)) {
+        continue;
+      }
+
+      final userProfileDoc =
+          await firestore.collection('users').doc(userDoc.id).get();
+
+      Map<String, dynamic>? userProfile =
+          userProfileDoc.exists ? userProfileDoc.data() : null;
+
       final userStoriesSnapshot = await userDoc.reference
           .collection('userStories')
           .orderBy('timestamp', descending: true)
@@ -69,19 +83,11 @@ Future<Map<String, List<Map<String, dynamic>>>> getValidStories(currentUserId) a
       allStories[userDoc.id] = userStoryList;
     }
 
-    // Prepare final map with current user first
-    Map<String, List<Map<String, dynamic>>> orderedStories = {};
+    // add current user is first
+    Map<String, List<Map<String, dynamic>>> orderedStories = {
+      currentUserId: allStories[currentUserId] ?? []
+    };
 
-    if (currentUserId != null) {
-      // Fetch current user's profile
-      final currentUserProfileDoc = await firestore.collection('users').doc(currentUserId).get();
-      final currentUserProfile = currentUserProfileDoc.exists ? currentUserProfileDoc.data() : null;
-
-      // Add current user first
-      orderedStories[currentUserId] = allStories[currentUserId] ?? [];
-    }
-
-    // Add the rest of the users (excluding current user)
     allStories.forEach((userId, stories) {
       if (userId != currentUserId) {
         orderedStories[userId] = stories;
@@ -94,4 +100,4 @@ Future<Map<String, List<Map<String, dynamic>>>> getValidStories(currentUserId) a
     return {};
   }
 }
-}
+  }
