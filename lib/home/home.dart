@@ -48,10 +48,6 @@ class _HomeState extends ConsumerState<Home> {
               "assets/svgs/send.svg",
               height: 24,
               width: 24,
-              colorFilter: const ColorFilter.mode(
-                Colors.black,
-                BlendMode.srcIn,
-              ),
             ),
           ),
         ],
@@ -83,45 +79,97 @@ class _HomeState extends ConsumerState<Home> {
                       print("curr user??? $currUser");
                       final currUserProfile =
                           stories[currUser]?[0]["userProfile"];
+                      print("curr user profile??? $currUserProfile");
 
                       return SizedBox(
                         width: 100,
                         child: Column(
-                          children: [GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return
-                                    // Center(child: Text("User Stories here"));
-                                    UserStories(userStories: stories[currUser]!);
-                                  },
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => UserStories(
+                                          userStories: stories[currUser]!,
+                                        ),
+                                  ),
+                                );
+                              },
+                              //trick to create the gradient border around the avatar
+                              //use 2 containers, the outer one with gradient and inner one with circle avatar
+                              //use first containers padding to create the border thickness effect
+                              //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
+                              child: Container(
+                                width: 80, // 2 * radius + border
+                                height: 80, // 2 * radius + border
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors:
+                                        index % 2 == 0
+                                            ? [
+                                              const Color.fromARGB(
+                                                255,
+                                                103,
+                                                1,
+                                                121,
+                                              ),
+                                              const Color.fromARGB(
+                                                255,
+                                                255,
+                                                64,
+                                                50,
+                                              ),
+                                            ]
+                                            : [
+                                              const Color.fromARGB(
+                                                255,
+                                                255,
+                                                64,
+                                                50,
+                                              ),
+                                              const Color.fromARGB(
+                                                255,
+                                                103,
+                                                1,
+                                                121,
+                                              ),
+                                            ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
                                 ),
-                              );
-                            },
-                            child: Container(
-                              height: 100,
-                              width: 100,
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                          
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: CachedNetworkImage(
-                                  imageUrl:
-                                      currUserProfile?['dp'] ??
-                                      "https://plus.unsplash.com/premium_photo-1764435536930-c93558fa72c6?q=80&w=3023&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                                child: Padding(
+                                  padding: const EdgeInsets.all(
+                                    5,
+                                  ), // border thickness
+
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    padding: const EdgeInsets.all(
+                                      5,
+                                    ), // border thickness trick again
+                                    child: CircleAvatar(
+                                      radius: 32,
+                                      backgroundImage: CachedNetworkImageProvider(
+                                        currUserProfile['dp'] ??
+                                            'https://www.pngitem.com/pimgs/m/150-1503941_user-profile-default-image-png-clipart-png-download.png',
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                             SizedBox(height: 5),
                             Text(
-                              currUserProfile?['email'].split('@')[0] ,
+                              currUserProfile?['email'].split('@')[0],
                               style: TextStyle(fontSize: 16),
                             ),
-                          ],  
+                          ],
                         ),
                       );
                     },
