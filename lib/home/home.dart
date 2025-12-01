@@ -1,9 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
+import 'package:instagram/stories/screens/post_story.dart';
+import 'package:instagram/stories/screens/select_story_image.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
 import 'package:instagram/chat/screens/chats.dart';
 
@@ -15,6 +20,8 @@ class Home extends ConsumerStatefulWidget {
 }
 
 class _HomeState extends ConsumerState<Home> {
+  bool currentUserHasStory = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +62,9 @@ class _HomeState extends ConsumerState<Home> {
       body: Column(
         children: [
           FutureBuilder(
-            future: ref.read(storyRepositoryProvider).getValidStories(),
+            future: ref
+                .read(storyRepositoryProvider)
+                .getValidStories(ref.read(getUserProvider).value?.firebaseUID),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
@@ -76,10 +85,16 @@ class _HomeState extends ConsumerState<Home> {
 
                     itemBuilder: (context, index) {
                       final currUser = users[index];
-                      print("curr user??? $currUser");
-                      final currUserProfile =
-                          stories[currUser]?[0]["userProfile"];
-                      print("curr user profile??? $currUserProfile");
+                      var currUserProfile;
+                      if (stories[currUser] != null &&
+                          stories[currUser]!.isNotEmpty) {
+                        currUserProfile = stories[currUser]?[0]["userProfile"];
+                      } else {
+                        //the only time a user will be returned even if they have no stories is when they are the current user
+                        currUserProfile =
+                            ref.read(getUserProvider).value?.toMap();
+                        currentUserHasStory = false;
+                      }
 
                       return SizedBox(
                         width: 100,
@@ -96,73 +111,141 @@ class _HomeState extends ConsumerState<Home> {
                                   ),
                                 );
                               },
-                              //trick to create the gradient border around the avatar
-                              //use 2 containers, the outer one with gradient and inner one with circle avatar
-                              //use first containers padding to create the border thickness effect
-                              //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
-                              child: Container(
-                                width: 80, // 2 * radius + border
-                                height: 80, // 2 * radius + border
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors:
-                                        index % 2 == 0
-                                            ? [
-                                              const Color.fromARGB(
-                                                255,
-                                                103,
-                                                1,
-                                                121,
-                                              ),
-                                              const Color.fromARGB(
-                                                255,
-                                                255,
-                                                64,
-                                                50,
-                                              ),
-                                            ]
-                                            : [
-                                              const Color.fromARGB(
-                                                255,
-                                                255,
-                                                64,
-                                                50,
-                                              ),
-                                              const Color.fromARGB(
-                                                255,
-                                                103,
-                                                1,
-                                                121,
-                                              ),
-                                            ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(
-                                    5,
-                                  ), // border thickness
 
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    padding: const EdgeInsets.all(
-                                      5,
-                                    ), // border thickness trick again
-                                    child: CircleAvatar(
-                                      radius: 32,
-                                      backgroundImage: CachedNetworkImageProvider(
-                                        currUserProfile['dp'] ??
-                                            'https://www.pngitem.com/pimgs/m/150-1503941_user-profile-default-image-png-clipart-png-download.png',
+                              child:
+                                  //if user has no story then its just a circle avatar with dp and a plus icon to post
+                                  currUser ==
+                                              ref
+                                                  .read(getUserProvider)
+                                                  .value
+                                                  ?.firebaseUID &&
+                                          !currentUserHasStory
+                                      ? Stack(
+                                        children: [
+                                          Container(
+                                            width: 80, // 2 * radius + border
+                                            height: 80,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: CircleAvatar(
+                                              radius: 80,
+                                              backgroundImage:
+                                                  CachedNetworkImageProvider(
+                                                    currUserProfile['profile']['dp'],
+                                                  ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            bottom: 0,
+                                            right: 0,
+                                            child: Container(
+                                              padding: EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Container(
+                                                padding: EdgeInsets.all(2),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: GestureDetector(
+                                                  onTap: (){
+                                                    Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            SelectStoryImage(),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Icon(
+                                                    Icons.add,
+                                                    size: 16,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                      :
+                                      //trick to create the gradient border around the avatar
+                                      //use 2 containers, the outer one with gradient and inner one with circle avatar
+                                      //use first containers padding to create the border thickness effect
+                                      //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
+                                      Container(
+                                        width: 80, // 2 * radius + border
+                                        height: 80, // 2 * radius + border
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors:
+                                                index % 2 == 0
+                                                    ? [
+                                                      const Color.fromARGB(
+                                                        255,
+                                                        103,
+                                                        1,
+                                                        121,
+                                                      ),
+                                                      const Color.fromARGB(
+                                                        255,
+                                                        255,
+                                                        64,
+                                                        50,
+                                                      ),
+                                                    ]
+                                                    : [
+                                                      const Color.fromARGB(
+                                                        255,
+                                                        255,
+                                                        64,
+                                                        50,
+                                                      ),
+                                                      const Color.fromARGB(
+                                                        255,
+                                                        103,
+                                                        1,
+                                                        121,
+                                                      ),
+                                                    ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(
+                                            5,
+                                          ), // border thickness
+
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            padding: const EdgeInsets.all(
+                                              5,
+                                            ), // border thickness trick again
+                                            child: CircleAvatar(
+                                              radius: 32,
+                                              backgroundImage: CachedNetworkImageProvider(
+                                                currUser ==
+                                                        ref
+                                                            .read(
+                                                              getUserProvider,
+                                                            )
+                                                            .value
+                                                            ?.firebaseUID
+                                                    ? currUserProfile['profile']['dp']
+                                                    : currUserProfile['dp'] ??
+                                                        'https://www.pngitem.com/pimgs/m/150-1503941_user-profile-default-image-png-clipart-png-download.png',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                ),
-                              ),
                             ),
                             SizedBox(height: 5),
                             Text(

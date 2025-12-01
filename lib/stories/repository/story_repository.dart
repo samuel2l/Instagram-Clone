@@ -37,8 +37,9 @@ class StoryRepository {
     }
   }
 
-Future<Map<String, List<Map<String, dynamic>>>> getValidStories() async {
+Future<Map<String, List<Map<String, dynamic>>>> getValidStories(currentUserId) async {
   final firestore = FirebaseFirestore.instance;
+ 
 
   Map<String, List<Map<String, dynamic>>> allStories = {};
 
@@ -49,9 +50,7 @@ Future<Map<String, List<Map<String, dynamic>>>> getValidStories() async {
     for (final userDoc in storiesSnapshot.docs) {
       // Fetch user profile once
       final userProfileDoc = await firestore.collection('users').doc(userDoc.id).get();
-
       Map<String, dynamic>? userProfile = userProfileDoc.exists ? userProfileDoc.data() : null;
-      print("user profile doc? $userProfile"); 
 
       // Get all userStories for this user, ordered by timestamp descending
       final userStoriesSnapshot = await userDoc.reference
@@ -59,22 +58,37 @@ Future<Map<String, List<Map<String, dynamic>>>> getValidStories() async {
           .orderBy('timestamp', descending: true)
           .get();
 
-      for (final storyDoc in userStoriesSnapshot.docs) {
-        final storyData = {
+      final userStoryList = userStoriesSnapshot.docs.map((storyDoc) {
+        return {
           'storyId': storyDoc.id,
           ...storyDoc.data(),
-          'userProfile': userProfile, // attach user profile here
+          'userProfile': userProfile,
         };
+      }).toList();
 
-        if (allStories.containsKey(userDoc.id)) {
-          allStories[userDoc.id]!.add(storyData);
-        } else {
-          allStories[userDoc.id] = [storyData];
-        }
-      }
+      allStories[userDoc.id] = userStoryList;
     }
 
-    return allStories;
+    // Prepare final map with current user first
+    Map<String, List<Map<String, dynamic>>> orderedStories = {};
+
+    if (currentUserId != null) {
+      // Fetch current user's profile
+      final currentUserProfileDoc = await firestore.collection('users').doc(currentUserId).get();
+      final currentUserProfile = currentUserProfileDoc.exists ? currentUserProfileDoc.data() : null;
+
+      // Add current user first
+      orderedStories[currentUserId] = allStories[currentUserId] ?? [];
+    }
+
+    // Add the rest of the users (excluding current user)
+    allStories.forEach((userId, stories) {
+      if (userId != currentUserId) {
+        orderedStories[userId] = stories;
+      }
+    });
+
+    return orderedStories;
   } catch (e) {
     print('Error fetching stories with user details: $e');
     return {};

@@ -39,6 +39,7 @@ class AppUserModel {
     return <String, dynamic>{
       'email': email,
       'uid': firebaseUID,
+      "profile":  profile.toMap(),
       'createdAt': createdAt,
     };
   }

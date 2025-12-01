@@ -12,4 +12,15 @@ class Profile {
     required this.bio,
     required this.dp,
   });
+    Map<String, dynamic> toMap() {
+    return {
+      'followers': followers,
+      'following': following,
+      'name': name,
+      'bio': bio,
+      'dp': dp,
+    };
+  }
+
+
 }
