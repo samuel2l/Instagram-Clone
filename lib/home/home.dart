@@ -15,7 +15,20 @@ class _HomeState extends ConsumerState<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Home")),
+      appBar: AppBar(
+        leading: Icon(Icons.add),
+        title: Text(
+          "Instagram",
+          style: TextStyle(
+            fontFamily: 'ImperialScript',
+            fontWeight: FontWeight.bold,
+            fontSize: 34
+          ),
+        ),
+        actions: [
+          Icon(Icons.send_outlined)
+        ],
+      ),
       body: Column(
         children: [
           FutureBuilder(
