@@ -31,6 +31,9 @@ class StoryRepository {
         'timestamp': FieldValue.serverTimestamp(),
         'watchers': <String>[],
       });
+      await firestore.collection('users').doc(userId).update({
+        'hasStory': true,
+      });
       return true;
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
@@ -156,35 +159,34 @@ class StoryRepository {
       return false;
     }
   }
-  Future<List<Map<String, dynamic>>> getUserStories(
-  String userId,
-) async {
-  try {
-    final userProfileDoc =
-        await firestore.collection('users').doc(userId).get();
 
-    if (!userProfileDoc.exists) return [];
+  Future<List<Map<String, dynamic>>> getUserStories(String userId) async {
+    try {
+      final userProfileDoc =
+          await firestore.collection('users').doc(userId).get();
 
-    final userProfile = userProfileDoc.data();
+      if (!userProfileDoc.exists) return [];
 
-    final userStoriesSnapshot = await firestore
-        .collection('stories')
-        .doc(userId)
-        .collection('userStories')
-        .orderBy('timestamp', descending: true)
-        .get();
+      final userProfile = userProfileDoc.data();
 
-    return userStoriesSnapshot.docs.map((storyDoc) {
-      return {
-        'storyId': storyDoc.id,
-        ...storyDoc.data(),
-        'userProfile': userProfile,
-      };
-    }).toList();
+      final userStoriesSnapshot =
+          await firestore
+              .collection('stories')
+              .doc(userId)
+              .collection('userStories')
+              .orderBy('timestamp', descending: true)
+              .get();
 
-  } catch (e) {
-    print('Error getting user stories: $e');
-    return [];
+      return userStoriesSnapshot.docs.map((storyDoc) {
+        return {
+          'storyId': storyDoc.id,
+          ...storyDoc.data(),
+          'userProfile': userProfile,
+        };
+      }).toList();
+    } catch (e) {
+      print('Error getting user stories: $e');
+      return [];
+    }
   }
-}
 }
