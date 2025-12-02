@@ -156,4 +156,35 @@ class StoryRepository {
       return false;
     }
   }
+  Future<List<Map<String, dynamic>>> getUserStories(
+  String userId,
+) async {
+  try {
+    final userProfileDoc =
+        await firestore.collection('users').doc(userId).get();
+
+    if (!userProfileDoc.exists) return [];
+
+    final userProfile = userProfileDoc.data();
+
+    final userStoriesSnapshot = await firestore
+        .collection('stories')
+        .doc(userId)
+        .collection('userStories')
+        .orderBy('timestamp', descending: true)
+        .get();
+
+    return userStoriesSnapshot.docs.map((storyDoc) {
+      return {
+        'storyId': storyDoc.id,
+        ...storyDoc.data(),
+        'userProfile': userProfile,
+      };
+    }).toList();
+
+  } catch (e) {
+    print('Error getting user stories: $e');
+    return [];
+  }
+}
 }
