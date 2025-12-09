@@ -7,7 +7,8 @@ import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/firebase_options.dart';
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
-import 'package:instagram/home/home.dart';
+import 'package:instagram/home/screens/home.dart';
+import 'package:instagram/posts/screens/create_post.dart';
 
 String? appId = dotenv.env["AGORA_APP_ID"];
 String? token = dotenv.env["AGORA_TEMP_TOKEN"];
@@ -30,6 +31,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
 
       locale: Locale("fr"),
       localizationsDelegates: [
@@ -40,22 +42,21 @@ class MyApp extends ConsumerWidget {
       ],
       supportedLocales: [Locale("en"), Locale("fr")],
 
-
       home: ref
           .watch(getUserProvider)
           .when(
             data: (data) {
+
               return data == null ? const SignUp() : Home();
             },
-            error: (error, stackTrace) => Center(child: Text(error.toString())),
+            error: (error, stackTrace) {
+ 
+              return Center(child: Text(error.toString()  ));
+            },
             loading: () => Center(child: CircularProgressIndicator()),
           ),
 
       // home: CreatePost(),
- 
     );
   }
 }
-
-
-

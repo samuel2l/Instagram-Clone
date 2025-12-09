@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
-import 'package:instagram/home/home.dart';
+import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/utils/utils.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
@@ -84,10 +84,7 @@ class AuthRepository {
     BuildContext context,
   ) async {
     try {
- await auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await auth.signInWithEmailAndPassword(email: email, password: password);
 
       Navigator.of(
         context,
@@ -146,6 +143,7 @@ class AuthRepository {
 
   Future<AppUserModel?> getUser() async {
     final curr = auth.currentUser;
+    print("ah curr? $curr");
 
     if (curr == null) {
       return null;
@@ -153,11 +151,12 @@ class AuthRepository {
 
     var userData =
         await firestore.collection('users').doc(auth.currentUser!.uid).get();
+
+        print("user data?? ${userData.data()}");
     AppUserModel? user;
     if (userData.data() != null) {
       user = AppUserModel.fromMap(userData.data()!);
     }
-
 
     return user;
   }

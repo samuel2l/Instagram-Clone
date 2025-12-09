@@ -24,14 +24,14 @@ class ProfileRepository {
     String? bio,
     BuildContext? context,
     bool isNew = true,
-    String? dp
+    String? dp,
   }) async {
     try {
       Map<String, dynamic> dataToUpdate = {};
 
       if (name != null) dataToUpdate['name'] = name;
       if (bio != null) dataToUpdate['bio'] = bio;
-      if(dp!=null)dataToUpdate['dp']=dp;  
+      if (dp != null) dataToUpdate['dp'] = dp;
 
       if (isNew) {
         dataToUpdate["followers"] = [];
@@ -55,118 +55,128 @@ class ProfileRepository {
       }
     }
   }
-Stream<Map<String, dynamic>?> getUserProfile({
-  required String uid,
-  BuildContext? context,
-}) {
-  final firestore = FirebaseFirestore.instance;
 
-  return firestore.collection('users').doc(uid).snapshots().map((docSnapshot) {
-    if (docSnapshot.exists) {
-      return docSnapshot.data();
-    } else {
-      if (context != null) {
-        showSnackBar(context: context, content: 'User profile not found.');
-      }
-      return null;
-    }
-  }).handleError((e) {
-    if (context != null) {
-      showSnackBar(context: context, content: 'Error fetching profile: $e');
-    }
-  });
-}  
+  Stream<Map<String, dynamic>?> getUserProfile({
+    required String uid,
+    BuildContext? context,
+  }) {
+    final firestore = FirebaseFirestore.instance;
+    print("Fetching profile for UID: $uid");
+
+    return firestore
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((docSnapshot) {
+          if (docSnapshot.exists) {
+            return docSnapshot.data();
+          } else {
+            if (context != null) {
+              showSnackBar(
+                context: context,
+                content: 'User profile not found.',
+              );
+            }
+            return null;
+          }
+        })
+        .handleError((e) {
+          if (context != null) {
+            print("profile error: $e");
+            print(e);
+            showSnackBar(
+              context: context,
+              content: 'Error fetching profile: $e',
+            );
+          }
+        });
+  }
+
   Future<void> followUser({
+    required String targetUserId,
+    BuildContext? context,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
 
-  required String targetUserId,
-  BuildContext? context,
-}) async {
-  try {
-    final firestore = FirebaseFirestore.instance;
+      final currentUserRef = firestore
+          .collection('users')
+          .doc(auth.currentUser!.uid);
+      final targetUserRef = firestore.collection('users').doc(targetUserId);
 
+      final batch = firestore.batch();
 
-    final currentUserRef = firestore.collection('users').doc(auth.currentUser!.uid);
-    final targetUserRef = firestore.collection('users').doc(targetUserId);
+      batch.update(currentUserRef, {
+        'following': FieldValue.arrayUnion([targetUserId]),
+      });
 
-    final batch = firestore.batch();
+      batch.update(targetUserRef, {
+        'followers': FieldValue.arrayUnion([auth.currentUser!.uid]),
+      });
 
-    batch.update(currentUserRef, {
-      'following': FieldValue.arrayUnion([targetUserId]),
-    });
+      await batch.commit();
 
-    batch.update(targetUserRef, {
-      'followers': FieldValue.arrayUnion([auth.currentUser!.uid]),
-    });
-
-    await batch.commit();
-
-    if (context != null) {
-      showSnackBar(
-        context: context,
-        content: "You are now following this user",
-      );
-    }
-  } catch (e) {
-    if (context != null) {
-      showSnackBar(
-        context: context,
-        content: 'Error following user: $e',
-      );
+      if (context != null) {
+        showSnackBar(
+          context: context,
+          content: "You are now following this user",
+        );
+      }
+    } catch (e) {
+      if (context != null) {
+        showSnackBar(context: context, content: 'Error following user: $e');
+      }
     }
   }
-}
 
-Stream<bool> isFollowing({
-  required String targetUid,
-}) {
-  return FirebaseFirestore.instance
-      .collection('users')
-      .doc(targetUid)
-      .snapshots()
-      .map((doc) {
-    if (!doc.exists) return false;
+  Stream<bool> isFollowing({required String targetUid}) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(targetUid)
+        .snapshots()
+        .map((doc) {
+          if (!doc.exists) return false;
 
-    final data = doc.data() as Map<String, dynamic>;
-    final followers = List<String>.from(data['followers'] ?? []);
-    return followers.contains(auth.currentUser!.uid);
-  });
-}
+          final data = doc.data() as Map<String, dynamic>;
+          final followers = List<String>.from(data['followers'] ?? []);
+          return followers.contains(auth.currentUser!.uid);
+        });
+  }
 
-Future<void> unfollowUser({
-  required String targetUserId,
-  BuildContext? context,
-}) async {
-  try {
-    final firestore = FirebaseFirestore.instance;
+  Future<void> unfollowUser({
+    required String targetUserId,
+    BuildContext? context,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
 
-    final currentUserRef = firestore.collection('users').doc(auth.currentUser!.uid);
-    final targetUserRef = firestore.collection('users').doc(targetUserId);
+      final currentUserRef = firestore
+          .collection('users')
+          .doc(auth.currentUser!.uid);
+      final targetUserRef = firestore.collection('users').doc(targetUserId);
 
-    final batch = firestore.batch();
+      final batch = firestore.batch();
 
-    batch.update(currentUserRef, {
-      'following': FieldValue.arrayRemove([targetUserId]),
-    });
+      batch.update(currentUserRef, {
+        'following': FieldValue.arrayRemove([targetUserId]),
+      });
 
-    batch.update(targetUserRef, {
-      'followers': FieldValue.arrayRemove([auth.currentUser!.uid]),
-    });
+      batch.update(targetUserRef, {
+        'followers': FieldValue.arrayRemove([auth.currentUser!.uid]),
+      });
 
-    await batch.commit();
+      await batch.commit();
 
-    if (context != null) {
-      showSnackBar(
-        context: context,
-        content: "You have unfollowed this user",
-      );
-    }
-  } catch (e) {
-    if (context != null) {
-      showSnackBar(
-        context: context,
-        content: 'Error unfollowing user: $e',
-      );
+      if (context != null) {
+        showSnackBar(
+          context: context,
+          content: "You have unfollowed this user",
+        );
+      }
+    } catch (e) {
+      if (context != null) {
+        showSnackBar(context: context, content: 'Error unfollowing user: $e');
+      }
     }
   }
-}
 }
