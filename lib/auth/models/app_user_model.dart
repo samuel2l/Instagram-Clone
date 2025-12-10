@@ -7,7 +7,6 @@ import 'package:instagram/profile/models/profile.dart';
 class AppUserModel {
   final String email;
   final String firebaseUID;
-  final String username;
   final String createdAt;
   final Profile profile;
 
@@ -15,7 +14,6 @@ class AppUserModel {
     required this.email,
     required this.firebaseUID,
     required this.createdAt,
-    required this.username,
     required this.profile,
   });
 
@@ -23,14 +21,13 @@ class AppUserModel {
     String? email,
     String? firebaseUID,
     String? createdAt,
-    String? username,
+
     Profile? profile,
   }) {
     return AppUserModel(
       email: email ?? this.email,
       firebaseUID: firebaseUID ?? this.firebaseUID,
       createdAt: createdAt ?? this.createdAt,
-      username: username ?? this.username,
       profile: profile ?? this.profile,
     );
   }
@@ -39,6 +36,7 @@ class AppUserModel {
     return <String, dynamic>{
       'email': email,
       'uid': firebaseUID,
+
       "profile":  profile.toMap(),
       'createdAt': createdAt,
     };
@@ -51,10 +49,13 @@ class AppUserModel {
       email: map['email'] as String,
       firebaseUID: map['uid'] as String,
       createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(),
-      username: map['username'] ?? "",
+      
       profile: Profile(
         bio: map["bio"] ?? "",
         name: map["name"] ?? "",
+        username: map['username'] ?? "",
+        hasStory: map["hasStory"] ?? false,
+
         followers:  List<String>.from(map["followers"]??[]) ,
         following: List<String>.from(map["following"]??[]),
         dp:

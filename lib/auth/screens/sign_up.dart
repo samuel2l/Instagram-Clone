@@ -25,7 +25,7 @@ class _SignUpState extends ConsumerState<SignUp> {
             key: formKey,
             child: Column(
               children: [
-                TextFormField(controller: emailController),
+                TextFormField(controller: emailController,),
                 TextFormField(controller: usernameController),
 
                 TextFormField(

@@ -7,10 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/home/screens/home.dart';
+import 'package:instagram/profile/repository/profile_repository.dart';
 import 'package:instagram/utils/utils.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository(
+    ref:ref,
     auth: FirebaseAuth.instance,
     firestore: FirebaseFirestore.instance,
   ),
@@ -21,10 +23,11 @@ final getUserProvider = FutureProvider<AppUserModel?>((ref) {
 });
 
 class AuthRepository {
+  final Ref ref;
   final FirebaseAuth auth;
   final FirebaseFirestore firestore;
 
-  AuthRepository({required this.auth, required this.firestore});
+  AuthRepository({required this.auth, required this.firestore,required this.ref});
   Future<void> createUser(
     String email,
     String password,
@@ -36,6 +39,7 @@ class AuthRepository {
         email: email,
         password: password,
       );
+      print("created user? ${userCredential.user?.uid}");
       // showSnackBar(
       //   context: context,
       //   content: "User created: ${userCredential.user?.uid}",
@@ -53,6 +57,16 @@ class AuthRepository {
 
         'createdAt': FieldValue.serverTimestamp(),
       });
+      await ref
+          .read(profileRepositoryProvider)
+          .createOrUpdateUserProfile(
+            uid: FirebaseAuth.instance.currentUser!.uid,
+            bio: " Hey I am a user of this app",
+            name: username,
+            dp:
+                "https://plus.unsplash.com/premium_photo-1764435536930-c93558fa72c6?q=80&w=3023&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            context: context,
+          );
 
       Navigator.of(context).push(
         MaterialPageRoute(

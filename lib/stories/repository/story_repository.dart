@@ -55,6 +55,8 @@ class StoryRepository {
       final currentUserDoc =
           await firestore.collection('users').doc(currentUserId).get();
 
+      print("current user doc data? ${currentUserDoc.data()} ");
+
       final List<String> following = List<String>.from(
         currentUserDoc.data()?['following'] ?? [],
       );
@@ -68,6 +70,8 @@ class StoryRepository {
 
         final userProfileDoc =
             await firestore.collection('users').doc(userDoc.id).get();
+
+            print("user profile doc data? ${userProfileDoc.data()} ");  
 
         Map<String, dynamic>? userProfile =
             userProfileDoc.exists ? userProfileDoc.data() : null;
@@ -101,7 +105,7 @@ class StoryRepository {
           orderedStories[userId] = stories;
         }
       });
-      print("in the func?????? $allStories");
+      print("in the func?????? $orderedStories");
 
       return orderedStories;
     } catch (e) {

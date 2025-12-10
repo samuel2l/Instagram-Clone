@@ -93,6 +93,7 @@ class _HomeState extends ConsumerState<Home> {
                         currentUserHasStory = false;
                       }
 
+print("the curr user profile? $currUserProfile"); 
                       return SizedBox(
                         width: 100,
                         child: Column(
@@ -247,7 +248,7 @@ class _HomeState extends ConsumerState<Home> {
                                                                 )
                                                                 .value
                                                                 ?.firebaseUID
-                                                        ? currUserProfile['profile']['dp']
+                                                        ? currUserProfile['dp']
                                                         : currUserProfile['dp'] ??
                                                             'https://www.pngitem.com/pimgs/m/150-1503941_user-profile-default-image-png-clipart-png-download.png',
                                                   ),
@@ -260,7 +261,7 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                             SizedBox(height: 5),
                             Text(
-                              currUserProfile?['email'].split('@')[0],
+                              currUserProfile?['username'],
                               style: TextStyle(fontSize: 16),
                             ),
                           ],
