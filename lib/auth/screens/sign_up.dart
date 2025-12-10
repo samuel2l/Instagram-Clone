@@ -12,6 +12,7 @@ class SignUp extends ConsumerStatefulWidget {
 
 class _SignUpState extends ConsumerState<SignUp> {
   TextEditingController emailController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   @override
@@ -37,9 +38,10 @@ class _SignUpState extends ConsumerState<SignUp> {
               if (formKey.currentState!.validate()) {
                 ref
                     .read(authRepositoryProvider)
-                    .signUp(
+                    .createUser(
                       emailController.text.trim(),
                       passwordController.text.trim(),
+
                       context,
                     );
               }

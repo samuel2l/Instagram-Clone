@@ -46,12 +46,13 @@ class MyApp extends ConsumerWidget {
           .watch(getUserProvider)
           .when(
             data: (data) {
-
               return data == null ? const SignUp() : Home();
             },
             error: (error, stackTrace) {
- 
-              return Center(child: Text(error.toString()  ));
+              print(stackTrace);
+              print("rthe error is ");
+              print(error);
+              return Center(child: Text(error.toString()));
             },
             loading: () => Center(child: CircularProgressIndicator()),
           ),

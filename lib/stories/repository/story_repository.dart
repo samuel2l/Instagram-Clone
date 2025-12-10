@@ -44,6 +44,7 @@ class StoryRepository {
   Future<Map<String, List<Map<String, dynamic>>>> getValidStories(
     String? currentUserId,
   ) async {
+    print("GETTING VALID STORIES IN REPO $currentUserId");
     final firestore = FirebaseFirestore.instance;
 
     Map<String, List<Map<String, dynamic>>> allStories = {};
