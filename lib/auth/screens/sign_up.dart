@@ -12,7 +12,7 @@ class SignUp extends ConsumerStatefulWidget {
 
 class _SignUpState extends ConsumerState<SignUp> {
   TextEditingController emailController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   @override
@@ -26,6 +26,8 @@ class _SignUpState extends ConsumerState<SignUp> {
             child: Column(
               children: [
                 TextFormField(controller: emailController),
+                TextFormField(controller: usernameController),
+
                 TextFormField(
                   controller: passwordController,
                   obscureText: true,
@@ -41,6 +43,7 @@ class _SignUpState extends ConsumerState<SignUp> {
                     .createUser(
                       emailController.text.trim(),
                       passwordController.text.trim(),
+                      usernameController.text.trim(),
 
                       context,
                     );

@@ -49,7 +49,7 @@ class AuthRepository {
       await firestore.collection('users').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
         'email': email,
-        "username": username
+        "username": username,
 
         'createdAt': FieldValue.serverTimestamp(),
       });
