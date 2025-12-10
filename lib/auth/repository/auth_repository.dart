@@ -12,7 +12,7 @@ import 'package:instagram/utils/utils.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository(
-    ref:ref,
+    ref: ref,
     auth: FirebaseAuth.instance,
     firestore: FirebaseFirestore.instance,
   ),
@@ -27,7 +27,11 @@ class AuthRepository {
   final FirebaseAuth auth;
   final FirebaseFirestore firestore;
 
-  AuthRepository({required this.auth, required this.firestore,required this.ref});
+  AuthRepository({
+    required this.auth,
+    required this.firestore,
+    required this.ref,
+  });
   Future<void> createUser(
     String email,
     String password,
@@ -40,15 +44,6 @@ class AuthRepository {
         password: password,
       );
       print("created user? ${userCredential.user?.uid}");
-      // showSnackBar(
-      //   context: context,
-      //   content: "User created: ${userCredential.user?.uid}",
-      // );
-      //             await FirebaseFirestore.instance.collection('users').doc(res.user!.uid).set({
-      //   'uid': res.user!.uid,
-      //   'email': res.user!.email,
-      //   'createdAt': FieldValue.serverTimestamp(),
-      // });
 
       await firestore.collection('users').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
@@ -68,13 +63,9 @@ class AuthRepository {
             context: context,
           );
 
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) {
-            return Home();
-          },
-        ),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => Home()));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         showSnackBar(
