@@ -8,7 +8,6 @@ import 'package:instagram/firebase_options.dart';
 
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import 'package:instagram/home/screens/home.dart';
-import 'package:instagram/posts/screens/create_post.dart';
 
 String? appId = dotenv.env["AGORA_APP_ID"];
 String? token = dotenv.env["AGORA_TEMP_TOKEN"];
@@ -49,9 +48,6 @@ class MyApp extends ConsumerWidget {
               return data == null ? const SignUp() : Home();
             },
             error: (error, stackTrace) {
-              print(stackTrace);
-              print("rthe error is ");
-              print(error);
               return Center(child: Text(error.toString()));
             },
             loading: () => Center(child: CircularProgressIndicator()),

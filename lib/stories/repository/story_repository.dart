@@ -55,8 +55,6 @@ class StoryRepository {
       final currentUserDoc =
           await firestore.collection('users').doc(currentUserId).get();
 
-      print("current user doc data? ${currentUserDoc.data()} ");
-
       final List<String> following = List<String>.from(
         currentUserDoc.data()?['following'] ?? [],
       );
