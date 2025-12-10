@@ -27,4 +27,15 @@ class Profile {
       'hasStory': hasStory,
     };
   }
+  factory Profile.fromMap(Map<String, dynamic> map) {
+    return Profile(
+      following: List<String>.from((map['following'] as List<String>)),
+      followers: List<String>.from((map['followers'] as List<String>)),
+      name: map['name'] as String,
+      bio: map['bio'] as String,
+      dp: map['dp'] as String,
+      username: map['username'] as String,
+      hasStory: map['hasStory'] as bool? ?? false,
+    );
+  }
 }
