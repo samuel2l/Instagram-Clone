@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/utils/utils.dart';
+import 'dart:convert';
 
 final storyRepositoryProvider = Provider<StoryRepository>((ref) {
   return StoryRepository(firestore: FirebaseFirestore.instance);
@@ -41,6 +42,27 @@ class StoryRepository {
     }
   }
 
+dynamic normalizeFirestoreData(dynamic data) {
+  if (data is Timestamp) {
+    return data.toDate().toIso8601String();
+  }
+
+  if (data is Map) {
+    return data.map((key, value) =>
+        MapEntry(key, normalizeFirestoreData(value)));
+  }
+
+  if (data is List) {
+    return data.map((e) => normalizeFirestoreData(e)).toList();
+  }
+
+  return data;
+}
+void logDeep(dynamic data) {
+  final normalized = normalizeFirestoreData(data);
+  const encoder = JsonEncoder.withIndent('  ');
+  debugPrint(encoder.convert(normalized), wrapWidth: 2048);
+}
   Future<Map<String, List<Map<String, dynamic>>>> getValidStories(
     String? currentUserId,
   ) async {
@@ -69,7 +91,7 @@ class StoryRepository {
         final userProfileDoc =
             await firestore.collection('users').doc(userDoc.id).get();
 
-            print("user profile doc data? ${userProfileDoc.data()} ");  
+        print("user profile doc data? ${userProfileDoc.data()} ");
 
         Map<String, dynamic>? userProfile =
             userProfileDoc.exists ? userProfileDoc.data() : null;
@@ -103,7 +125,8 @@ class StoryRepository {
           orderedStories[userId] = stories;
         }
       });
-      print("in the func?????? $orderedStories");
+      print("the sotries??");
+      logDeep(orderedStories);
 
       return orderedStories;
     } catch (e) {
