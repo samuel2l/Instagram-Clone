@@ -20,22 +20,20 @@ class UserStories {
     };
   }
 
-  factory UserStories.fromMap(Map<String, dynamic> map) {
+  factory UserStories.fromMap(Map<String, dynamic> map,String userId) {
     print("from map in user stories $map");
     print("the stories part ${map['stories']}");
     return UserStories(
-      userId: map['userId'] as String,
+      userId: userId,
       stories: List<Story>.from(
-        (map['stories'] as List<int>).map<Story>(
-          (x) => Story.fromMap(x as Map<String, dynamic>),
+        (map['stories'] as List<Map<String,dynamic>>).map<Story>(
+          (x) => Story.fromMap(x),
         ),
       ),
-      profile: Profile.fromMap(map['profile'] as Map<String, dynamic>),
+      profile: Profile.fromMap(map['userProfile'] as Map<String, dynamic>),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory UserStories.fromJson(String source) =>
-      UserStories.fromMap(json.decode(source) as Map<String, dynamic>);
 }

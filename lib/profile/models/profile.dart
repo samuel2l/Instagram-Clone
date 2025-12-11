@@ -5,7 +5,7 @@ class Profile {
   final String bio;
   final String dp;
   final String username;
-  bool hasStory=false;
+  bool hasStory = false;
 
   Profile({
     required this.following,
@@ -27,10 +27,12 @@ class Profile {
       'hasStory': hasStory,
     };
   }
+
   factory Profile.fromMap(Map<String, dynamic> map) {
+    print("profile map? $map");
     return Profile(
-      following: List<String>.from((map['following'] as List<String>)),
-      followers: List<String>.from((map['followers'] as List<String>)),
+      following: (map["following"] as List).map((e) => e.toString()).toList(),
+      followers: (map["followers"] as List).map((e) => e.toString()).toList(),
       name: map['name'] as String,
       bio: map['bio'] as String,
       dp: map['dp'] as String,

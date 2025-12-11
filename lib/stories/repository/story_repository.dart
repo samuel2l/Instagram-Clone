@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/stories/models/user_stories.dart';
 import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/utils/utils.dart';
 import 'dart:convert';
@@ -42,27 +43,30 @@ class StoryRepository {
     }
   }
 
-dynamic normalizeFirestoreData(dynamic data) {
-  if (data is Timestamp) {
-    return data.toDate().toIso8601String();
+  dynamic normalizeFirestoreData(dynamic data) {
+    if (data is Timestamp) {
+      return data.toDate().toIso8601String();
+    }
+
+    if (data is Map) {
+      return data.map(
+        (key, value) => MapEntry(key, normalizeFirestoreData(value)),
+      );
+    }
+
+    if (data is List) {
+      return data.map((e) => normalizeFirestoreData(e)).toList();
+    }
+
+    return data;
   }
 
-  if (data is Map) {
-    return data.map((key, value) =>
-        MapEntry(key, normalizeFirestoreData(value)));
+  void logDeep(dynamic data) {
+    final normalized = normalizeFirestoreData(data);
+    const encoder = JsonEncoder.withIndent('  ');
+    debugPrint(encoder.convert(normalized), wrapWidth: 2048);
   }
 
-  if (data is List) {
-    return data.map((e) => normalizeFirestoreData(e)).toList();
-  }
-
-  return data;
-}
-void logDeep(dynamic data) {
-  final normalized = normalizeFirestoreData(data);
-  const encoder = JsonEncoder.withIndent('  ');
-  debugPrint(encoder.convert(normalized), wrapWidth: 2048);
-}
   Future<Map<String, List<Map<String, dynamic>>>> getValidStories(
     String? currentUserId,
   ) async {
@@ -88,14 +92,6 @@ void logDeep(dynamic data) {
           continue;
         }
 
-        final userProfileDoc =
-            await firestore.collection('users').doc(userDoc.id).get();
-
-        print("user profile doc data? ${userProfileDoc.data()} ");
-
-        Map<String, dynamic>? userProfile =
-            userProfileDoc.exists ? userProfileDoc.data() : null;
-
         final userStoriesSnapshot =
             await userDoc.reference
                 .collection('userStories')
@@ -105,30 +101,53 @@ void logDeep(dynamic data) {
         final userStoryList =
             userStoriesSnapshot.docs.map((storyDoc) {
               print("story doc data? ${storyDoc.data()["watchers"]} ");
-              return {
-                'storyId': storyDoc.id,
-                ...storyDoc.data(),
-                'userProfile': userProfile,
-              };
+              return {'storyId': storyDoc.id, ...storyDoc.data()};
             }).toList();
 
         allStories[userDoc.id] = userStoryList;
       }
 
       // add current user is first
-      Map<String, List<Map<String, dynamic>>> orderedStories = {
-        currentUserId: allStories[currentUserId] ?? [],
+          final userProfileDoc =
+              await firestore.collection('users').doc(currentUserId).get();
+      Map<String, dynamic> orderedStories = {
+        currentUserId: {"stories":allStories[currentUserId] ?? [],"userProfile":userProfileDoc.data()!},
       };
+      // List<Map<String, dynamic>>
 
-      allStories.forEach((userId, stories) {
+      allStories.forEach((userId, stories) async {
         if (userId != currentUserId) {
-          orderedStories[userId] = stories;
+          final userProfileDoc =
+              await firestore.collection('users').doc(userId).get();
+
+          orderedStories[userId] = {
+            "stories":stories, 
+            "userProfile":userProfileDoc.data()!
+            };
         }
       });
       print("the sotries??");
+      List<UserStories> parsedStories = [];
       logDeep(orderedStories);
+      orderedStories.keys.toList().map((userId) {
+        final userStoriesList = orderedStories[userId] ?? [];
+        print("parsing stories for user $userId with stories $userStoriesList");
+        logDeep(orderedStories[userId]);
 
-      return orderedStories;
+        for (int i = 0; i < userStoriesList.length; i++) {
+          final userStories = UserStories.fromMap(
+            orderedStories[userId],
+            userId,
+          );
+        }
+        // parsedStories.add(userStories);
+      }).toList();
+      print("the parsed stories??");
+      print(parsedStories);
+
+      // UserStories parsedStories
+
+      return {};
     } catch (e) {
       print('Error fetching stories with user details: $e');
       return {};

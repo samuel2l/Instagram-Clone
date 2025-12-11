@@ -11,6 +11,7 @@ class StoryDataPosition {
   }
 
   factory StoryDataPosition.fromMap(Map<String, dynamic> map) {
+    print("story data pos? $map");
     return StoryDataPosition(dx: map['dx'] as double, dy: map['dy'] as double);
   }
 
@@ -22,7 +23,7 @@ class StoryDataPosition {
 
 class StoryData {
   final double rotation;
-  final String value;
+  final String? value;
   final String type;
   final StoryDataPosition position;
 
@@ -46,9 +47,12 @@ class StoryData {
   }
 
   factory StoryData.fromMap(Map<String, dynamic> map) {
+    print("story data map $map");
+    print("maps value? ${map["value"]}");
+
     return StoryData(
       rotation: map['rotation'] as double,
-      value: map['value'] as String,
+      value: map["value"],
       type: map['type'] as String,
       position: StoryDataPosition.fromMap(
         map['position'] as Map<String, dynamic>,
@@ -78,7 +82,6 @@ class Story {
     required this.watchers,
   });
 
-
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'storyId': storyId,
@@ -92,15 +95,17 @@ class Story {
   factory Story.fromMap(Map<String, dynamic> map) {
     return Story(
       storyId: map['storyId'] as String,
-      storyData: List<StoryData>.from((map['storyData'] as List<int>).map<StoryData>((x) => StoryData.fromMap(x as Map<String,dynamic>),),),
+      storyData: List<StoryData>.from(
+        (map['storyData']).map<StoryData>((x) => StoryData.fromMap(x)),
+      ),
       timestamp: (map['timestamp'] as Timestamp).toDate().toIso8601String(),
       mediaUrl: map['mediaUrl'] as String,
-      watchers: List<String>.from((map['watchers'] as List<String>),
-    ));
+      watchers: (map["watchers"] as List).map((e) => e.toString()).toList(),
+    );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Story.fromJson(String source) => Story.fromMap(json.decode(source) as Map<String, dynamic>);
-
+  factory Story.fromJson(String source) =>
+      Story.fromMap(json.decode(source) as Map<String, dynamic>);
 }
