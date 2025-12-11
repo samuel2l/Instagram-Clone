@@ -117,7 +117,6 @@ class StoryRepository {
       for (var entry in allStories.entries) {
         final userId = entry.key;
         final stories = entry.value;
-        print("ENTRYYYYYYY $userId");
 
         if (userId == currentUserId) continue;
 
@@ -129,16 +128,14 @@ class StoryRepository {
           "userProfile": userProfileDoc.data()!,
         };
       }
-      print("the sotries??");
       List<UserStories> parsedStories = [];
-      logDeep(orderedStories);
+      // logDeep(orderedStories);
           orderedStories.forEach((userId, map) {
       parsedStories.add(
         UserStories.fromMap(map, userId),
       );
     });
-      print("the parsed stories??");
-      print(parsedStories);
+
 
       // UserStories parsedStories
 
@@ -154,7 +151,7 @@ class StoryRepository {
     required String storyId,
     required String viewerId,
   }) async {
-    print("ADDING VIEWER TO STORY IN REPO $ownerId $storyId $viewerId");
+
     final storyRef = FirebaseFirestore.instance
         .collection('stories')
         .doc(ownerId)
