@@ -71,7 +71,10 @@ class _HomeState extends ConsumerState<Home> {
               }
 
               final stories = snapshot.data ?? [];
-              
+              print("stories in home screen $stories");
+              print("${stories[0].profile.username} ${stories[0].profile.name}");
+              print("${stories[1].profile.username} ${stories[1].profile.name}");
+
               if (snapshot.connectionState == ConnectionState.done) {
                 return SizedBox(
                   height: 140,
@@ -119,7 +122,9 @@ class _HomeState extends ConsumerState<Home> {
                                               radius: 80,
                                               backgroundImage:
                                                   CachedNetworkImageProvider(
-                                                    currUserStoryData.profile.dp,
+                                                    currUserStoryData
+                                                        .profile
+                                                        .dp,
                                                   ),
                                             ),
                                           ),
@@ -262,16 +267,20 @@ class _HomeState extends ConsumerState<Home> {
                                                     child: CircleAvatar(
                                                       radius: 32,
                                                       backgroundImage: CachedNetworkImageProvider(
-                                                        currUserStoryData.userId ==
+                                                        currUserStoryData
+                                                                    .userId ==
                                                                 ref
                                                                     .read(
                                                                       getUserProvider,
                                                                     )
                                                                     .value
                                                                     ?.firebaseUID
-                                                            ? currUserStoryData.profile.dp
-                                                            : currUserStoryData.profile.dp 
-                                                                ,
+                                                            ? currUserStoryData
+                                                                .profile
+                                                                .dp
+                                                            : currUserStoryData
+                                                                .profile
+                                                                .dp,
                                                       ),
                                                     ),
                                                   ),

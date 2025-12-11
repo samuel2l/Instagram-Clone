@@ -29,7 +29,6 @@ class Profile {
   }
 
   factory Profile.fromMap(Map<String, dynamic> map) {
-    print("profile map? $map");
     return Profile(
       following: (map["following"] as List).map((e) => e.toString()).toList(),
       followers: (map["followers"] as List).map((e) => e.toString()).toList(),

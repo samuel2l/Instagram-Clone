@@ -11,7 +11,6 @@ class StoryDataPosition {
   }
 
   factory StoryDataPosition.fromMap(Map<String, dynamic> map) {
-    print("story data pos? $map");
     return StoryDataPosition(dx: map['dx'] as double, dy: map['dy'] as double);
   }
 
@@ -47,8 +46,6 @@ class StoryData {
   }
 
   factory StoryData.fromMap(Map<String, dynamic> map) {
-    print("story data map $map");
-    print("maps value? ${map["value"]}");
 
     return StoryData(
       rotation: map['rotation'] as double,

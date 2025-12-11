@@ -67,10 +67,7 @@ class StoryRepository {
     debugPrint(encoder.convert(normalized), wrapWidth: 2048);
   }
 
-  Future<List<UserStories>> getValidStories(
-    String? currentUserId,
-  ) async {
-    print("GETTING VALID STORIES IN REPO $currentUserId");
+  Future<List<UserStories>> getValidStories(String? currentUserId) async {
     final firestore = FirebaseFirestore.instance;
 
     Map<String, List<Map<String, dynamic>>> allStories = {};
@@ -100,49 +97,46 @@ class StoryRepository {
 
         final userStoryList =
             userStoriesSnapshot.docs.map((storyDoc) {
-              print("story doc data? ${storyDoc.data()["watchers"]} ");
               return {'storyId': storyDoc.id, ...storyDoc.data()};
             }).toList();
 
         allStories[userDoc.id] = userStoryList;
       }
 
-      // add current user is first
-          final userProfileDoc =
-              await firestore.collection('users').doc(currentUserId).get();
+      final userProfileDoc =
+          await firestore.collection('users').doc(currentUserId).get();
+
       Map<String, dynamic> orderedStories = {
-        currentUserId: {"stories":allStories[currentUserId] ?? [],"userProfile":userProfileDoc.data()!},
+        currentUserId: {
+          "stories": allStories[currentUserId] ?? [],
+          "userProfile": userProfileDoc.data()!,
+        },
       };
-      // List<Map<String, dynamic>>
 
-      allStories.forEach((userId, stories) async {
-        if (userId != currentUserId) {
-          final userProfileDoc =
-              await firestore.collection('users').doc(userId).get();
+      // Loop through others
+      for (var entry in allStories.entries) {
+        final userId = entry.key;
+        final stories = entry.value;
+        print("ENTRYYYYYYY $userId");
 
-          orderedStories[userId] = {
-            "stories":stories, 
-            "userProfile":userProfileDoc.data()!
-            };
-        }
-      });
+        if (userId == currentUserId) continue;
+
+        final userProfileDoc =
+            await firestore.collection('users').doc(userId).get();
+
+        orderedStories[userId] = {
+          "stories": stories,
+          "userProfile": userProfileDoc.data()!,
+        };
+      }
       print("the sotries??");
       List<UserStories> parsedStories = [];
       logDeep(orderedStories);
-      orderedStories.keys.toList().map((userId) {
-        final userStoriesList = orderedStories[userId] ?? [];
-        print("parsing stories for user $userId with stories $userStoriesList");
-        logDeep(orderedStories[userId]);
-
-        for (int i = 0; i < userStoriesList.length; i++) {
-          final userStories = UserStories.fromMap(
-            orderedStories[userId],
-            userId,
-          );
-          parsedStories.add(userStories);
-        }
-        // parsedStories.add(userStories);
-      }).toList();
+          orderedStories.forEach((userId, map) {
+      parsedStories.add(
+        UserStories.fromMap(map, userId),
+      );
+    });
       print("the parsed stories??");
       print(parsedStories);
 

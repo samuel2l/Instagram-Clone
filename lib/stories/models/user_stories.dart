@@ -21,8 +21,6 @@ class UserStories {
   }
 
   factory UserStories.fromMap(Map<String, dynamic> map,String userId) {
-    print("from map in user stories $map");
-    print("the stories part ${map['stories']}");
     return UserStories(
       userId: userId,
       stories: List<Story>.from(
