@@ -67,7 +67,7 @@ class StoryRepository {
     debugPrint(encoder.convert(normalized), wrapWidth: 2048);
   }
 
-  Future<Map<String, List<Map<String, dynamic>>>> getValidStories(
+  Future<List<UserStories>> getValidStories(
     String? currentUserId,
   ) async {
     print("GETTING VALID STORIES IN REPO $currentUserId");
@@ -76,7 +76,7 @@ class StoryRepository {
     Map<String, List<Map<String, dynamic>>> allStories = {};
 
     try {
-      if (currentUserId == null) return {};
+      if (currentUserId == null) return [];
 
       final currentUserDoc =
           await firestore.collection('users').doc(currentUserId).get();
@@ -139,6 +139,7 @@ class StoryRepository {
             orderedStories[userId],
             userId,
           );
+          parsedStories.add(userStories);
         }
         // parsedStories.add(userStories);
       }).toList();
@@ -147,10 +148,10 @@ class StoryRepository {
 
       // UserStories parsedStories
 
-      return {};
+      return parsedStories;
     } catch (e) {
       print('Error fetching stories with user details: $e');
-      return {};
+      return [];
     }
   }
 

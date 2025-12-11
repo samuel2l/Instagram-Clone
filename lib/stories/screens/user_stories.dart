@@ -6,10 +6,11 @@ import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/stories/screens/view_story.dart';
 import 'package:instagram/stories/widgets/story_bars.dart';
+import 'package:instagram/stories/models/user_stories.dart' as UserStoriesModel;
 
 class UserStories extends ConsumerStatefulWidget {
   const UserStories({super.key, required this.userStories});
-  final List<Map<String, dynamic>> userStories;
+  final UserStoriesModel.UserStories userStories;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _UserStoriesState();
@@ -26,47 +27,47 @@ class _UserStoriesState extends ConsumerState<UserStories> {
   void initState() {
     super.initState();
 
-    for (int index = 0; index < widget.userStories.length; index++) {
-      final currStory = widget.userStories[index];
+    for (int index = 0; index < widget.userStories.stories.length; index++) {
+      final currStory = widget.userStories.stories[index];
       List<EditableItem> storyData = [];
 
-      final storyDataFromFirebase = currStory["storyData"] as List;
+      final storyDataFromFirebase = currStory.storyData;
 
       for (var storyComponent in storyDataFromFirebase) {
         final editable = EditableItem();
         editable.position = Offset(
-          storyComponent["position"]["dx"],
-          storyComponent["position"]["dy"],
+          storyComponent.position.dx,
+          storyComponent.position.dy,
         );
-        editable.rotation = storyComponent["rotation"];
-        editable.scale = storyComponent["scale"];
+        editable.rotation = storyComponent.rotation;
+        editable.scale = storyComponent.scale;
 
-        if (storyComponent["type"] == "image") {
+        if (storyComponent.type == "image") {
           editable.type = ItemType.image;
-        } else if (storyComponent["type"] == "text") {
+        } else if (storyComponent.type == "text") {
           editable.type = ItemType.text;
         }
 
-        editable.value = storyComponent["value"];
+        editable.value = storyComponent.value;
         storyData.add(editable);
       }
       userStoriesCast.add(storyData);
     }
 
-    percentageCoveredList = List.filled(widget.userStories.length, 0);
+    percentageCoveredList = List.filled(widget.userStories.stories.length, 0);
     _startWatching();
   }
 
   void _startWatching() {
     final currentUserId = ref.read(getUserProvider).value?.firebaseUID ?? "";
 
-    final currStory = widget.userStories[currentStoryIndex];
+    final currStory = widget.userStories.stories[currentStoryIndex];
 
     ref
         .read(storyRepositoryProvider)
         .addStoryViewer(
-          ownerId: currStory["userProfile"]["uid"],
-          storyId: currStory["storyId"],
+          ownerId: widget.userStories.userId,
+          storyId: currStory.storyId,
           viewerId: currentUserId,
         );
 
@@ -83,7 +84,7 @@ class _UserStoriesState extends ConsumerState<UserStories> {
             percentageCoveredList[currentStoryIndex] = 1;
             timer.cancel();
 
-            if (currentStoryIndex < widget.userStories.length - 1) {
+            if (currentStoryIndex < widget.userStories.stories.length - 1) {
               currentStoryIndex++;
               _startWatching();
             } else {
@@ -118,7 +119,7 @@ class _UserStoriesState extends ConsumerState<UserStories> {
             _startWatching();
           }
         } else {
-          if (currentStoryIndex < widget.userStories.length - 1) {
+          if (currentStoryIndex < widget.userStories.stories.length - 1) {
             percentageCoveredList[currentStoryIndex] = 1;
             percentageCoveredList[currentStoryIndex + 1] = 0;
             currentStoryIndex += 1;
@@ -143,12 +144,12 @@ class _UserStoriesState extends ConsumerState<UserStories> {
           children: [
             ViewStory(
               storyData: userStoriesCast[currentStoryIndex],
-              mediaUrl: widget.userStories[currentStoryIndex]["mediaUrl"],
+              mediaUrl: widget.userStories.stories[currentStoryIndex].mediaUrl,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
               child: StoryBars(
-                storiesLength: widget.userStories.length,
+                storiesLength: widget.userStories.stories.length,
                 percentageCoveredList: percentageCoveredList,
               ),
             ),

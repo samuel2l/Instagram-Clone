@@ -67,33 +67,22 @@ class _HomeState extends ConsumerState<Home> {
                 return Center(child: CircularProgressIndicator());
               }
               if (snapshot.hasError) {
-                return Center(child: Text("Unexpected error"));
+                return Center(child: Text("Error loading stories"));
               }
 
-              final stories = snapshot.data ?? {};
-              List users = stories.keys.toList();
+              final stories = snapshot.data ?? [];
+              
               if (snapshot.connectionState == ConnectionState.done) {
                 return SizedBox(
                   height: 140,
                   width: double.infinity,
                   child: ListView.builder(
-                    itemCount: users.length,
+                    itemCount: stories.length,
                     scrollDirection: Axis.horizontal,
 
                     itemBuilder: (context, index) {
-                      final currUser = users[index];
-                      var currUserProfile;
-                      if (stories[currUser] != null &&
-                          stories[currUser]!.isNotEmpty) {
-                        currUserProfile = stories[currUser]?[0]["userProfile"];
-                      } else {
-                        //the only time a user will be returned even if they have no stories is when they are the current user
-                        currUserProfile =
-                            ref.read(getUserProvider).value?.toMap();
-                        currentUserHasStory = false;
-                      }
+                      final currUserStoryData = stories[index];
 
-                      print("the curr user profile? $currUserProfile");
                       return SizedBox(
                         width: 100,
                         child: Column(
@@ -104,7 +93,7 @@ class _HomeState extends ConsumerState<Home> {
                                   MaterialPageRoute(
                                     builder:
                                         (context) => UserStories(
-                                          userStories: stories[currUser]!,
+                                          userStories: currUserStoryData,
                                         ),
                                   ),
                                 );
@@ -112,7 +101,7 @@ class _HomeState extends ConsumerState<Home> {
 
                               child:
                                   //if user has no story then its just a circle avatar with dp and a plus icon to post
-                                  currUser ==
+                                  currUserStoryData.userId ==
                                               ref
                                                   .read(getUserProvider)
                                                   .value
@@ -130,7 +119,7 @@ class _HomeState extends ConsumerState<Home> {
                                               radius: 80,
                                               backgroundImage:
                                                   CachedNetworkImageProvider(
-                                                    currUserProfile['dp'],
+                                                    currUserStoryData.profile.dp,
                                                   ),
                                             ),
                                           ),
@@ -178,7 +167,7 @@ class _HomeState extends ConsumerState<Home> {
                                         future: ref
                                             .read(storyRepositoryProvider)
                                             .hasUserWatchedAllStories(
-                                              ownerId: currUser,
+                                              ownerId: currUserStoryData.userId,
                                               currentUserId:
                                                   ref
                                                       .read(getUserProvider)
@@ -273,16 +262,16 @@ class _HomeState extends ConsumerState<Home> {
                                                     child: CircleAvatar(
                                                       radius: 32,
                                                       backgroundImage: CachedNetworkImageProvider(
-                                                        currUser ==
+                                                        currUserStoryData.userId ==
                                                                 ref
                                                                     .read(
                                                                       getUserProvider,
                                                                     )
                                                                     .value
                                                                     ?.firebaseUID
-                                                            ? currUserProfile['dp']
-                                                            : currUserProfile['dp'] ??
-                                                                'https://www.pngitem.com/pimgs/m/150-1503941_user-profile-default-image-png-clipart-png-download.png',
+                                                            ? currUserStoryData.profile.dp
+                                                            : currUserStoryData.profile.dp 
+                                                                ,
                                                       ),
                                                     ),
                                                   ),
@@ -330,7 +319,7 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                             SizedBox(height: 5),
                             Text(
-                              currUserProfile?['username'],
+                              currUserStoryData.profile.username,
                               style: TextStyle(fontSize: 16),
                             ),
                           ],
