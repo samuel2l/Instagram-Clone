@@ -103,7 +103,7 @@ class _PostDetailState extends ConsumerState<PostDetail> {
                           child: Center(
                             child: Text(
                               "${index + 1}/${post.mediaUrls.length}",
-                              style: TextStyle(color: Colors.green),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),

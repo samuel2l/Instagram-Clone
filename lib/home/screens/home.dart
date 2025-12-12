@@ -65,7 +65,7 @@ class _HomeState extends ConsumerState<Home> {
                 .getValidStories(ref.read(getUserProvider).value?.firebaseUID),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return Container(height: 100,);
               }
               if (snapshot.hasError) {
                 return Center(child: Text("Error loading stories"));
@@ -181,7 +181,7 @@ class _HomeState extends ConsumerState<Home> {
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
-                                            return CircularProgressIndicator();
+                                            return Container();
                                           }
                                           if (snapshot.hasError) {
                                             return Text("error");
