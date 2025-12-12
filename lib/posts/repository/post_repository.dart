@@ -149,17 +149,56 @@ class PostRepository {
   //       .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   // }
 
-Stream<List<Post>> getUserPosts(String userId) {
-  return firestore
-      .collection('posts')
-      .where('uid', isEqualTo: userId)
-      .where('postType', isEqualTo: 'post')
-      .snapshots()
-      .map((snapshot) {
-        final posts = snapshot.docs.map((doc) {
-          return Post.fromMap(doc.data());
-        }).toList();
+  Stream<List<Post>> getUserPosts(String userId) {
+    return firestore
+        .collection('posts')
+        .where('uid', isEqualTo: userId)
+        .where('postType', isEqualTo: 'post')
+        .snapshots()
+        .map((snapshot) {
+          final posts =
+              snapshot.docs.map((doc) {
+                return Post.fromMap(doc.data());
+              }).toList();
 
-        return posts;  // <- stored in variable before returning
+          return posts; 
+        });
+  }
+
+  Future<List<Post>> getFeedPosts() async {
+    try {
+      final currentUserId = auth.currentUser!.uid;
+
+      final userDoc =
+          await firestore.collection('users').doc(currentUserId).get();
+      final List<String> following = List<String>.from(
+        userDoc.data()?['following'] ?? [],
+      );
+
+      following.add(currentUserId);
+
+      final querySnapshot =
+          await firestore
+              .collection('posts')
+              .where('uid', whereIn: following)
+              .where('postType', isEqualTo: 'post')
+              .get();
+
+      List<Post> posts =
+          querySnapshot.docs.map((doc) {
+            return Post.fromMap(doc.data());
+          }).toList();
+
+      posts.sort((a, b) {
+        final aTime = a.createdAt;
+        final bTime = b.createdAt;
+        return bTime.compareTo(aTime);
       });
-}}
+
+      return posts;
+    } catch (e) {
+      debugPrint("Error fetching feed posts: $e");
+      return [];
+    }
+  }
+}

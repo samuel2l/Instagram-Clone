@@ -52,7 +52,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                 icon: FutureBuilder<bool>(
                   future: ref
                       .watch(postRepositoryProvider)
-                      .hasLikedPost("${post.postId}"),
+                      .hasLikedPost(post.postId),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return snapshot.data == true
