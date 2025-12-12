@@ -4,24 +4,23 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Post {
+  final String userId;
   final String postId;
   final List<String> mediaUrls;
   final String caption;
   final String createdAt;
 
-  Post({required this.postId, required this.mediaUrls, required this.caption,required this.createdAt});
-
-  Post copyWith({String? postId, List<String>? mediaUrls}) {
-    return Post(
-      postId: postId ?? this.postId,
-      mediaUrls: mediaUrls ?? this.mediaUrls,
-      caption: caption,
-      createdAt: createdAt,
-    );
-  }
+  Post({
+    required this.userId,
+    required this.postId,
+    required this.mediaUrls,
+    required this.caption,
+    required this.createdAt,
+  });
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      "userId": userId,
       'postId': postId,
       'mediaUrls': mediaUrls,
       'caption': caption,
@@ -30,10 +29,11 @@ class Post {
 
   factory Post.fromMap(Map<String, dynamic> map) {
     return Post(
+      userId: map['uid'] as String,
       postId: map['postId'] as String,
       mediaUrls: (map["imageUrls"] as List).map((e) => e.toString()).toList(),
       caption: map['caption'] as String,
-      createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(), 
+      createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(),
     );
   }
 

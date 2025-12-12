@@ -4,6 +4,7 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/widgets/post_video.dart';
+import 'package:instagram/profile/repository/profile_repository.dart';
 
 class PostDetail extends ConsumerStatefulWidget {
   const PostDetail({super.key, required this.post});
@@ -22,6 +23,27 @@ class _PostDetailState extends ConsumerState<PostDetail> {
 
     return Column(
       children: [
+        FutureBuilder(
+          future: ref
+              .read(profileRepositoryProvider)
+              .getUserProfileOnce(uid: post.userId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return ListTile();
+            } else if (snapshot.hasError) {
+              return Text("Error loading user data");
+            } else if (snapshot.hasData) {
+              final userProfile = snapshot.data!;
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(userProfile.profile.dp),
+                ),
+                title: Text(userProfile.profile.username),
+              );
+            }
+            return Text("No user data");
+          },
+        ),
         SizedBox(
           height: 400,
           child: PageView.builder(
@@ -51,7 +73,7 @@ class _PostDetailState extends ConsumerState<PostDetail> {
                       ),
 
                   Positioned(
-                    right:0,
+                    right: 0,
                     child: Container(
                       height: 30,
                       width: 34,

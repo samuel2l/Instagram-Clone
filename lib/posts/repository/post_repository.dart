@@ -7,16 +7,18 @@ import 'package:instagram/utils/utils.dart';
 
 final postRepositoryProvider = Provider<PostRepository>(
   (ref) => PostRepository(
+    ref: ref,
     auth: FirebaseAuth.instance,
     firestore: FirebaseFirestore.instance,
   ),
 );
 
 class PostRepository {
+  final Ref ref;
   final FirebaseAuth auth;
   final FirebaseFirestore firestore;
 
-  PostRepository({required this.auth, required this.firestore});
+  PostRepository({required this.ref,required this.auth, required this.firestore});
 
   Future<void> createPost({
     required String caption,
@@ -161,7 +163,7 @@ class PostRepository {
                 return Post.fromMap(doc.data());
               }).toList();
 
-          return posts; 
+          return posts;
         });
   }
 

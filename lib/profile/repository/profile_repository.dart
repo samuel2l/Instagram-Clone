@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/utils/utils.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>(
@@ -83,8 +84,6 @@ class ProfileRepository {
         })
         .handleError((e) {
           if (context != null) {
-            print("profile error: $e");
-            print(e);
             showSnackBar(
               context: context,
               content: 'Error fetching profile: $e',
@@ -92,6 +91,38 @@ class ProfileRepository {
           }
         });
   }
+
+  Future<AppUserModel?> getUserProfileOnce({
+  required String uid,
+  BuildContext? context,
+}) async {
+  try {
+    final firestore = FirebaseFirestore.instance;
+    print("Fetching profile ONCE for UID: $uid");
+
+    final docSnapshot = await firestore.collection('users').doc(uid).get();
+
+    if (docSnapshot.exists) {
+      return AppUserModel.fromMap(docSnapshot.data()!);
+    } else {
+      if (context != null) {
+        showSnackBar(
+          context: context,
+          content: 'User profile not found.',
+        );
+      }
+      return null;
+    }
+  } catch (e) {
+    if (context != null) {
+      showSnackBar(
+        context: context,
+        content: 'Error fetching profile: $e',
+      );
+    }
+    return null;
+  }
+}
 
   Future<void> followUser({
     required String targetUserId,
