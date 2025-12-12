@@ -65,14 +65,14 @@ class _HomeState extends ConsumerState<Home> {
                 .getValidStories(ref.read(getUserProvider).value?.firebaseUID),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(height: 100,);
+                return Container(height: 100);
               }
               if (snapshot.hasError) {
                 return Center(child: Text("Error loading stories"));
               }
-
+      
               final stories = snapshot.data ?? [];
-
+      
               if (snapshot.connectionState == ConnectionState.done) {
                 return SizedBox(
                   height: 140,
@@ -80,10 +80,10 @@ class _HomeState extends ConsumerState<Home> {
                   child: ListView.builder(
                     itemCount: stories.length,
                     scrollDirection: Axis.horizontal,
-
+      
                     itemBuilder: (context, index) {
                       final currUserStoryData = stories[index];
-
+      
                       return SizedBox(
                         width: 100,
                         child: Column(
@@ -99,7 +99,7 @@ class _HomeState extends ConsumerState<Home> {
                                   ),
                                 );
                               },
-
+      
                               child:
                                   //if user has no story then its just a circle avatar with dp and a plus icon to post
                                   currUserStoryData.userId ==
@@ -188,7 +188,7 @@ class _HomeState extends ConsumerState<Home> {
                                           }
                                           final hasWatchedAllStories =
                                               snapshot.data ?? false;
-
+      
                                           return Stack(
                                             children: [
                                               Container(
@@ -253,7 +253,7 @@ class _HomeState extends ConsumerState<Home> {
                                                   padding: const EdgeInsets.all(
                                                     5,
                                                   ), // border thickness
-
+      
                                                   child: Container(
                                                     decoration: BoxDecoration(
                                                       color: Colors.white,
@@ -339,7 +339,7 @@ class _HomeState extends ConsumerState<Home> {
               return Text("unexpected error");
             },
           ),
-          PostFeed()
+          PostFeed(),
           // Text("errrrr")
         ],
       ),
