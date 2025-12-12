@@ -50,6 +50,7 @@ class _PostDetailState extends ConsumerState<PostDetail> {
               }
 
               return ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 6),
                 leading: CircleAvatar(
                   backgroundImage: NetworkImage(userProfile!.profile.dp),
                 ),
@@ -119,8 +120,10 @@ class _PostDetailState extends ConsumerState<PostDetail> {
         ),
 
         Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             IconButton(
+
               onPressed: () {
                 ref.read(postRepositoryProvider).toggleLikePost(post.postId);
                 setState(() {});
@@ -227,7 +230,7 @@ class _PostDetailState extends ConsumerState<PostDetail> {
         ),
         userProfile != null
             ? ListTile(
-              contentPadding: EdgeInsets.all(0),
+              contentPadding: EdgeInsets.symmetric(horizontal: 6),
 
               horizontalTitleGap: 4,
               minTileHeight: 10,
