@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
+import 'package:instagram/posts/screens/post_feed.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
@@ -71,9 +72,6 @@ class _HomeState extends ConsumerState<Home> {
               }
 
               final stories = snapshot.data ?? [];
-              print("stories in home screen $stories");
-              print("${stories[0].profile.username} ${stories[0].profile.name}");
-              print("${stories[1].profile.username} ${stories[1].profile.name}");
 
               if (snapshot.connectionState == ConnectionState.done) {
                 return SizedBox(
@@ -341,6 +339,8 @@ class _HomeState extends ConsumerState<Home> {
               return Text("unexpected error");
             },
           ),
+          PostFeed()
+          // Text("errrrr")
         ],
       ),
     );

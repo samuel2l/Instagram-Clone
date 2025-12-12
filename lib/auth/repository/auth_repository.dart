@@ -152,8 +152,6 @@ class AuthRepository {
 
   Future<AppUserModel?> getUser() async {
     final curr = auth.currentUser;
-    print("ah curr? $curr");
-
     if (curr == null) {
       return null;
     }
