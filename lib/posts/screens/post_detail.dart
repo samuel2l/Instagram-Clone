@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
@@ -18,6 +20,7 @@ class _PostDetailState extends ConsumerState<PostDetail> {
   final PageController _controller = PageController();
   TextEditingController commentController = TextEditingController();
   bool hasProfileLoaded = false;
+  AppUserModel? userProfile;
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
@@ -34,7 +37,7 @@ class _PostDetailState extends ConsumerState<PostDetail> {
             } else if (snapshot.hasError) {
               return Text("Error loading user data");
             } else if (snapshot.hasData) {
-              final userProfile = snapshot.data!;
+              userProfile = snapshot.data!;
               if (!hasProfileLoaded) {
                 // Wait until Flutter finishes building the UI, and THEN run setState.
                 //basically since i need to set state after build is complete and the only place i know the profile loaded isin the builder and state cannot be updated in a builder since part of the tree is still being built
@@ -42,15 +45,16 @@ class _PostDetailState extends ConsumerState<PostDetail> {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   setState(() {
                     hasProfileLoaded = true;
+                    userProfile = snapshot.data!;
                   });
                 });
               }
 
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: NetworkImage(userProfile.profile.dp),
+                  backgroundImage: NetworkImage(userProfile!.profile.dp),
                 ),
-                title: Text(userProfile.profile.username),
+                title: Text(userProfile!.profile.username),
               );
             }
             return Text("No user data");
@@ -114,6 +118,7 @@ class _PostDetailState extends ConsumerState<PostDetail> {
             },
           ),
         ),
+
         Row(
           children: [
             IconButton(
@@ -221,6 +226,19 @@ class _PostDetailState extends ConsumerState<PostDetail> {
             ),
           ],
         ),
+        userProfile != null
+            ? ListTile(
+              contentPadding: EdgeInsets.all(0),
+              horizontalTitleGap: 4,
+              minTileHeight: 10,
+
+              leading: Text(
+                userProfile!.profile.username,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              title: Text(post.caption),
+            )
+            : ListTile(),
       ],
     );
   }

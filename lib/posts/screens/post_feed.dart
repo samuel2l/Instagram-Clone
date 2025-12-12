@@ -28,6 +28,7 @@ class _PostFeedState extends ConsumerState<PostFeed> {
               return Text("No posts available");
             } else {
               return ListView.builder(
+                
                 shrinkWrap: true,
                 itemCount: posts.length,
                 itemBuilder: (context, index) {
