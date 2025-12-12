@@ -17,6 +17,7 @@ class PostDetail extends ConsumerStatefulWidget {
 class _PostDetailState extends ConsumerState<PostDetail> {
   final PageController _controller = PageController();
   TextEditingController commentController = TextEditingController();
+  bool hasProfileLoaded = false;
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
@@ -34,6 +35,17 @@ class _PostDetailState extends ConsumerState<PostDetail> {
               return Text("Error loading user data");
             } else if (snapshot.hasData) {
               final userProfile = snapshot.data!;
+              if (!hasProfileLoaded) {
+                // Wait until Flutter finishes building the UI, and THEN run setState.
+                //basically since i need to set state after build is complete and the only place i know the profile loaded isin the builder and state cannot be updated in a builder since part of the tree is still being built
+                //so use the add post frame callback to schedule the state update after build is complete
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {
+                    hasProfileLoaded = true;
+                  });
+                });
+              }
+
               return ListTile(
                 leading: CircleAvatar(
                   backgroundImage: NetworkImage(userProfile.profile.dp),
@@ -51,51 +63,54 @@ class _PostDetailState extends ConsumerState<PostDetail> {
             itemCount: post.mediaUrls.length,
             itemBuilder: (context, index) {
               String imageUrl = post.mediaUrls[index];
-              return Stack(
-                children: [
-                  imageUrl.endsWith('.jpg') ||
-                          imageUrl.endsWith('.jpeg') ||
-                          imageUrl.endsWith('.png') ||
-                          imageUrl.endsWith('.webp')
-                      ? SizedBox(
-                        height: 400,
-                        width: double.infinity,
-                        child: Image.network(
-                          post.mediaUrls[index],
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                      : SizedBox(
-                        height: 400,
-                        width: double.infinity,
 
-                        child: PostVideo(url: imageUrl),
-                      ),
+              return hasProfileLoaded
+                  ? Stack(
+                    children: [
+                      imageUrl.endsWith('.jpg') ||
+                              imageUrl.endsWith('.jpeg') ||
+                              imageUrl.endsWith('.png') ||
+                              imageUrl.endsWith('.webp')
+                          ? SizedBox(
+                            height: 400,
+                            width: double.infinity,
+                            child: Image.network(
+                              post.mediaUrls[index],
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                          : SizedBox(
+                            height: 400,
+                            width: double.infinity,
 
-                  Positioned(
-                    right: 0,
-                    child: Container(
-                      height: 30,
-                      width: 34,
-                      margin: EdgeInsets.all(5),
-                      padding: EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF121212),
-                        borderRadius: BorderRadius.horizontal(
-                          left: Radius.circular(14),
-                          right: Radius.circular(14),
+                            child: PostVideo(url: imageUrl),
+                          ),
+
+                      Positioned(
+                        right: 0,
+                        child: Container(
+                          height: 30,
+                          width: 34,
+                          margin: EdgeInsets.all(5),
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF121212),
+                            borderRadius: BorderRadius.horizontal(
+                              left: Radius.circular(14),
+                              right: Radius.circular(14),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              "${index + 1}/${post.mediaUrls.length}",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                          ),
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          "${index + 1}/${post.mediaUrls.length}",
-                          style: TextStyle(color: Colors.green),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
+                    ],
+                  )
+                  : Container();
             },
           ),
         ),
