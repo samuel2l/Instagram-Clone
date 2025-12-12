@@ -29,12 +29,51 @@ class _PostDetailState extends ConsumerState<PostDetail> {
             itemCount: post.mediaUrls.length,
             itemBuilder: (context, index) {
               String imageUrl = post.mediaUrls[index];
-              return imageUrl.endsWith('.jpg') ||
-                      imageUrl.endsWith('.jpeg') ||
-                      imageUrl.endsWith('.png') ||
-                      imageUrl.endsWith('.webp')
-                  ? Image.network(post.mediaUrls[index], fit: BoxFit.cover)
-                  : PostVideo(url: imageUrl);
+              return Stack(
+                children: [
+                  imageUrl.endsWith('.jpg') ||
+                          imageUrl.endsWith('.jpeg') ||
+                          imageUrl.endsWith('.png') ||
+                          imageUrl.endsWith('.webp')
+                      ? SizedBox(
+                        height: 400,
+                        width: double.infinity,
+                        child: Image.network(
+                          post.mediaUrls[index],
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                      : SizedBox(
+                        height: 400,
+                        width: double.infinity,
+
+                        child: PostVideo(url: imageUrl),
+                      ),
+
+                  Positioned(
+                    right:0,
+                    child: Container(
+                      height: 30,
+                      width: 34,
+                      margin: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF121212),
+                        borderRadius: BorderRadius.horizontal(
+                          left: Radius.circular(14),
+                          right: Radius.circular(14),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "${index + 1}/${post.mediaUrls.length}",
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
             },
           ),
         ),
