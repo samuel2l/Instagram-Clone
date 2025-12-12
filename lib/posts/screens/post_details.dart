@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
+import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/widgets/post_video.dart';
 
 class PostDetails extends ConsumerStatefulWidget {
   const PostDetails({super.key, required this.post});
-  final Map<String, dynamic> post;
+  final Post post;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _PostDetailsState();
@@ -17,6 +18,8 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
   TextEditingController commentController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    final post = widget.post;
+
     return Scaffold(
       appBar: AppBar(),
       body: Column(
@@ -25,17 +28,14 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
             height: 400,
             child: PageView.builder(
               controller: _controller,
-              itemCount: (widget.post["imageUrls"] as List).length,
+              itemCount: post.mediaUrls.length,
               itemBuilder: (context, index) {
-                String imageUrl = widget.post["imageUrls"][index];
+                String imageUrl = post.mediaUrls[index];
                 return imageUrl.endsWith('.jpg') ||
                         imageUrl.endsWith('.jpeg') ||
                         imageUrl.endsWith('.png') ||
                         imageUrl.endsWith('.webp')
-                    ? Image.network(
-                      widget.post["imageUrls"][index],
-                      fit: BoxFit.cover,
-                    )
+                    ? Image.network(post.mediaUrls[index], fit: BoxFit.cover)
                     : PostVideo(url: imageUrl);
               },
             ),
@@ -46,13 +46,13 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                 onPressed: () {
                   ref
                       .read(postRepositoryProvider)
-                      .toggleLikePost(widget.post["postId"]);
+                      .toggleLikePost(post.postId);
                   setState(() {});
                 },
                 icon: FutureBuilder<bool>(
                   future: ref
                       .watch(postRepositoryProvider)
-                      .hasLikedPost("${widget.post["postId"]}"),
+                      .hasLikedPost("${post.postId}"),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return snapshot.data == true
@@ -67,7 +67,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
               StreamBuilder(
                 stream: ref
                     .watch(postRepositoryProvider)
-                    .getLikesCount(widget.post["postId"]),
+                    .getLikesCount(post.postId),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return Text("${snapshot.data}");
@@ -87,7 +87,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                 await ref
                     .read(postRepositoryProvider)
                     .addCommentToPost(
-                      postId: widget.post["postId"],
+                      postId: post.postId,
                       email: profileData.email,
                       dp: profileData.profile.dp,
                       commentText: commentController.text.trim(),
@@ -99,7 +99,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
             child: StreamBuilder(
               stream: ref
                   .watch(postRepositoryProvider)
-                  .getPostComments(widget.post["postId"]),
+                  .getPostComments(post.postId),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   if (snapshot.data != null && snapshot.data!.isNotEmpty) {

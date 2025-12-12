@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/post_details.dart';
 
@@ -14,7 +15,7 @@ class UserPosts extends ConsumerStatefulWidget {
 class _UserPostsState extends ConsumerState<UserPosts> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Map<String, dynamic>>>(
+    return StreamBuilder<List<Post>>(
       stream: ref.watch(postRepositoryProvider).getUserPosts(widget.userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -37,7 +38,7 @@ class _UserPostsState extends ConsumerState<UserPosts> {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
-                final firstUrl = post["imageUrls"][0] as String;
+                final firstUrl = post.mediaUrls[0];
 
                 final isImage =
                     firstUrl.endsWith('.jpg') ||

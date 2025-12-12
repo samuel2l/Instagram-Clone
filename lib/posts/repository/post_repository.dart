@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/utils/utils.dart';
 
 final postRepositoryProvider = Provider<PostRepository>(
@@ -148,12 +149,17 @@ class PostRepository {
   //       .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   // }
 
-  Stream<List<Map<String, dynamic>>> getUserPosts(String userId) {
-    return firestore
-        .collection('posts')
-        .where('uid', isEqualTo: userId)
-        .where('postType', isEqualTo: 'post')
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
-  }
-}
+Stream<List<Post>> getUserPosts(String userId) {
+  return firestore
+      .collection('posts')
+      .where('uid', isEqualTo: userId)
+      .where('postType', isEqualTo: 'post')
+      .snapshots()
+      .map((snapshot) {
+        final posts = snapshot.docs.map((doc) {
+          return Post.fromMap(doc.data());
+        }).toList();
+
+        return posts;  // <- stored in variable before returning
+      });
+}}
