@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
@@ -229,9 +228,9 @@ class _PostDetailState extends ConsumerState<PostDetail> {
         userProfile != null
             ? ListTile(
               contentPadding: EdgeInsets.all(0),
+
               horizontalTitleGap: 4,
               minTileHeight: 10,
-
               leading: Text(
                 userProfile!.profile.username,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),

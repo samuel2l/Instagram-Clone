@@ -24,6 +24,8 @@ class _HomeState extends ConsumerState<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.add),
           onPressed: () {
