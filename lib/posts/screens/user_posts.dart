@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
-import 'package:instagram/posts/screens/post_details.dart';
+import 'package:instagram/posts/screens/post_feed.dart';
 
 class UserPosts extends ConsumerStatefulWidget {
   const UserPosts({super.key, required this.userId});
@@ -66,7 +66,7 @@ class _UserPostsState extends ConsumerState<UserPosts> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) {
-                                return PostDetails(post: post);
+                                return PostFeed(post: post);
                               },
                             ),
                           );

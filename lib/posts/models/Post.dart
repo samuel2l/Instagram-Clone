@@ -33,7 +33,7 @@ class Post {
       postId: map['postId'] as String,
       mediaUrls: (map["imageUrls"] as List).map((e) => e.toString()).toList(),
       caption: map['caption'] as String,
-      createdAt: (map['timestamp'] as Timestamp).toDate().toIso8601String(), 
+      createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(), 
     );
   }
 
