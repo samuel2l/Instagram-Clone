@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/utils/constants.dart';
 
 final chatRepositoryProvider = Provider((ref) {
@@ -264,7 +265,7 @@ class ChatRepository {
     }
   }
 
-  Stream<List<Map<String, dynamic>>> getMessages(String chatId) {
+  Stream<List<Message>> getMessages(String chatId) {
     if (chatId.isEmpty) {
       return firestore
           .collection('chats')
@@ -272,7 +273,7 @@ class ChatRepository {
           .collection('messages')
           .orderBy('createdAt', descending: true)
           .snapshots()
-          .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+          .map((snapshot) => snapshot.docs.map((doc) => Message.fromMap(doc.data())).toList());
     }
     return firestore
         .collection('chats')
@@ -285,7 +286,7 @@ class ChatRepository {
               snapshot.docs.map((doc) {
                 final data = doc.data();
                 data['id'] = doc.id; // add the document ID into the map
-                return data;
+                return Message.fromMap(data);
               }).toList(),
         );
   }

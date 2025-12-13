@@ -4,7 +4,7 @@ import 'dart:convert';
 class Message {
   final String id;
   final bool isSeen;
-  final bool senderId;
+  final String senderId;
   final String type;
   final String repliedTo;
   final String replyType;
@@ -24,7 +24,7 @@ class Message {
   Message copyWith({
     String? id,
     bool? isSeen,
-    bool? senderId,
+    String? senderId,
     String? type,
     String? repliedTo,
     String? replyType,
@@ -60,7 +60,7 @@ class Message {
     return Message(
       id: map['id'] as String,
       isSeen: map['isSeen'] as bool,
-      senderId: map['senderId'] as bool,
+      senderId: map['senderId'] as String,
       type: map['type'] as String,
       repliedTo: map['repliedTo'] as String,
       replyType: map['replyType'] as String,
@@ -71,6 +71,6 @@ class Message {
 
   String toJson() => json.encode(toMap());
 
-  factory Message.fromJson(String source) => Message.fromMap(json.decode(source) as Map<String, dynamic>);
-
+  factory Message.fromJson(String source) =>
+      Message.fromMap(json.decode(source) as Map<String, dynamic>);
 }

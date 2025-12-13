@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:giphy_get/giphy_get.dart';
+import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
 import 'package:instagram/chat/screens/remove_member.dart';
@@ -55,7 +56,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     if (widget.chatData["isGroup"] == null) {
       widget.chatData["isGroup"] = false;
     }
@@ -252,7 +252,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<List<Map<String, dynamic>>>(
+            child: StreamBuilder<List<Message>>(
               stream: ref
                   .watch(chatRepositoryProvider)
                   .getMessages(localChatData["chatId"] ?? ""),
@@ -283,25 +283,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   controller: scrollController,
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    if (!messages[index]["isSeen"] &&
+                    final currMessage=messages[index];
+                    if (!currMessage.isSeen &&
                         FirebaseAuth.instance.currentUser?.uid !=
-                            messages[index]["senderId"]) {
+                            currMessage.senderId) {
                       ref
                           .read(chatRepositoryProvider)
                           .updateSeen(
                             localChatData["chatId"] ?? "123",
-                            messages[index]["id"],
+                            currMessage.id,
                           );
                     }
-                    if (messages[index]["type"] == image ||
-                        messages[index]["type"] == GIF) {
+                    if (currMessage.type == image ||
+                        currMessage.type == GIF) {
                       return SwipeTo(
                         onLeftSwipe: (details) {
                           showReply = true;
                           messageToReply = {
-                            "senderId": messages[index]["senderId"],
-                            "text": messages[index]["text"],
-                            "type": messages[index]["type"],
+                            "senderId": currMessage.senderId,
+                            "text": currMessage.content,
+                            "type": currMessage.type,
                           };
                           setState(() {});
                         },
@@ -309,7 +310,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
                             children: [
-                              messages[index]["repliedTo"].toString().isEmpty
+                              currMessage.repliedTo.isEmpty
                                   ? SizedBox.shrink()
                                   : Container(
                                     width: double.infinity,
@@ -318,37 +319,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          messages[index]["repliedTo"] ?? "",
-                                        ),
-                                        messages[index]["replyType"] == image ||
-                                                messages[index]["replyType"] ==
-                                                    GIF
+                                        Text(currMessage.repliedTo),
+                                        currMessage.replyType == image ||
+                                                currMessage.replyType == GIF
                                             ? SizedBox(
                                               height: 70,
                                               width: 70,
                                               child: CachedNetworkImage(
-                                                imageUrl:
-                                                    messages[index]["reply"],
+                                                imageUrl: currMessage.reply,
                                               ),
                                             )
-                                            : messages[index]["replyType"] ==
-                                                video
+                                            : currMessage.replyType == video
                                             ? SizedBox(
                                               height: 70,
                                               width: 70,
                                               child: VideoMessage(
-                                                url: messages[index]["reply"],
+                                                url: currMessage.reply,
                                                 isSender:
-                                                    messages[index]["repliedTo"] ==
+                                                    currMessage.repliedTo ==
                                                             "Me"
                                                         ? true
                                                         : false,
                                               ),
                                             )
-                                            : Text(
-                                              messages[index]["reply"] ?? "",
-                                            ),
+                                            : Text(currMessage.reply),
                                       ],
                                     ),
                                   ),
@@ -356,7 +350,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               Container(
                                 padding: EdgeInsets.all(5),
                                 color:
-                                    messages[index]["senderId"] ==
+                                    currMessage.senderId ==
                                             FirebaseAuth
                                                 .instance
                                                 .currentUser!
@@ -371,7 +365,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 height: 350,
 
                                 child: CachedNetworkImage(
-                                  imageUrl: messages[index]["text"],
+                                  imageUrl: currMessage.content,
                                   placeholder:
                                       (context, url) => Center(
                                         child: CircularProgressIndicator(),
@@ -385,21 +379,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                         ),
                       );
-                    } else if (messages[index]["type"] == video) {
+                    } else if (currMessage.type == video) {
                       return SwipeTo(
                         onLeftSwipe: (details) {
                           showReply = true;
                           messageToReply = {
-                            "senderId": messages[index]["senderId"],
-                            "text": messages[index]["text"],
-                            "type": messages[index]["type"],
+                            "senderId": currMessage.senderId,
+                            "text": currMessage.content,
+                            "type": currMessage.type,
                           };
                           setState(() {});
                         },
 
                         child: Column(
                           children: [
-                            messages[index]["repliedTo"].toString().isEmpty
+                            currMessage.repliedTo.toString().isEmpty
                                 ? SizedBox.shrink()
                                 : Container(
                                   width: double.infinity,
@@ -408,43 +402,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(messages[index]["repliedTo"] ?? ""),
-                                      messages[index]["replyType"] == image ||
-                                              messages[index]["replyType"] ==
-                                                  GIF
+                                      Text(currMessage.repliedTo),
+                                      currMessage.replyType == image ||
+                                              currMessage.replyType == GIF
                                           ? SizedBox(
                                             height: 70,
                                             width: 70,
                                             child: CachedNetworkImage(
-                                              imageUrl:
-                                                  messages[index]["reply"],
+                                              imageUrl: currMessage.reply,
                                             ),
                                           )
-                                          : messages[index]["replyType"] ==
-                                              video
+                                          : currMessage.replyType == video
                                           ? SizedBox(
                                             height: 70,
                                             width: 70,
                                             child: VideoMessage(
-                                              url: messages[index]["reply"],
+                                              url: currMessage.reply,
                                               isSender:
-                                                  messages[index]["repliedTo"] ==
+                                                  currMessage.repliedTo ==
                                                           "Me"
                                                       ? true
                                                       : false,
                                             ),
                                           )
-                                          : Text(
-                                            messages[index]["reply"] ?? "",
-                                          ),
+                                          : Text(currMessage.reply),
                                     ],
                                   ),
                                 ),
 
                             VideoMessage(
-                              url: messages[index]["text"],
+                              url: currMessage.content,
                               isSender:
-                                  messages[index]["senderId"] ==
+                                  currMessage.senderId ==
                                   FirebaseAuth.instance.currentUser!.uid,
                             ),
                           ],
@@ -455,9 +444,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         onLeftSwipe: (details) {
                           showReply = true;
                           messageToReply = {
-                            "senderId": messages[index]["senderId"],
-                            "text": messages[index]["text"],
-                            "type": messages[index]["type"],
+                            "senderId": currMessage.senderId,
+                            "text": currMessage.content,
+                            "type": currMessage.type,
                           };
                           setState(() {});
                         },
@@ -467,7 +456,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             children: [
                               ListTile(
                                 tileColor:
-                                    messages[index]["senderId"] ==
+                                    currMessage.senderId ==
                                             FirebaseAuth
                                                 .instance
                                                 .currentUser!
@@ -482,13 +471,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 title: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    messages[index]["repliedTo"]
-                                            .toString()
-                                            .isEmpty
+                                    currMessage.repliedTo.toString().isEmpty
                                         ? SizedBox.shrink()
                                         :
                                         // Text(
-                                        //   messages[index]["repliedTo"] ?? "",
+                                        //   currMessage.repliedTo ?? "",
                                         // ),
                                         Container(
                                           width: double.infinity,
@@ -498,50 +485,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                messages[index]["repliedTo"] ??
-                                                    "",
+                                                currMessage.repliedTo,
                                               ),
-                                              messages[index]["replyType"] ==
+                                              currMessage.replyType ==
                                                           image ||
-                                                      messages[index]["replyType"] ==
+                                                      currMessage.replyType ==
                                                           GIF
                                                   ? SizedBox(
                                                     height: 70,
                                                     width: 70,
                                                     child: CachedNetworkImage(
                                                       imageUrl:
-                                                          messages[index]["reply"],
+                                                          currMessage.reply,
                                                     ),
                                                   )
-                                                  : messages[index]["replyType"] ==
+                                                  : currMessage.replyType ==
                                                       video
                                                   ? SizedBox(
                                                     height: 70,
                                                     width: 70,
                                                     child: VideoMessage(
-                                                      url:
-                                                          messages[index]["reply"],
+                                                      url: currMessage.reply,
                                                       isSender:
-                                                          messages[index]["repliedTo"] ==
+                                                          currMessage.repliedTo ==
                                                                   "Me"
                                                               ? true
                                                               : false,
                                                     ),
                                                   )
                                                   : Text(
-                                                    messages[index]["reply"] ??
-                                                        "",
+                                                    currMessage.reply,
                                                   ),
                                             ],
                                           ),
                                         ),
 
-                                    Text(messages[index]["text"] ?? ""),
+                                    Text(currMessage.content),
                                   ],
                                 ),
-                                subtitle: Text(
-                                  messages[index]["senderId"] ?? "",
-                                ),
+                                subtitle: Text(currMessage.senderId),
                               ),
                             ],
                           ),
