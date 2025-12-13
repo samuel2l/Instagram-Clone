@@ -72,9 +72,9 @@ class _HomeState extends ConsumerState<Home> {
               if (snapshot.hasError) {
                 return Center(child: Text("Error loading stories"));
               }
-      
+
               final stories = snapshot.data ?? [];
-      
+
               if (snapshot.connectionState == ConnectionState.done) {
                 return SizedBox(
                   height: 140,
@@ -82,10 +82,10 @@ class _HomeState extends ConsumerState<Home> {
                   child: ListView.builder(
                     itemCount: stories.length,
                     scrollDirection: Axis.horizontal,
-      
+
                     itemBuilder: (context, index) {
                       final currUserStoryData = stories[index];
-      
+
                       return SizedBox(
                         width: 100,
                         child: Column(
@@ -101,7 +101,7 @@ class _HomeState extends ConsumerState<Home> {
                                   ),
                                 );
                               },
-      
+
                               child:
                                   //if user has no story then its just a circle avatar with dp and a plus icon to post
                                   currUserStoryData.userId ==
@@ -168,7 +168,13 @@ class _HomeState extends ConsumerState<Home> {
                                       //use 2 containers, the outer one with gradient and inner one with circle avatar
                                       //use first containers padding to create the border thickness effect
                                       //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
-                                      FutureBuilder(
+                                      currUserStoryData.userId ==
+                                              ref
+                                                  .read(getUserProvider)
+                                                  .value
+                                                  ?.firebaseUID &&
+                                          currentUserHasStory
+                                      ? FutureBuilder(
                                         future: ref
                                             .read(storyRepositoryProvider)
                                             .hasUserWatchedAllStories(
@@ -190,7 +196,7 @@ class _HomeState extends ConsumerState<Home> {
                                           }
                                           final hasWatchedAllStories =
                                               snapshot.data ?? false;
-      
+
                                           return Stack(
                                             children: [
                                               Container(
@@ -255,7 +261,7 @@ class _HomeState extends ConsumerState<Home> {
                                                   padding: const EdgeInsets.all(
                                                     5,
                                                   ), // border thickness
-      
+
                                                   child: Container(
                                                     decoration: BoxDecoration(
                                                       color: Colors.white,
@@ -316,6 +322,128 @@ class _HomeState extends ConsumerState<Home> {
                                                       child: Icon(
                                                         Icons.add,
                                                         size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      )
+                                      : FutureBuilder(
+                                        future: ref
+                                            .read(storyRepositoryProvider)
+                                            .hasUserWatchedAllStories(
+                                              ownerId: currUserStoryData.userId,
+                                              currentUserId:
+                                                  ref
+                                                      .read(getUserProvider)
+                                                      .value
+                                                      ?.firebaseUID ??
+                                                  "",
+                                            ),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Container();
+                                          }
+                                          if (snapshot.hasError) {
+                                            return Text("error");
+                                          }
+                                          final hasWatchedAllStories =
+                                              snapshot.data ?? false;
+
+                                          return Stack(
+                                            children: [
+                                              Container(
+                                                width:
+                                                    80, // 2 * radius + border
+                                                height:
+                                                    80, // 2 * radius + border
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      hasWatchedAllStories
+                                                          ? const Color.fromARGB(
+                                                            255,
+                                                            200,
+                                                            199,
+                                                            199,
+                                                          )
+                                                          : null,
+                                                  gradient:
+                                                      !hasWatchedAllStories
+                                                          ? LinearGradient(
+                                                            colors:
+                                                                index % 2 == 0
+                                                                    ? [
+                                                                      const Color.fromARGB(
+                                                                        255,
+                                                                        103,
+                                                                        1,
+                                                                        121,
+                                                                      ),
+                                                                      const Color.fromARGB(
+                                                                        255,
+                                                                        255,
+                                                                        64,
+                                                                        50,
+                                                                      ),
+                                                                    ]
+                                                                    : [
+                                                                      const Color.fromARGB(
+                                                                        255,
+                                                                        255,
+                                                                        64,
+                                                                        50,
+                                                                      ),
+                                                                      const Color.fromARGB(
+                                                                        255,
+                                                                        103,
+                                                                        1,
+                                                                        121,
+                                                                      ),
+                                                                    ],
+                                                            begin:
+                                                                Alignment
+                                                                    .topLeft,
+                                                            end:
+                                                                Alignment
+                                                                    .bottomRight,
+                                                          )
+                                                          : null,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    5,
+                                                  ), // border thickness
+
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    padding: const EdgeInsets.all(
+                                                      5,
+                                                    ), // border thickness trick again
+                                                    child: CircleAvatar(
+                                                      radius: 32,
+                                                      backgroundImage: CachedNetworkImageProvider(
+                                                        currUserStoryData
+                                                                    .userId ==
+                                                                ref
+                                                                    .read(
+                                                                      getUserProvider,
+                                                                    )
+                                                                    .value
+                                                                    ?.firebaseUID
+                                                            ? currUserStoryData
+                                                                .profile
+                                                                .dp
+                                                            : currUserStoryData
+                                                                .profile
+                                                                .dp,
                                                       ),
                                                     ),
                                                   ),
