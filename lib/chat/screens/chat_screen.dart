@@ -3,10 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
 import 'package:instagram/chat/screens/remove_member.dart';
+import 'package:instagram/chat/widgets/send_message.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
@@ -575,6 +577,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
                     )
                     : SizedBox.shrink(),
+                    SendMessage(user: AppUserModel.fromMap(widget.user))
 
               ],
             ),
