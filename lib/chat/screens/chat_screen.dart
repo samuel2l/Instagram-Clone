@@ -1,11 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:giphy_get/giphy_get.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
@@ -28,10 +25,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  String? file;
-  String? mediaFilePath;
 
-  final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
   bool showReply = false;
   Map<String, dynamic> messageToReply = {};
@@ -45,11 +39,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     // getChatId();
     localChatData = Map.from(widget.chatData);
+    ref.read(chatIdProvider.notifier).state = localChatData["chatId"];
   }
 
   @override
   void dispose() {
-    messageController.dispose();
     scrollController.dispose();
     super.dispose();
   }
@@ -59,7 +53,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (widget.chatData["isGroup"] == null) {
       widget.chatData["isGroup"] = false;
     }
-    // print("ah the chatdat????? ${widget.chatData}");
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -76,7 +69,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         MaterialPageRoute(
                           builder: (context) {
                             return RemoveMember(
-                              chatId: localChatData["chatId"],
+                              chatId: ref.watch(chatIdProvider),
                             );
                           },
                         ),
@@ -90,7 +83,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) {
-                            return AddMember(chatId: localChatData["chatId"]);
+                            return AddMember(chatId: ref.watch(chatIdProvider));
                           },
                         ),
                       );
@@ -100,7 +93,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   StreamBuilder(
                     stream: ref
                         .watch(videoCallRepositoryProvider)
-                        .checkIncomingCalls(localChatData["chatId"]),
+                        .checkIncomingCalls(ref.watch(chatIdProvider)),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -119,10 +112,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ref
                                 .read(videoCallRepositoryProvider)
                                 .sendCallData(
-                                  calleeId: localChatData["chatId"],
+                                  calleeId: ref.watch(chatIdProvider),
                                   callType: "video",
                                   channelId:
-                                      "${localChatData["chatId"]} ${widget.chatData["groupName"]}",
+                                      "${ref.watch(chatIdProvider)} ${widget.chatData["groupName"]}",
                                 );
 
                             String? res;
@@ -131,8 +124,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return GroupVideoCallScreen(
                                     channelId:
-                                        "${localChatData["chatId"]} ${widget.chatData["groupName"]}",
-                                    calleeId: localChatData["chatId"],
+                                        "${ref.watch(chatIdProvider)} ${widget.chatData["groupName"]}",
+                                    calleeId: ref.watch(chatIdProvider),
                                   );
                                 },
                               ),
@@ -154,7 +147,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return GroupVideoCallScreen(
                                     channelId: callData['channelId'],
-                                    calleeId: localChatData["chatId"],
+                                    calleeId: ref.watch(chatIdProvider),
                                   );
                                 },
                               ),
@@ -255,7 +248,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: StreamBuilder<List<Message>>(
               stream: ref
                   .watch(chatRepositoryProvider)
-                  .getMessages(localChatData["chatId"] ?? ""),
+                  .getMessages(ref.watch(chatIdProvider) ?? ""),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -283,19 +276,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   controller: scrollController,
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    final currMessage=messages[index];
+                    final currMessage = messages[index];
                     if (!currMessage.isSeen &&
                         FirebaseAuth.instance.currentUser?.uid !=
                             currMessage.senderId) {
                       ref
                           .read(chatRepositoryProvider)
                           .updateSeen(
-                            localChatData["chatId"] ?? "123",
+                            ref.watch(chatIdProvider) ?? "123",
                             currMessage.id,
                           );
                     }
-                    if (currMessage.type == image ||
-                        currMessage.type == GIF) {
+                    if (currMessage.type == image || currMessage.type == GIF) {
                       return SwipeTo(
                         onLeftSwipe: (details) {
                           showReply = true;
@@ -419,8 +411,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                             child: VideoMessage(
                                               url: currMessage.reply,
                                               isSender:
-                                                  currMessage.repliedTo ==
-                                                          "Me"
+                                                  currMessage.repliedTo == "Me"
                                                       ? true
                                                       : false,
                                             ),
@@ -484,11 +475,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                currMessage.repliedTo,
-                                              ),
-                                              currMessage.replyType ==
-                                                          image ||
+                                              Text(currMessage.repliedTo),
+                                              currMessage.replyType == image ||
                                                       currMessage.replyType ==
                                                           GIF
                                                   ? SizedBox(
@@ -513,9 +501,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                               : false,
                                                     ),
                                                   )
-                                                  : Text(
-                                                    currMessage.reply,
-                                                  ),
+                                                  : Text(currMessage.reply),
                                             ],
                                           ),
                                         ),
@@ -590,291 +576,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     )
                     : SizedBox.shrink(),
 
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        showEmojis = !showEmojis;
-                        if (showEmojis) {
-                          focusNode.unfocus();
-                        } else {
-                          focusNode.requestFocus();
-                        }
-                        setState(() {});
-                      },
-                      icon: Icon(Icons.emoji_emotions_outlined),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        focusNode: focusNode,
-                        // inputFormatters: [EmojiSafeFormatter()],
-                        controller: messageController,
-                        decoration: InputDecoration(
-                          hintText: "Type a message...",
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        file = await pickImageFromGallery(context);
-                        if (file != "") {
-                          mediaFilePath = await uploadImageToCloudinary(file);
-
-                          showReply
-                              ? ref
-                                  .read(chatRepositoryProvider)
-                                  .sendFile(
-                                    receiverId: widget.user["uid"] ?? "",
-                                    senderId:
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: localChatData["chatId"] ?? "",
-                                    messageType: image,
-                                    imageUrl: mediaFilePath!,
-                                    repliedTo:
-                                        FirebaseAuth
-                                                    .instance
-                                                    .currentUser
-                                                    ?.uid ==
-                                                messageToReply["senderId"]
-                                            ? "Me"
-                                            : messageToReply["senderId"],
-                                    reply: messageToReply["text"],
-                                    replyType: messageToReply["type"],
-                                  )
-                              : ref
-                                  .read(chatRepositoryProvider)
-                                  .sendFile(
-                                    receiverId: widget.user["uid"] ?? "",
-                                    senderId:
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: localChatData["chatId"] ?? "",
-                                    messageType: image,
-                                    imageUrl: mediaFilePath!,
-                                  );
-                          mediaFilePath = "";
-                          showReply = false;
-                          setState(() {});
-                        }
-                      },
-                      icon: Icon(Icons.photo),
-                    ),
-
-                    IconButton(
-                      onPressed: () async {
-                        GiphyGif? gif = await pickGIF(context);
-                        if (gif != null) {
-                          showReply
-                              ? ref
-                                  .read(chatRepositoryProvider)
-                                  .sendFile(
-                                    receiverId: widget.user["uid"] ?? "",
-                                    senderId:
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: localChatData["chatId"] ?? "",
-                                    messageType: GIF,
-                                    imageUrl: gif.images?.original?.url ?? "",
-                                    repliedTo:
-                                        FirebaseAuth
-                                                    .instance
-                                                    .currentUser
-                                                    ?.uid ==
-                                                messageToReply["senderId"]
-                                            ? "Me"
-                                            : messageToReply["senderId"],
-                                    reply: messageToReply["text"],
-                                    replyType: messageToReply["type"],
-                                  )
-                              : ref
-                                  .read(chatRepositoryProvider)
-                                  .sendFile(
-                                    receiverId: widget.user["uid"] ?? "",
-                                    senderId:
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                    chatId: localChatData["chatId"] ?? "",
-                                    messageType: GIF,
-                                    imageUrl: gif.images?.original?.url ?? "",
-                                  );
-                          messageToReply = {};
-                          showReply = false;
-                          setState(() {});
-                        }
-                      },
-                      icon: Icon(Icons.gif),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        file = await pickVideoFromGallery(context);
-                        if (file != "" || file != null) {
-                          mediaFilePath = await uploadVideoToCloudinary(file);
-                          if (mediaFilePath != "") {
-                            showReply
-                                ? ref
-                                    .read(chatRepositoryProvider)
-                                    .sendFile(
-                                      receiverId: widget.user["uid"] ?? "",
-                                      senderId:
-                                          FirebaseAuth
-                                              .instance
-                                              .currentUser!
-                                              .uid,
-                                      chatId: localChatData["chatId"] ?? "",
-                                      messageType: video,
-                                      imageUrl: mediaFilePath!,
-                                      repliedTo:
-                                          FirebaseAuth
-                                                      .instance
-                                                      .currentUser
-                                                      ?.uid ==
-                                                  messageToReply["senderId"]
-                                              ? "Me"
-                                              : messageToReply["senderId"],
-                                      reply: messageToReply["text"],
-                                      replyType: messageToReply["type"],
-                                    )
-                                : ref
-                                    .read(chatRepositoryProvider)
-                                    .sendFile(
-                                      receiverId: widget.user["uid"] ?? "",
-                                      senderId:
-                                          FirebaseAuth
-                                              .instance
-                                              .currentUser!
-                                              .uid,
-                                      chatId: localChatData["chatId"] ?? "",
-                                      messageType: video,
-                                      imageUrl: mediaFilePath!,
-                                    );
-                            mediaFilePath = "";
-                            showReply = false;
-                            setState(() {});
-                          }
-                        }
-                      },
-                      icon: Icon(Icons.attachment),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.send),
-                      onPressed: () async {
-                        final text = messageController.text.trim();
-
-                        if (text.isNotEmpty) {
-                          final chatData =
-                              showReply
-                                  ? await ref
-                                      .read(chatRepositoryProvider)
-                                      .sendMessage(
-                                        receiverId:
-                                            widget.user["uid"] ?? "" ?? "",
-                                        senderId:
-                                            FirebaseAuth
-                                                .instance
-                                                .currentUser!
-                                                .uid,
-                                        messageText: text,
-                                        chatId: localChatData["chatId"] ?? "",
-                                        repliedTo:
-                                            FirebaseAuth
-                                                        .instance
-                                                        .currentUser
-                                                        ?.uid ==
-                                                    messageToReply["senderId"]
-                                                ? "Me"
-                                                : messageToReply["senderId"],
-                                        reply: messageToReply["text"],
-                                        replyType: messageToReply["type"],
-                                      )
-                                  : await ref
-                                      .read(chatRepositoryProvider)
-                                      .sendMessage(
-                                        receiverId:
-                                            widget.user["uid"] ?? "" ?? "",
-                                        senderId:
-                                            FirebaseAuth
-                                                .instance
-                                                .currentUser!
-                                                .uid,
-                                        messageText: text,
-                                        chatId: localChatData["chatId"] ?? "",
-                                      );
-                          messageController.clear();
-                          if (localChatData["chatId"] == null &&
-                              chatData != "") {
-                            localChatData["chatId"] = chatData;
-                          }
-                        }
-                        messageToReply = {};
-                        showReply = false;
-                        setState(() {});
-                      },
-                    ),
-                  ],
-                ),
-                showEmojis
-                    ? SizedBox(
-                      height: 250,
-                      child: EmojiPicker(
-                        onBackspacePressed: () {
-                          final text = messageController.text;
-                          final selection = messageController.selection;
-
-                          if (selection.start <= 0) return;
-
-                          final characters = text.characters;
-                          int deleteOffset = selection.start;
-
-                          int currentOffset = 0;
-                          for (final char in characters) {
-                            final nextOffset = currentOffset + char.length;
-                            if (nextOffset >= deleteOffset) {
-                              // Found the character to delete
-                              final newText = text.replaceRange(
-                                currentOffset,
-                                nextOffset,
-                                '',
-                              );
-
-                              // Update the text and cursor position
-                              messageController.text = newText;
-                              messageController
-                                  .selection = TextSelection.collapsed(
-                                offset: currentOffset,
-                              );
-                              return;
-                            }
-                            currentOffset = nextOffset;
-                          }
-                        },
-                        onEmojiSelected: (category, emoji) {
-                          final text = messageController.text;
-                          final textSelection = messageController.selection;
-
-                          // 🛡️ Prevent range error if selection is invalid
-                          if (textSelection.start < 0 ||
-                              textSelection.end < 0) {
-                            messageController.text += emoji.emoji;
-                            messageController
-                                .selection = TextSelection.collapsed(
-                              offset: messageController.text.length,
-                            );
-                            return;
-                          }
-
-                          final newText = text.replaceRange(
-                            textSelection.start,
-                            textSelection.end,
-                            emoji.emoji,
-                          );
-                          final emojiLength = emoji.emoji.length;
-
-                          messageController.text = newText;
-                          messageController.selection = textSelection.copyWith(
-                            baseOffset: textSelection.start + emojiLength,
-                            extentOffset: textSelection.start + emojiLength,
-                          );
-                        },
-                      ),
-                    )
-                    : SizedBox.shrink(),
               ],
             ),
           ),

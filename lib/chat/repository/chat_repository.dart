@@ -8,6 +8,7 @@ final chatRepositoryProvider = Provider((ref) {
   return ChatRepository(firestore: FirebaseFirestore.instance);
 });
 
+final chatIdProvider = StateProvider<String>((ref) => '');
 class ChatRepository {
   FirebaseFirestore firestore;
   ChatRepository({required this.firestore});
@@ -226,11 +227,11 @@ class ChatRepository {
     String replyType = "",
 
     bool isGroup = false,
-    List<String> participants = const [],
     String groupName = "",
   }) async {
     try {
       if (chatId.isEmpty) {
+        //if it is a group this condiiton will never be true as chat id is created for group when group's created
         chatId = await getOrCreateChatId([senderId, receiverId]);
       }
       final messageDoc =
