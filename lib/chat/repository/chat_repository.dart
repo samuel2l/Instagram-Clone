@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/utils/constants.dart';
 
@@ -104,17 +105,19 @@ class ChatRepository {
     return users;
   }
 
-  Future<Map<String, dynamic>> getUserById(String uid) async {
-    final snapshot =
-        await firestore
-            .collection('users')
-            .where('uid', isEqualTo: uid)
-            .limit(1)
-            .get();
+Future<AppUserModel?> getUserById(String uid) async {
+  final snapshot = await firestore
+      .collection('users')
+      .where('uid', isEqualTo: uid)
+      .limit(1)
+      .get();
 
-    return snapshot.docs.first.data();
+  if (snapshot.docs.isEmpty) {
+    return null; 
   }
 
+  return AppUserModel.fromMap(snapshot.docs.first.data());
+}
   Future<String> getOrCreateChatId(
     List<String> userIds, {
     bool isGroup = false,

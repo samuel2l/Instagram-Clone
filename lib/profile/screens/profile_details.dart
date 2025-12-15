@@ -78,10 +78,7 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                 MaterialPageRoute(
                                   builder: (context) {
                                     return ChatScreen(
-                                      user: {
-                                        "email": profileData!.email,
-                                        "uid": profileData.firebaseUID,
-                                      },
+                                      user: profileData,
                                       chatData: chatData ?? {},
                                     );
                                   },

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
@@ -331,14 +332,14 @@ class Chats extends ConsumerWidget {
                                         builder:
                                             (context) => ChatScreen(
                                               chatData: chat,
-                                              user: {},
+                                              user: null,
                                             ),
                                       ),
                                     );
                                   },
                                   trailing: Text(formattedTime),
                                 )
-                                : FutureBuilder<Map<String, dynamic>>(
+                                : FutureBuilder<AppUserModel?>(
                                   future: ref
                                       .read(chatRepositoryProvider)
                                       .getUserById(
@@ -381,7 +382,7 @@ class Chats extends ConsumerWidget {
                                           ),
                                         );
                                       },
-                                      title: Text(receiver["email"]),
+                                      title: Text(receiver.email),
                                       subtitle: Text(chat["lastMessage"] ?? ""),
                                       trailing: Text(formattedTime),
                                     );

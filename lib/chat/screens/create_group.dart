@@ -69,7 +69,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
-                    return ChatScreen(chatData:res ,user: {});
+                    return ChatScreen(chatData:res ,user: null);
                   },
                 ),
               );

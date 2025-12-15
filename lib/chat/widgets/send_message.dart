@@ -9,7 +9,7 @@ import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
 class SendMessage extends ConsumerStatefulWidget {
-final AppUserModel user;
+final AppUserModel? user;
     const SendMessage( {super.key,required this.user});
 
 
@@ -72,7 +72,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                       ? ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user.firebaseUID,
+                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: image,
@@ -88,7 +88,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                       : ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user.firebaseUID,
+                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: image,
@@ -110,7 +110,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                       ? ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user.firebaseUID,
+                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: GIF,
@@ -126,7 +126,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                       : ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user.firebaseUID,
+                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: GIF,
@@ -149,7 +149,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                         ? ref
                             .read(chatRepositoryProvider)
                             .sendFile(
-                              receiverId: widget.user.firebaseUID,
+                              receiverId: widget.user!=null?widget.user!.firebaseUID:"",
                               senderId: FirebaseAuth.instance.currentUser!.uid,
                               chatId: ref.watch(chatIdProvider),
                               messageType: video,
@@ -165,7 +165,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                         : ref
                             .read(chatRepositoryProvider)
                             .sendFile(
-                              receiverId: widget.user.firebaseUID,
+                              receiverId:widget.user!=null?widget.user!.firebaseUID:"",
                               senderId: FirebaseAuth.instance.currentUser!.uid,
                               chatId: ref.watch(chatIdProvider),
                               messageType: video,
@@ -190,7 +190,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                           ? await ref
                               .read(chatRepositoryProvider)
                               .sendMessage(
-                                receiverId: widget.user.firebaseUID ,
+                                receiverId: widget.user!=null?widget.user!.firebaseUID:"",
                                 senderId:
                                     FirebaseAuth.instance.currentUser!.uid,
                                 messageText: text,
@@ -206,7 +206,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                           : await ref
                               .read(chatRepositoryProvider)
                               .sendMessage(
-                                receiverId: widget.user.firebaseUID ,
+                                receiverId:widget.user!=null?widget.user!.firebaseUID:"" ,
                                 senderId:
                                     FirebaseAuth.instance.currentUser!.uid,
                                 messageText: text,

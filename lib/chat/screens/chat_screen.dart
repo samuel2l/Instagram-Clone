@@ -19,7 +19,7 @@ import 'package:swipe_to/swipe_to.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.user, required this.chatData});
-  final Map<String, dynamic> user;
+  final AppUserModel? user;
   final Map<String, dynamic> chatData;
 
   @override
@@ -27,7 +27,6 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-
   final ScrollController scrollController = ScrollController();
   bool showReply = false;
   Map<String, dynamic> messageToReply = {};
@@ -41,7 +40,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     // getChatId();
     localChatData = Map.from(widget.chatData);
-    ref.read(chatIdProvider.notifier).state = localChatData["chatId"];
+    print("ah this local chat data? $localChatData");
+    ref.read(chatIdProvider.notifier).state = localChatData["chatId"] ?? '';
+ 
   }
 
   @override
@@ -52,7 +53,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.chatData["isGroup"] == null) {
+      if (widget.chatData["isGroup"] == null) {
       widget.chatData["isGroup"] = false;
     }
     return Scaffold(
@@ -60,7 +61,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         title: Text(
           widget.chatData["isGroup"]
               ? widget.chatData["groupName"]
-              : widget.user["email"],
+              : widget.user?.email,
         ),
         actions:
             widget.chatData["isGroup"]
@@ -191,10 +192,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ref
                                 .read(videoCallRepositoryProvider)
                                 .sendCallData(
-                                  calleeId: widget.user["uid"],
+                                  calleeId:
+                                      widget.user != null
+                                          ? widget.user!.firebaseUID
+                                          : "",
                                   callType: "video",
                                   channelId:
-                                      "${FirebaseAuth.instance.currentUser?.uid} ${widget.user["uid"]}",
+                                      "${FirebaseAuth.instance.currentUser?.uid} ${widget.user?.firebaseUID}",
                                 );
 
                             String? res;
@@ -203,8 +207,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return VideoCallScreen(
                                     channelId:
-                                        "${FirebaseAuth.instance.currentUser?.uid} ${widget.user["uid"]}",
-                                    calleeId: widget.user["uid"],
+                                        "${FirebaseAuth.instance.currentUser?.uid} ${widget.user?.firebaseUID}",
+                                    calleeId:
+                                        widget.user != null
+                                            ? widget.user!.firebaseUID
+                                            : "",
                                   );
                                 },
                               ),
@@ -226,7 +233,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return VideoCallScreen(
                                     channelId: callData['channelId'],
-                                    calleeId: widget.user["uid"],
+                                    calleeId:
+                                        widget.user != null
+                                            ? widget.user!.firebaseUID
+                                            : "",
                                   );
                                 },
                               ),
@@ -577,8 +587,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
                     )
                     : SizedBox.shrink(),
-                    SendMessage(user: AppUserModel.fromMap(widget.user))
-
+                SendMessage(user: widget.user!=null?widget.user!:null),
               ],
             ),
           ),
