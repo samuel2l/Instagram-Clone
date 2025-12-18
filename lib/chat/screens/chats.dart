@@ -12,7 +12,6 @@ class Chats extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return Scaffold(
       appBar: AppBar(title: Text("Chats")),
       body: ref
@@ -168,10 +167,10 @@ class Chats extends ConsumerWidget {
                             final chat = chats[index];
 
                             String formattedTime = chat.lastMessageTime!;
-                            
 
                             return chat.isGroup
                                 ? ListTile(
+                                  splashColor: Colors.transparent,
                                   title: Text(chat.groupName!),
                                   subtitle: Text(chat.lastMessage!),
                                   onTap: () {
@@ -219,6 +218,7 @@ class Chats extends ConsumerWidget {
                                     final receiver = snapshot.data!;
 
                                     return ListTile(
+                                      splashColor: Colors.transparent,
                                       onTap: () {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
@@ -230,7 +230,7 @@ class Chats extends ConsumerWidget {
                                           ),
                                         );
                                       },
-                                      title: Text(receiver.email),
+                                      title: Text(receiver.profile.name),
                                       subtitle: Text(chat.lastMessage!),
                                       trailing: Text(formattedTime),
                                     );
