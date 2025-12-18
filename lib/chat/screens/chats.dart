@@ -1,4 +1,3 @@
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +6,6 @@ import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
-import 'package:instagram/chat/screens/create_group.dart';
-import 'package:instagram/home/screens/find_users.dart';
-import 'package:instagram/live%20stream/repository/livestream_repository.dart';
-import 'package:instagram/live%20stream/screens/livestream_screen.dart';
-import 'package:instagram/live%20stream/screens/start_livestream.dart';
-import 'package:instagram/posts/screens/create_post.dart';
-import 'package:instagram/profile/repository/profile_repository.dart';
 import 'package:instagram/posts/screens/reels.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
 
@@ -22,7 +14,6 @@ class Chats extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Map<String, dynamic> stories = {};
 
     return Scaffold(
       appBar: AppBar(title: Text("Chats")),
@@ -32,259 +23,121 @@ class Chats extends ConsumerWidget {
             data: (user) {
               return Column(
                 children: [
-                  // Container(
-                  //   height: 160,
-                  //   color: Colors.red,
-                  //   child: StreamBuilder(
-                  //     stream:
-                  //         ref.watch(liveStreamRepositoryProvider).getLiveUsers(),
-                  //     builder: (context, snapshot) {
-                  //       if (snapshot.connectionState == ConnectionState.waiting) {
-                  //         return const Center(child: CircularProgressIndicator());
-                  //       }
+                  // StreamBuilder(
+                  //   stream:
+                  //       ref.watch(liveStreamRepositoryProvider).getLiveUsers(),
+                  //   builder: (context, snapshot) {
+                  //     if (snapshot.connectionState == ConnectionState.waiting) {
+                  //       return const Center(child: CircularProgressIndicator());
+                  //     }
 
-                  //       if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  //         return const Center(child: Text("No users are live"));
-                  //       }
+                  //     if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  //       return const Center(child: Text("No users are live"));
+                  //     }
 
-                  //       final liveUsers = snapshot.data!;
-                  //       print("ah users $liveUsers");
+                  //     final liveUsers = snapshot.data!;
 
-                  //       return Expanded(
-                  //         child: ListView.builder(
+                  //     return SizedBox(
+                  //       height: 100,
+                  //       child: ListView.builder(
+                  //         scrollDirection: Axis.horizontal,
+                  //         itemCount: liveUsers.length,
+                  //         itemBuilder: (context, index) {
+                  //           final user = liveUsers[index];
 
-                  //           // scrollDirection: Axis.horizontal,
-                  //           itemCount: liveUsers.length,
-                  //           itemBuilder: (context, index) {
-                  //             final user = liveUsers[index];
-                  //             return ListTile(
-                  //               title: Text(user['email'] ?? 'Unknown'),
-                  //               subtitle: const Text('Live'),
-                  //               onTap: () {
-                  //                 Navigator.of(context).push(
-                  //                   MaterialPageRoute(
-                  //                     builder: (context) {
-                  //                       return LivestreamScreen(
-                  //                         role: ClientRoleType.clientRoleAudience,
-                  //                         channelId:
-                  //                             "${user["uid"]} ${user["email"]}", // replace with your correct field
-                  //                       );
-                  //                     },
+                  //           // print("${user["uid"]} ${user["email"]}");
+                  //           return SingleChildScrollView(
+                  //             child: Container(
+                  //               width: 100,
+                  //               margin: const EdgeInsets.symmetric(
+                  //                 horizontal: 8,
+                  //               ),
+                  //               child: GestureDetector(
+                  //                 onTap: () {
+                  //                   Navigator.of(context).push(
+                  //                     MaterialPageRoute(
+                  //                       builder: (context) {
+                  //                         ref.read(
+                  //                           liveStreamRepositoryProvider,
+                  //                         );
+                  //                         return LivestreamScreen(
+                  //                           role:
+                  //                               ClientRoleType
+                  //                                   .clientRoleAudience,
+                  //                           channelId:
+                  //                               "${user["uid"]} ${user["email"]}",
+                  //                         );
+                  //                       },
+                  //                     ),
+                  //                   );
+                  //                 },
+                  //                 child: Card(
+                  //                   child: Center(
+                  //                     child: Column(
+                  //                       mainAxisAlignment:
+                  //                           MainAxisAlignment.center,
+                  //                       children: [
+                  //                         Icon(
+                  //                           Icons.videocam,
+                  //                           color: Colors.red,
+                  //                         ),
+                  //                         const SizedBox(height: 8),
+                  //                         Text(
+                  //                           user['email'] ?? 'Unknown',
+                  //                           textAlign: TextAlign.center,
+                  //                         ),
+                  //                         const Text(
+                  //                           'Live',
+                  //                           style: TextStyle(color: Colors.red),
+                  //                         ),
+                  //                       ],
+                  //                     ),
                   //                   ),
-                  //                 );
-                  //               },
-                  //             );
-                  //           },
-                  //         ),
-                  //       );
-                  //     },
-                  //   ),
+                  //                 ),
+                  //               ),
+                  //             ),
+                  //           );
+                  //         },
+                  //       ),
+                  //     );
+                  //   },
                   // ),
-                  StreamBuilder(
-                    stream:
-                        ref.watch(liveStreamRepositoryProvider).getLiveUsers(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(child: Text("No users are live"));
-                      }
-
-                      final liveUsers = snapshot.data!;
-
-                      return SizedBox(
-                        height: 100,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: liveUsers.length,
-                          itemBuilder: (context, index) {
-                            final user = liveUsers[index];
-
-                            // print("${user["uid"]} ${user["email"]}");
-                            return SingleChildScrollView(
-                              child: Container(
-                                width: 100,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          ref.read(
-                                            liveStreamRepositoryProvider,
-                                          );
-                                          return LivestreamScreen(
-                                            role:
-                                                ClientRoleType
-                                                    .clientRoleAudience,
-                                            channelId:
-                                                "${user["uid"]} ${user["email"]}",
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                  child: Card(
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.videocam,
-                                            color: Colors.red,
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            user['email'] ?? 'Unknown',
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          const Text(
-                                            'Live',
-                                            style: TextStyle(color: Colors.red),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(authRepositoryProvider).logoutUser(context);
-                      ref.invalidate(getUserProvider);
-                    },
-                    child: Text("Logout"),
-                  ),
-                  SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () async {
-                      await ref
-                          .read(profileRepositoryProvider)
-                          .createOrUpdateUserProfile(
-                            uid: FirebaseAuth.instance.currentUser!.uid,
-                            bio: "1st user of app",
-                            name: "Samuel Adams",
-                            dp: "https://plus.unsplash.com/premium_photo-1764435536930-c93558fa72c6?q=80&w=3023&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                            context: context,
-
-
-                            
-                          );
-                    },
-                    child: Text("Create profile sharp sharp"),
-                  ),       
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     ref.read(authRepositoryProvider).logoutUser(context);
+                  //     ref.invalidate(getUserProvider);
+                  //   },
+                  //   child: Text("Logout"),
+                  // ),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(builder: (context) => CreateGroup()),
+                  //     );
+                  //   },
+                  //   child: Text("Create Group"),
+                  // ),
 
                   // GestureDetector(
-                  //   onTap: () async {
-                  //     await ref
-                  //         .read(profileRepositoryProvider)
-                  //         .getUserProfile(
-                  //           uid: FirebaseAuth.instance.currentUser!.uid,
-                  //           context: context,
-                  //         );
+                  //   onTap: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(builder: (context) => FindUsers()),
+                  //     );
                   //   },
-                  //   child: Text("see prpfile"),
+                  //   child: Text("Connect with others"),
                   // ),
-                  FutureBuilder(
-                    future: ref.read(authRepositoryProvider).getUser(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Text("error fetching profile");
-                      }
-                      if (snapshot.hasData) {
-                        final userData = snapshot.data;
-
-                        return Column(
-                          children: [
-                            Row(
-                              children: [
-                                Column(
-                                  children: [
-                                    Text("Followers"),
-                                    Text(
-                                      "${userData!.profile.followers.length}",
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    Text("Following"),
-                                    Text(
-                                      "${userData.profile.following.length}",
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Text(userData.profile.bio),
-                            CircleAvatar(
-
-                              backgroundImage: NetworkImage(
-                                userData.profile.dp,
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                      return Center(child: CircularProgressIndicator());
-                    },
-                  ),
-
-                  SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => CreateGroup()),
-                      );
-                    },
-                    child: Text("Create Group"),
-                  ),
-
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => CreatePost()),
-                      );
-                    },
-                    child: Text("Post"),
-                  ),
-
-                  // UserPosts(userId: FirebaseAuth.instance.currentUser!.uid),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => FindUsers()),
-                      );
-                    },
-                    child: Text("Connect with others"),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return StartLivestreamScreen();
-                          },
-                        ),
-                      );
-                    },
-                    child: Text("Start Live stream"),
-                  ),
-                  Text(user?.email ?? ""),
-                  Text(user?.firebaseUID ?? ""),
-                  SizedBox(height: 20),
-                  Text("CHATS", style: TextStyle(fontSize: 22)),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (context) {
+                  //           return StartLivestreamScreen();
+                  //         },
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: Text("Start Live stream"),
+                  // ),
                   Expanded(
                     child: StreamBuilder<List<Map<String, dynamic>>>(
                       stream: ref
@@ -393,30 +246,19 @@ class Chats extends ConsumerWidget {
                       },
                     ),
                   ),
-                  TextButton(
-                    onPressed: () async {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return SelectStoryImage();
-                          },
-                        ),
-                      );
-                    },
-                    child: Text("add imgs"),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return Reels();
-                          },
-                        ),
-                      );
-                    },
-                    child: Text("Watch reels"),
-                  ),
+
+                  // TextButton(
+                  //   onPressed: () async {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (context) {
+                  //           return Reels();
+                  //         },
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: Text("Watch reels"),
+                  // ),
                 ],
               );
             },
