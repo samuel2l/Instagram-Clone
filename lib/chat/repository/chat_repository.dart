@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
+import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/utils/constants.dart';
 
@@ -10,10 +11,11 @@ final chatRepositoryProvider = Provider((ref) {
 });
 
 final chatIdProvider = StateProvider<String>((ref) => '');
+
 class ChatRepository {
   FirebaseFirestore firestore;
   ChatRepository({required this.firestore});
-  Stream<List<Map<String, dynamic>>> getUserChats(String userId) {
+  Stream<List<ChatData>> getUserChats(String userId) {
     return firestore
         .collection('chats')
         .where('participants', arrayContains: userId)
@@ -41,16 +43,17 @@ class ChatRepository {
 
                 if (userSnap.docs.isNotEmpty) {
                   final userData = userSnap.docs.first.data();
+                  print("user data at chat repo? $userData");
                   chatData['email'] = userData['email'];
                   chatData['name'] = userData['name'];
-                  chatData['profilePic'] = userData['profilePic'];
+                  chatData['dp'] = userData['dp'];
                 }
               }
               return chatData;
             }).toList(),
           );
 
-          return enrichedChats;
+          return enrichedChats.map((chat) => ChatData.fromMap(chat)).toList();
         });
   }
 
@@ -105,19 +108,21 @@ class ChatRepository {
     return users;
   }
 
-Future<AppUserModel?> getUserById(String uid) async {
-  final snapshot = await firestore
-      .collection('users')
-      .where('uid', isEqualTo: uid)
-      .limit(1)
-      .get();
+  Future<AppUserModel?> getUserById(String uid) async {
+    final snapshot =
+        await firestore
+            .collection('users')
+            .where('uid', isEqualTo: uid)
+            .limit(1)
+            .get();
 
-  if (snapshot.docs.isEmpty) {
-    return null; 
+    if (snapshot.docs.isEmpty) {
+      return null;
+    }
+
+    return AppUserModel.fromMap(snapshot.docs.first.data());
   }
 
-  return AppUserModel.fromMap(snapshot.docs.first.data());
-}
   Future<String> getOrCreateChatId(
     List<String> userIds, {
     bool isGroup = false,
@@ -277,7 +282,12 @@ Future<AppUserModel?> getUserById(String uid) async {
           .collection('messages')
           .orderBy('createdAt', descending: true)
           .snapshots()
-          .map((snapshot) => snapshot.docs.map((doc) => Message.fromMap(doc.data())).toList());
+          .map(
+            (snapshot) =>
+                snapshot.docs
+                    .map((doc) => Message.fromMap(doc.data()))
+                    .toList(),
+          );
     }
     return firestore
         .collection('chats')

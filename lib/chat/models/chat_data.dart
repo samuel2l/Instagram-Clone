@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatData {
   final String chatId;
@@ -10,7 +10,7 @@ class ChatData {
   final String? groupName;
   final String dp;
   final String? lastMessage;
-  final String lastMessageTime;
+  final String? lastMessageTime;
   final List<String> participants;
   ChatData({
     required this.chatId,
@@ -63,6 +63,7 @@ class ChatData {
   }
 
   factory ChatData.fromMap(Map<String, dynamic> map) {
+    print("chat data map $map");
     return ChatData(
       chatId: map['chatId'] as String,
       isGroup: map['isGroup'] as bool,
@@ -72,11 +73,11 @@ class ChatData {
       dp: map['dp'] as String,
       lastMessage:
           map['lastMessage'] != null ? map['lastMessage'] as String : "",
-      lastMessageTime: map['lastMessageTime'] as String,
-      participants:(map["imageUrls"] as List).map((e) => e.toString()).toList(),
+      lastMessageTime: (map['lastMessageTime'] as Timestamp).toDate().toIso8601String(),
+      participants:
+          (map["participants"] as List).map((e) => e.toString()).toList(),
     );
   }
 
   String toJson() => json.encode(toMap());
-
 }

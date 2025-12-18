@@ -1,13 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
+import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
-import 'package:instagram/posts/screens/reels.dart';
-import 'package:instagram/stories/screens/select_story_image.dart';
 
 class Chats extends ConsumerWidget {
   const Chats({super.key});
@@ -139,7 +137,7 @@ class Chats extends ConsumerWidget {
                   //   child: Text("Start Live stream"),
                   // ),
                   Expanded(
-                    child: StreamBuilder<List<Map<String, dynamic>>>(
+                    child: StreamBuilder<List<ChatData>>(
                       stream: ref
                           .watch(chatRepositoryProvider)
                           .getUserChats(user?.firebaseUID ?? ""),
@@ -169,16 +167,13 @@ class Chats extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             final chat = chats[index];
 
-                            Timestamp? timestamp = chat["lastMessageTime"];
-                            String formattedTime = '';
-                            if (timestamp != null) {
-                              formattedTime = timestamp.toDate().toString();
-                            }
+                            String formattedTime = chat.lastMessageTime!;
+                            
 
-                            return chat["isGroup"]
+                            return chat.isGroup
                                 ? ListTile(
-                                  title: Text(chat["groupName"]),
-                                  subtitle: Text(chat["lastMessage"]),
+                                  title: Text(chat.groupName!),
+                                  subtitle: Text(chat.lastMessage!),
                                   onTap: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
@@ -196,13 +191,13 @@ class Chats extends ConsumerWidget {
                                   future: ref
                                       .read(chatRepositoryProvider)
                                       .getUserById(
-                                        (chat["participants"][0] ==
+                                        (chat.participants[0] ==
                                                 FirebaseAuth
                                                     .instance
                                                     .currentUser!
                                                     .uid)
-                                            ? chat["participants"][1]
-                                            : chat["participants"][0],
+                                            ? chat.participants[1]
+                                            : chat.participants[0],
                                       ),
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
@@ -236,7 +231,7 @@ class Chats extends ConsumerWidget {
                                         );
                                       },
                                       title: Text(receiver.email),
-                                      subtitle: Text(chat["lastMessage"] ?? ""),
+                                      subtitle: Text(chat.lastMessage!),
                                       trailing: Text(formattedTime),
                                     );
                                   },

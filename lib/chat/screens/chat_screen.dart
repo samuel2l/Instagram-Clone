@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
+import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
@@ -20,7 +21,7 @@ import 'package:swipe_to/swipe_to.dart';
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.user, required this.chatData});
   final AppUserModel? user;
-  final Map<String, dynamic> chatData;
+  final ChatData chatData;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ChatScreenState();
@@ -30,7 +31,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController scrollController = ScrollController();
   bool showReply = false;
   Map<String, dynamic> messageToReply = {};
-  late Map<String, dynamic> localChatData;
+  late ChatData localChatData;
 
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
@@ -39,13 +40,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     // getChatId();
-    localChatData = Map.from(widget.chatData);
+    localChatData = widget.chatData;
     print("ah this local chat data? $localChatData");
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    ref.read(chatIdProvider.notifier).state =
-        localChatData["chatId"] ?? '';
-  });
- 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(chatIdProvider.notifier).state = localChatData.chatId;
+    });
   }
 
   @override
@@ -56,18 +55,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-      if (widget.chatData["isGroup"] == null) {
-      widget.chatData["isGroup"] = false;
-    }
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.chatData["isGroup"]
-              ? widget.chatData["groupName"]
-              : widget.user?.email,
+          widget.chatData.isGroup
+              ? widget.chatData.groupName!
+              : widget.user!.profile.name,
         ),
         actions:
-            widget.chatData["isGroup"]
+            widget.chatData.isGroup
                 ? [
                   GestureDetector(
                     onDoubleTap: () {
@@ -121,7 +118,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   calleeId: ref.watch(chatIdProvider),
                                   callType: "video",
                                   channelId:
-                                      "${ref.watch(chatIdProvider)} ${widget.chatData["groupName"]}",
+                                      "${ref.watch(chatIdProvider)} ${widget.chatData.groupName}",
                                 );
 
                             String? res;
@@ -130,7 +127,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return GroupVideoCallScreen(
                                     channelId:
-                                        "${ref.watch(chatIdProvider)} ${widget.chatData["groupName"]}",
+                                        "${ref.watch(chatIdProvider)} ${widget.chatData.groupName}",
                                     calleeId: ref.watch(chatIdProvider),
                                   );
                                 },
@@ -590,7 +587,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
                     )
                     : SizedBox.shrink(),
-                SendMessage(user: widget.user!=null?widget.user!:null),
+                SendMessage(user: widget.user),
               ],
             ),
           ),
