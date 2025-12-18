@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/stories/models/story.dart';
 import 'package:instagram/stories/models/user_stories.dart';
 import 'package:instagram/stories/screens/post_story.dart';
 import 'package:instagram/utils/utils.dart';
@@ -130,12 +131,9 @@ class StoryRepository {
       }
       List<UserStories> parsedStories = [];
       // logDeep(orderedStories);
-          orderedStories.forEach((userId, map) {
-      parsedStories.add(
-        UserStories.fromMap(map, userId),
-      );
-    });
-
+      orderedStories.forEach((userId, map) {
+        parsedStories.add(UserStories.fromMap(map, userId));
+      });
 
       // UserStories parsedStories
 
@@ -151,7 +149,6 @@ class StoryRepository {
     required String storyId,
     required String viewerId,
   }) async {
-
     final storyRef = FirebaseFirestore.instance
         .collection('stories')
         .doc(ownerId)
@@ -198,7 +195,7 @@ class StoryRepository {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getUserStories(String userId) async {
+  Future<List<Story>> getUserStories(String userId) async {
     try {
       final userProfileDoc =
           await firestore.collection('users').doc(userId).get();
@@ -216,11 +213,12 @@ class StoryRepository {
               .get();
 
       return userStoriesSnapshot.docs.map((storyDoc) {
-        return {
+        final story = {
           'storyId': storyDoc.id,
           ...storyDoc.data(),
           'userProfile': userProfile,
         };
+        return Story.fromMap(story);
       }).toList();
     } catch (e) {
       print('Error getting user stories: $e');
