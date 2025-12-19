@@ -79,7 +79,8 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                   builder: (context) {
                                     return ChatScreen(
                                       user: profileData,
-                                      chatData: chatData ?? {},
+
+                                      chatData: chatData,
                                     );
                                   },
                                 ),

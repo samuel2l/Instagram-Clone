@@ -43,6 +43,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     localChatData = widget.chatData;
     print("ah this local chat data? $localChatData");
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      
       ref.read(chatIdProvider.notifier).state = localChatData.chatId;
     });
   }

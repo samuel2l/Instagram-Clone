@@ -6,6 +6,7 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
+import 'package:instagram/home/screens/find_users.dart';
 
 class Chats extends ConsumerWidget {
   const Chats({super.key});
@@ -99,13 +100,13 @@ class Chats extends ConsumerWidget {
                   //     );
                   //   },
                   // ),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     ref.read(authRepositoryProvider).logoutUser(context);
-                  //     ref.invalidate(getUserProvider);
-                  //   },
-                  //   child: Text("Logout"),
-                  // ),
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(authRepositoryProvider).logoutUser(context);
+                      ref.invalidate(getUserProvider);
+                    },
+                    child: Text("Logout"),
+                  ),
                   // GestureDetector(
                   //   onTap: () {
                   //     Navigator.of(context).push(
@@ -115,14 +116,14 @@ class Chats extends ConsumerWidget {
                   //   child: Text("Create Group"),
                   // ),
 
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     Navigator.of(context).push(
-                  //       MaterialPageRoute(builder: (context) => FindUsers()),
-                  //     );
-                  //   },
-                  //   child: Text("Connect with others"),
-                  // ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => FindUsers()),
+                      );
+                    },
+                    child: Text("Connect with others"),
+                  ),
                   // GestureDetector(
                   //   onTap: () {
                   //     Navigator.of(context).push(

@@ -20,7 +20,7 @@ class ChatData {
     this.groupName,
     required this.dp,
     this.lastMessage,
-    required this.lastMessageTime,
+     this.lastMessageTime,
     required this.participants,
   });
 
@@ -73,7 +73,7 @@ class ChatData {
       dp: map['dp'] as String,
       lastMessage:
           map['lastMessage'] != null ? map['lastMessage'] as String : "",
-      lastMessageTime: (map['lastMessageTime'] as Timestamp).toDate().toIso8601String(),
+      lastMessageTime:map['lastMessageTime']!=null? (map['lastMessageTime'] as Timestamp).toDate().toIso8601String():"",
       participants:
           (map["participants"] as List).map((e) => e.toString()).toList(),
     );

@@ -57,7 +57,7 @@ class ChatRepository {
         });
   }
 
-  Future<Map<String, dynamic>?> getChatByParticipants(
+  Future<ChatData> getChatByParticipants(
     List<String> userIds,
     String currentUserId,
   ) async {
@@ -75,7 +75,7 @@ class ChatRepository {
       chatData['chatId'] = doc.id;
 
       if (chatData["isGroup"]) {
-        return chatData;
+        return ChatData.fromMap(chatData);
       } else {
         String otherUserId = userIds.firstWhere((id) => id != currentUserId);
 
@@ -90,14 +90,37 @@ class ChatRepository {
           final userData = userSnap.docs.first.data();
           chatData['email'] = userData['email'];
           chatData['name'] = userData['name'];
-          chatData['profilePic'] = userData['profilePic'];
+          chatData['dp'] = userData['dp'];
         }
 
-        return chatData;
+        return ChatData.fromMap(chatData);
       }
     } else {
-      return null;
+      //if no participants are found matching given ids it means that is the first time a message is being sent
+      //but to send to chatscreen we need chat data so dummy chat data will be provided
+
+      String otherUserId = userIds.firstWhere((id) => id != currentUserId);
+
+      final userSnap =
+          await firestore
+              .collection('users')
+              .where('uid', isEqualTo: otherUserId)
+              .limit(1)
+              .get();
+
+      if (userSnap.docs.isNotEmpty) {
+        final userData = userSnap.docs.first.data();
+        final AppUserModel user = AppUserModel.fromMap(userData);
+        return ChatData(
+          chatId: "",
+          isGroup: false,
+          dp: user.profile.dp,
+          participants: userIds,
+          name: user.profile.name,
+        );
+      }
     }
+    return ChatData(chatId: "", isGroup: false, dp: "", participants: []);
   }
 
   Stream<List<Map<String, dynamic>>> getUsers() {
@@ -151,7 +174,7 @@ class ChatRepository {
     return newChatDoc.id;
   }
 
-  Future<Map<String, dynamic>> createGroupChat({
+  Future<ChatData> createGroupChat({
     required List<String> userIds,
     required String groupName,
   }) async {
@@ -171,7 +194,9 @@ class ChatRepository {
     final snapshot = await newChatDoc.get();
     final docData = snapshot.data() ?? {};
 
-    return {'chatId': newChatDoc.id, ...docData};
+    final chatData = {'chatId': newChatDoc.id, ...docData};
+
+    return ChatData.fromMap(chatData);
   }
 
   Future<List<String>> getGroupMembers({required String chatId}) async {
