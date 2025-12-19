@@ -64,7 +64,7 @@ class _HomeState extends ConsumerState<Home> {
           FutureBuilder(
             future: ref
                 .read(storyRepositoryProvider)
-                .getValidStories(ref.read(getUserProvider).value?.firebaseUID),
+                .getValidStories(ref.read(userProvider).value?.firebaseUID),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(height: 100);
@@ -106,7 +106,7 @@ class _HomeState extends ConsumerState<Home> {
                                   //if user has no story then its just a circle avatar with dp and a plus icon to post
                                   currUserStoryData.userId ==
                                               ref
-                                                  .read(getUserProvider)
+                                                  .read(userProvider)
                                                   .value
                                                   ?.firebaseUID &&
                                           !currentUserHasStory
@@ -170,7 +170,7 @@ class _HomeState extends ConsumerState<Home> {
                                       //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
                                       currUserStoryData.userId ==
                                               ref
-                                                  .read(getUserProvider)
+                                                  .read(userProvider)
                                                   .value
                                                   ?.firebaseUID &&
                                           currentUserHasStory
@@ -181,7 +181,7 @@ class _HomeState extends ConsumerState<Home> {
                                               ownerId: currUserStoryData.userId,
                                               currentUserId:
                                                   ref
-                                                      .read(getUserProvider)
+                                                      .read(userProvider)
                                                       .value
                                                       ?.firebaseUID ??
                                                   "",
@@ -277,7 +277,7 @@ class _HomeState extends ConsumerState<Home> {
                                                                     .userId ==
                                                                 ref
                                                                     .read(
-                                                                      getUserProvider,
+                                                                      userProvider,
                                                                     )
                                                                     .value
                                                                     ?.firebaseUID
@@ -338,7 +338,7 @@ class _HomeState extends ConsumerState<Home> {
                                               ownerId: currUserStoryData.userId,
                                               currentUserId:
                                                   ref
-                                                      .read(getUserProvider)
+                                                      .read(userProvider)
                                                       .value
                                                       ?.firebaseUID ??
                                                   "",
@@ -434,7 +434,7 @@ class _HomeState extends ConsumerState<Home> {
                                                                     .userId ==
                                                                 ref
                                                                     .read(
-                                                                      getUserProvider,
+                                                                      userProvider,
                                                                     )
                                                                     .value
                                                                     ?.firebaseUID

@@ -48,7 +48,7 @@ class AppUserModel {
     return AppUserModel(
       email: map['email'] as String,
       firebaseUID: map['uid'] as String,
-      createdAt: (map['createdAt'] as Timestamp).toDate().toIso8601String(),
+      createdAt: map['createdAt']!=null? (map['createdAt'] as Timestamp).toDate().toIso8601String():"",
 
       profile: Profile(
         bio: map["bio"] ?? "",

@@ -17,9 +17,24 @@ final authRepositoryProvider = Provider<AuthRepository>(
     firestore: FirebaseFirestore.instance,
   ),
 );
+final authStateProvider = StreamProvider<User?>((ref) {
+  return FirebaseAuth.instance.authStateChanges();
+});
+final userProvider = StreamProvider<AppUserModel?>((ref) {
+  final auth = ref.watch(authStateProvider).value;
 
-final getUserProvider = FutureProvider<AppUserModel?>((ref) {
-  return ref.watch(authRepositoryProvider).getUser();
+  if (auth == null) {
+    return const Stream.empty();
+  }
+
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(auth.uid)
+      .snapshots()
+      .map((doc) {
+        if (!doc.exists) return null;
+        return AppUserModel.fromMap(doc.data()!);
+      });
 });
 
 class AuthRepository {
@@ -43,8 +58,6 @@ class AuthRepository {
         email: email,
         password: password,
       );
-      print("created user? ${userCredential.user?.uid}");
-
       await firestore.collection('users').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
         'email': email,
@@ -55,7 +68,7 @@ class AuthRepository {
       await ref
           .read(profileRepositoryProvider)
           .createOrUpdateUserProfile(
-            uid: FirebaseAuth.instance.currentUser!.uid,
+            uid: userCredential.user!.uid,
             bio: " Hey I am a user of this app",
             name: username,
             dp:
@@ -114,41 +127,6 @@ class AuthRepository {
       showSnackBar(context: context, content: 'Unexpected error: $e');
     }
   }
-
-  // Future<void> signUp(
-  //   String email,
-  //   String password,
-  //   BuildContext context,
-  // ) async {
-  //   try {
-  //     final res = await auth.createUserWithEmailAndPassword(
-  //       email: email,
-  //       password: password,
-  //     );
-  //     print("signed up a user? ");
-  //     print(res.user?.uid);
-
-  //     Navigator.of(
-  //       context,
-  //     ).pushReplacement(MaterialPageRoute(builder: (context) => Home()));
-  //   } on FirebaseAuthException catch (e) {
-  //     if (e.code == 'user-not-found') {
-  //       showSnackBar(
-  //         context: context,
-  //         content: 'No user found for that email.',
-  //       );
-  //     } else if (e.code == 'wrong-password') {
-  //       showSnackBar(context: context, content: 'Wrong password provided.');
-  //     } else {
-  //       showSnackBar(
-  //         context: context,
-  //         content: 'Authentication error: ${e.message}',
-  //       );
-  //     }
-  //   } catch (e) {
-  //     showSnackBar(context: context, content: 'Unexpected error: $e');
-  //   }
-  // }
 
   Future<AppUserModel?> getUser() async {
     final curr = auth.currentUser;

@@ -59,7 +59,7 @@ class _UserStoriesState extends ConsumerState<UserStories> {
   }
 
   void _startWatching() {
-    final currentUserId = ref.read(getUserProvider).value?.firebaseUID ?? "";
+    final currentUserId = ref.read(userProvider).value?.firebaseUID ?? "";
 
     final currStory = widget.userStories.stories[currentStoryIndex];
 

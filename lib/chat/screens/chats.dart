@@ -16,9 +16,10 @@ class Chats extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text("Chats")),
       body: ref
-          .watch(getUserProvider)
+          .watch(userProvider)
           .when(
             data: (user) {
+              print("ah gotten user? ${user?.firebaseUID}");
               return Column(
                 children: [
                   // StreamBuilder(
@@ -103,10 +104,11 @@ class Chats extends ConsumerWidget {
                   GestureDetector(
                     onTap: () {
                       ref.read(authRepositoryProvider).logoutUser(context);
-                      ref.invalidate(getUserProvider);
+                      ref.invalidate(userProvider);
                     },
                     child: Text("Logout"),
                   ),
+
                   // GestureDetector(
                   //   onTap: () {
                   //     Navigator.of(context).push(
@@ -115,7 +117,6 @@ class Chats extends ConsumerWidget {
                   //   },
                   //   child: Text("Create Group"),
                   // ),
-
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(
@@ -142,6 +143,9 @@ class Chats extends ConsumerWidget {
                           .watch(chatRepositoryProvider)
                           .getUserChats(user?.firebaseUID ?? ""),
                       builder: (context, snapshot) {
+                        print(
+                          "curr user id that is getting chats? ${user?.firebaseUID}",
+                        );
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return Center(child: CircularProgressIndicator());

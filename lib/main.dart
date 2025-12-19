@@ -42,7 +42,7 @@ class MyApp extends ConsumerWidget {
       supportedLocales: [Locale("en"), Locale("fr")],
 
       home: ref
-          .watch(getUserProvider)
+          .watch(userProvider)
           .when(
             data: (data) {
               return data == null ? const SignUp() : Home();
