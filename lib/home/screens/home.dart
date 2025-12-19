@@ -85,7 +85,7 @@ class _HomeState extends ConsumerState<Home> {
 
                     itemBuilder: (context, index) {
                       final currUserStoryData = stories[index];
-
+                      currentUserHasStory = currUserStoryData.profile.hasStory;
                       return SizedBox(
                         width: 100,
                         child: Column(
