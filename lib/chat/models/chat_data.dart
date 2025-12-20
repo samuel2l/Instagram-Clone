@@ -87,7 +87,7 @@ class ChatData {
           map['lastMessageTime'] != null
               ? (map['lastMessageTime'] as Timestamp).toDate().toIso8601String()
               : "",
-      hasStory: map['hasStory'] as bool,
+      hasStory: map['hasStory']!=null ?map['hasStory'] as bool:false,
       userId: map["userId"] != null ? map["userId"] as String : "",
       participants:
           (map["participants"] as List).map((e) => e.toString()).toList(),

@@ -48,7 +48,7 @@ class ChatRepository {
                   chatData['name'] = userData['name'];
                   chatData['dp'] = userData['dp'];
                   chatData['hasStory'] = userData['hasStory'];
-                  chatData["userId"]=userData["uid"];
+                  chatData["userId"] = userData["uid"];
                 }
               }
               return chatData;

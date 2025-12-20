@@ -37,6 +37,7 @@ class ProfileRepository {
       if (isNew) {
         dataToUpdate["followers"] = [];
         dataToUpdate["following"] = [];
+        dataToUpdate["hasStory"] = false;
       }
 
       await FirebaseFirestore.instance
@@ -52,7 +53,7 @@ class ProfileRepository {
       }
     } catch (e) {
       if (context != null) {
-        print("profile update error: $e");  
+        print("profile update error: $e");
         showSnackBar(context: context, content: 'Error updating profile: $e');
       }
     }
@@ -93,36 +94,30 @@ class ProfileRepository {
   }
 
   Future<AppUserModel?> getUserProfileOnce({
-  required String uid,
-  BuildContext? context,
-}) async {
-  try {
-    final firestore = FirebaseFirestore.instance;
-    print("Fetching profile ONCE for UID: $uid");
+    required String uid,
+    BuildContext? context,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      print("Fetching profile ONCE for UID: $uid");
 
-    final docSnapshot = await firestore.collection('users').doc(uid).get();
+      final docSnapshot = await firestore.collection('users').doc(uid).get();
 
-    if (docSnapshot.exists) {
-      return AppUserModel.fromMap(docSnapshot.data()!);
-    } else {
+      if (docSnapshot.exists) {
+        return AppUserModel.fromMap(docSnapshot.data()!);
+      } else {
+        if (context != null) {
+          showSnackBar(context: context, content: 'User profile not found.');
+        }
+        return null;
+      }
+    } catch (e) {
       if (context != null) {
-        showSnackBar(
-          context: context,
-          content: 'User profile not found.',
-        );
+        showSnackBar(context: context, content: 'Error fetching profile: $e');
       }
       return null;
     }
-  } catch (e) {
-    if (context != null) {
-      showSnackBar(
-        context: context,
-        content: 'Error fetching profile: $e',
-      );
-    }
-    return null;
   }
-}
 
   Future<void> followUser({
     required String targetUserId,
