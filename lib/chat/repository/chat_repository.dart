@@ -48,7 +48,7 @@ class ChatRepository {
                   chatData['name'] = userData['name'];
                   chatData['dp'] = userData['dp'];
                   chatData['hasStory'] = userData['hasStory'];
-                  
+                  chatData["userId"]=userData["uid"];
                 }
               }
               return chatData;
@@ -119,11 +119,17 @@ class ChatRepository {
           dp: user.profile.dp,
           participants: userIds,
           name: user.profile.name,
-          hasStory: user.profile.hasStory
+          hasStory: user.profile.hasStory,
         );
       }
     }
-    return ChatData(chatId: "", isGroup: false, dp: "", participants: [],hasStory: false);
+    return ChatData(
+      chatId: "",
+      isGroup: false,
+      dp: "",
+      participants: [],
+      hasStory: false,
+    );
   }
 
   Stream<List<Map<String, dynamic>>> getUsers() {

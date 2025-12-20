@@ -12,6 +12,7 @@ class ChatData {
   final String? lastMessage;
   final String? lastMessageTime;
   final bool hasStory;
+  final String? userId;
   final List<String> participants;
   ChatData({
     required this.chatId,
@@ -22,6 +23,7 @@ class ChatData {
     required this.dp,
     this.lastMessage,
     this.lastMessageTime,
+    this.userId,
     required this.participants,
     required this.hasStory,
   });
@@ -35,6 +37,7 @@ class ChatData {
     String? dp,
     String? lastMessage,
     String? lastMessageTime,
+    String? userId,
     List<String>? participants,
     bool? hasStory,
   }) {
@@ -49,6 +52,7 @@ class ChatData {
       lastMessageTime: lastMessageTime ?? this.lastMessageTime,
       participants: participants ?? this.participants,
       hasStory: hasStory ?? this.hasStory,
+      userId: userId ?? this.userId,
     );
   }
 
@@ -63,7 +67,8 @@ class ChatData {
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime,
       'participants': participants,
-      'hasStory':hasStory
+      'hasStory': hasStory,
+      'userid': userId,
     };
   }
 
@@ -82,7 +87,8 @@ class ChatData {
           map['lastMessageTime'] != null
               ? (map['lastMessageTime'] as Timestamp).toDate().toIso8601String()
               : "",
-              hasStory: map['hasStory'] as bool,
+      hasStory: map['hasStory'] as bool,
+      userId: map["userId"] != null ? map["userId"] as String : "",
       participants:
           (map["participants"] as List).map((e) => e.toString()).toList(),
     );

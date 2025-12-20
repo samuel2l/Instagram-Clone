@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/profile/models/profile.dart';
 import 'package:instagram/stories/models/story.dart';
 import 'package:instagram/stories/models/user_stories.dart';
 import 'package:instagram/stories/screens/post_story.dart';
@@ -195,12 +196,26 @@ class StoryRepository {
     }
   }
 
-  Future<List<Story>> getUserStories(String userId) async {
+  Future<UserStories> getUserStories(String userId) async {
     try {
       final userProfileDoc =
           await firestore.collection('users').doc(userId).get();
 
-      if (!userProfileDoc.exists) return [];
+      if (!userProfileDoc.exists) {
+        return UserStories(
+          userId: userId,
+          stories: [],
+          profile: Profile(
+            following: [],
+            followers: [],
+            name: "",
+            bio: "",
+            dp: "",
+            username: "",
+            hasStory: false,
+          ),
+        );
+      }
 
       final userProfile = userProfileDoc.data();
 
@@ -212,17 +227,35 @@ class StoryRepository {
               .orderBy('timestamp', descending: true)
               .get();
 
-      return userStoriesSnapshot.docs.map((storyDoc) {
-        final story = {
-          'storyId': storyDoc.id,
-          ...storyDoc.data(),
-          'userProfile': userProfile,
-        };
-        return Story.fromMap(story);
-      }).toList();
+      final List<Story> stories =
+          userStoriesSnapshot.docs.map((storyDoc) {
+            final story = {
+              'storyId': storyDoc.id,
+              ...storyDoc.data(),
+              'userProfile': userProfile,
+            };
+            return Story.fromMap(story);
+          }).toList();
+      return UserStories(
+        userId: userId,
+        stories: stories,
+        profile: Profile.fromMap(userProfile!),
+      );
     } catch (e) {
       print('Error getting user stories: $e');
-      return [];
+      return UserStories(
+        userId: userId,
+        stories: [],
+        profile: Profile(
+          following: [],
+          followers: [],
+          name: "",
+          bio: "",
+          dp: "",
+          username: "",
+          hasStory: false,
+        ),
+      );
     }
   }
 }

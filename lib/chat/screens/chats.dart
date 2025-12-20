@@ -8,6 +8,8 @@ import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
 import 'package:instagram/home/screens/find_users.dart';
+import 'package:instagram/stories/repository/story_repository.dart';
+import 'package:instagram/stories/screens/user_stories.dart';
 
 class Chats extends ConsumerWidget {
   const Chats({super.key});
@@ -234,31 +236,54 @@ class Chats extends ConsumerWidget {
                                                       chat.dp,
                                                     ),
                                               )
-                                              : Container(
-                                                padding: const EdgeInsets.all(
-                                                  5,
-                                                ), 
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  gradient: LinearGradient(
-                                                    colors: [
-                                                      Color(0xFF833AB4),
-                                                      Color(0xFFFD1D1D),
-                                                    ],
-                                                  ),
-                                                ),
+                                              : GestureDetector(
+                                                onTap: () async {
+                                                  final userStories = await ref
+                                                      .read(
+                                                        storyRepositoryProvider,
+                                                      )
+                                                      .getUserStories(
+                                                        chat.userId!,
+                                                      );
+                                                  Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                      builder:
+                                                          (context) => UserStories(userStories: userStories)
+
+                                                    ),
+                                                  );
+                                                },
                                                 child: Container(
-                                                  padding: EdgeInsets.all(3),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    shape: BoxShape.circle
+                                                  padding: const EdgeInsets.all(
+                                                    5,
                                                   ),
-                                                  child: CircleAvatar
-                                                  (
-                                                    backgroundImage:
-                                                        CachedNetworkImageProvider(
-                                                          chat.dp,
-                                                        ),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        gradient:
+                                                            LinearGradient(
+                                                              colors: [
+                                                                Color(
+                                                                  0xFF833AB4,
+                                                                ),
+                                                                Color(
+                                                                  0xFFFD1D1D,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                      ),
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(3),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: CircleAvatar(
+                                                      backgroundImage:
+                                                          CachedNetworkImageProvider(
+                                                            chat.dp,
+                                                          ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
