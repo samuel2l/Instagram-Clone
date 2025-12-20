@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/profile/models/profile.dart';
 import 'package:instagram/stories/models/story.dart';
 import 'package:instagram/stories/models/user_stories.dart';
@@ -69,83 +70,53 @@ class StoryRepository {
     debugPrint(encoder.convert(normalized), wrapWidth: 2048);
   }
 
-  Future<List<UserStories>> getValidStories(String? currentUserId) async {
+Future<List<AppUserModel>> getUsersWithStories(String? currentUserId) async {
+  if (currentUserId == null) return [];
+
+  try {
     final firestore = FirebaseFirestore.instance;
+    final List<AppUserModel> result = [];
 
-    Map<String, List<Map<String, dynamic>>> allStories = {};
+    final currentUserDoc =
+        await firestore.collection('users').doc(currentUserId).get();
 
-    try {
-      if (currentUserId == null) return [];
+    if (!currentUserDoc.exists) return [];
 
-      final currentUserDoc =
-          await firestore.collection('users').doc(currentUserId).get();
+    final currentUserData = currentUserDoc.data()!;
+    result.add(AppUserModel.fromMap(currentUserData));
 
-      final List<String> following = List<String>.from(
-        currentUserDoc.data()?['following'] ?? [],
+    final List<String> following =
+        List<String>.from(currentUserData['following'] ?? []);
+
+    if (following.isEmpty) return result;
+
+
+    following.remove(currentUserId);
+
+    // fetch followed users in chunks of 10 as firestore may throw error if query has contents of length>10
+    for (var i = 0; i < following.length; i += 10) {
+      final chunk = following.sublist(
+        i,
+        i + 10 > following.length ? following.length : i + 10,
       );
 
-      final storiesSnapshot = await firestore.collection('stories').get();
+      final snapshot = await firestore
+          .collection('users')
+          .where('hasStory', isEqualTo: true)
+          .where('uid', whereIn: chunk)
+          .get();
 
-      for (final userDoc in storiesSnapshot.docs) {
-        if (userDoc.id != currentUserId && !following.contains(userDoc.id)) {
-          continue;
-        }
-
-        final userStoriesSnapshot =
-            await userDoc.reference
-                .collection('userStories')
-                .orderBy('timestamp', descending: true)
-                .get();
-
-        final userStoryList =
-            userStoriesSnapshot.docs.map((storyDoc) {
-              return {'storyId': storyDoc.id, ...storyDoc.data()};
-            }).toList();
-
-        allStories[userDoc.id] = userStoryList;
+      for (final doc in snapshot.docs) {
+        result.add(AppUserModel.fromMap(doc.data()));
       }
-
-      final userProfileDoc =
-          await firestore.collection('users').doc(currentUserId).get();
-
-      Map<String, dynamic> orderedStories = {
-        currentUserId: {
-          "stories": allStories[currentUserId] ?? [],
-          "userProfile": userProfileDoc.data()!,
-        },
-      };
-
-      // Loop through others
-      for (var entry in allStories.entries) {
-        final userId = entry.key;
-        final stories = entry.value;
-
-        if (userId == currentUserId) continue;
-
-        final userProfileDoc =
-            await firestore.collection('users').doc(userId).get();
-
-        orderedStories[userId] = {
-          "stories": stories,
-          "userProfile": userProfileDoc.data()!,
-        };
-      }
-      List<UserStories> parsedStories = [];
-      // logDeep(orderedStories);
-      orderedStories.forEach((userId, map) {
-        parsedStories.add(UserStories.fromMap(map, userId));
-      });
-
-      // UserStories parsedStories
-
-      return parsedStories;
-    } catch (e) {
-      print('Error fetching stories with user details: $e');
-      return [];
     }
-  }
 
-  Future<void> addStoryViewer({
+    return result;
+  } catch (e) {
+    print('Error fetching users with stories: $e');
+    return [];
+  }
+}  Future<void> addStoryViewer({
     required String ownerId,
     required String storyId,
     required String viewerId,

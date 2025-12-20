@@ -64,7 +64,7 @@ class _HomeState extends ConsumerState<Home> {
           FutureBuilder(
             future: ref
                 .read(storyRepositoryProvider)
-                .getValidStories(ref.read(userProvider).value?.firebaseUID),
+                .getUsersWithStories(ref.read(userProvider).value?.firebaseUID),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(height: 100);
@@ -73,38 +73,40 @@ class _HomeState extends ConsumerState<Home> {
                 return Center(child: Text("Error loading stories"));
               }
 
-              final stories = snapshot.data ?? [];
+              final usersWithStories = snapshot.data ?? [];
 
               if (snapshot.connectionState == ConnectionState.done) {
                 return SizedBox(
                   height: 140,
                   width: double.infinity,
                   child: ListView.builder(
-                    itemCount: stories.length,
+                    itemCount: usersWithStories.length,
                     scrollDirection: Axis.horizontal,
 
                     itemBuilder: (context, index) {
-                      final currUserStoryData = stories[index];
-                      currentUserHasStory = currUserStoryData.profile.hasStory;
+                      final currUser = usersWithStories[index];
+                      currentUserHasStory = currUser.profile.hasStory;
                       return SizedBox(
                         width: 100,
                         child: Column(
                           children: [
                             GestureDetector(
-                              onTap: () {
+                              onTap: () async {
+                                final currUserStories=await ref
+                                    .read(storyRepositoryProvider)
+                                    .getUserStories(currUser.firebaseUID);
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder:
-                                        (context) => UserStories(
-                                          userStories: currUserStoryData,
-                                        ),
+                                        (context) =>
+                                            UserStories(userStories: currUserStories),
                                   ),
                                 );
                               },
 
                               child:
                                   //if user has no story then its just a circle avatar with dp and a plus icon to post
-                                  currUserStoryData.userId ==
+                                  currUser.firebaseUID ==
                                               ref
                                                   .read(userProvider)
                                                   .value
@@ -122,9 +124,7 @@ class _HomeState extends ConsumerState<Home> {
                                               radius: 80,
                                               backgroundImage:
                                                   CachedNetworkImageProvider(
-                                                    currUserStoryData
-                                                        .profile
-                                                        .dp,
+                                                    currUser.profile.dp,
                                                   ),
                                             ),
                                           ),
@@ -168,7 +168,7 @@ class _HomeState extends ConsumerState<Home> {
                                       //use 2 containers, the outer one with gradient and inner one with circle avatar
                                       //use first containers padding to create the border thickness effect
                                       //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
-                                      currUserStoryData.userId ==
+                                      currUser.firebaseUID ==
                                               ref
                                                   .read(userProvider)
                                                   .value
@@ -178,7 +178,7 @@ class _HomeState extends ConsumerState<Home> {
                                         future: ref
                                             .read(storyRepositoryProvider)
                                             .hasUserWatchedAllStories(
-                                              ownerId: currUserStoryData.userId,
+                                              ownerId: currUser.firebaseUID,
                                               currentUserId:
                                                   ref
                                                       .read(userProvider)
@@ -272,22 +272,22 @@ class _HomeState extends ConsumerState<Home> {
                                                     ), // border thickness trick again
                                                     child: CircleAvatar(
                                                       radius: 32,
-                                                      backgroundImage: CachedNetworkImageProvider(
-                                                        currUserStoryData
-                                                                    .userId ==
-                                                                ref
-                                                                    .read(
-                                                                      userProvider,
-                                                                    )
-                                                                    .value
-                                                                    ?.firebaseUID
-                                                            ? currUserStoryData
-                                                                .profile
-                                                                .dp
-                                                            : currUserStoryData
-                                                                .profile
-                                                                .dp,
-                                                      ),
+                                                      backgroundImage:
+                                                          CachedNetworkImageProvider(
+                                                            currUser.firebaseUID ==
+                                                                    ref
+                                                                        .read(
+                                                                          userProvider,
+                                                                        )
+                                                                        .value
+                                                                        ?.firebaseUID
+                                                                ? currUser
+                                                                    .profile
+                                                                    .dp
+                                                                : currUser
+                                                                    .profile
+                                                                    .dp,
+                                                          ),
                                                     ),
                                                   ),
                                                 ),
@@ -335,7 +335,7 @@ class _HomeState extends ConsumerState<Home> {
                                         future: ref
                                             .read(storyRepositoryProvider)
                                             .hasUserWatchedAllStories(
-                                              ownerId: currUserStoryData.userId,
+                                              ownerId: currUser.firebaseUID,
                                               currentUserId:
                                                   ref
                                                       .read(userProvider)
@@ -429,22 +429,22 @@ class _HomeState extends ConsumerState<Home> {
                                                     ), // border thickness trick again
                                                     child: CircleAvatar(
                                                       radius: 32,
-                                                      backgroundImage: CachedNetworkImageProvider(
-                                                        currUserStoryData
-                                                                    .userId ==
-                                                                ref
-                                                                    .read(
-                                                                      userProvider,
-                                                                    )
-                                                                    .value
-                                                                    ?.firebaseUID
-                                                            ? currUserStoryData
-                                                                .profile
-                                                                .dp
-                                                            : currUserStoryData
-                                                                .profile
-                                                                .dp,
-                                                      ),
+                                                      backgroundImage:
+                                                          CachedNetworkImageProvider(
+                                                            currUser.firebaseUID ==
+                                                                    ref
+                                                                        .read(
+                                                                          userProvider,
+                                                                        )
+                                                                        .value
+                                                                        ?.firebaseUID
+                                                                ? currUser
+                                                                    .profile
+                                                                    .dp
+                                                                : currUser
+                                                                    .profile
+                                                                    .dp,
+                                                          ),
                                                     ),
                                                   ),
                                                 ),
@@ -456,7 +456,7 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                             SizedBox(height: 5),
                             Text(
-                              currUserStoryData.profile.username,
+                              currUser.profile.username,
                               style: TextStyle(fontSize: 16),
                             ),
                           ],
