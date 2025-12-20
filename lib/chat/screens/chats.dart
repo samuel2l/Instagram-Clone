@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -143,9 +144,6 @@ class Chats extends ConsumerWidget {
                           .watch(chatRepositoryProvider)
                           .getUserChats(user?.firebaseUID ?? ""),
                       builder: (context, snapshot) {
-                        print(
-                          "curr user id that is getting chats? ${user?.firebaseUID}",
-                        );
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return Center(child: CircularProgressIndicator());
@@ -176,6 +174,11 @@ class Chats extends ConsumerWidget {
                             return chat.isGroup
                                 ? ListTile(
                                   splashColor: Colors.transparent,
+                                  leading: CircleAvatar(
+                                    backgroundImage: CachedNetworkImageProvider(
+                                      chat.dp,
+                                    ),
+                                  ),
                                   title: Text(chat.groupName!),
                                   subtitle: Text(chat.lastMessage!),
                                   onTap: () {
@@ -223,6 +226,42 @@ class Chats extends ConsumerWidget {
                                     final receiver = snapshot.data!;
 
                                     return ListTile(
+                                      leading:
+                                          !chat.hasStory
+                                              ? CircleAvatar(
+                                                backgroundImage:
+                                                    CachedNetworkImageProvider(
+                                                      chat.dp,
+                                                    ),
+                                              )
+                                              : Container(
+                                                padding: const EdgeInsets.all(
+                                                  5,
+                                                ), 
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      Color(0xFF833AB4),
+                                                      Color(0xFFFD1D1D),
+                                                    ],
+                                                  ),
+                                                ),
+                                                child: Container(
+                                                  padding: EdgeInsets.all(3),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    shape: BoxShape.circle
+                                                  ),
+                                                  child: CircleAvatar
+                                                  (
+                                                    backgroundImage:
+                                                        CachedNetworkImageProvider(
+                                                          chat.dp,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
                                       splashColor: Colors.transparent,
                                       onTap: () {
                                         Navigator.of(context).push(

@@ -11,6 +11,7 @@ class ChatData {
   final String dp;
   final String? lastMessage;
   final String? lastMessageTime;
+  final bool hasStory;
   final List<String> participants;
   ChatData({
     required this.chatId,
@@ -20,8 +21,9 @@ class ChatData {
     this.groupName,
     required this.dp,
     this.lastMessage,
-     this.lastMessageTime,
+    this.lastMessageTime,
     required this.participants,
+    required this.hasStory,
   });
 
   ChatData copyWith({
@@ -34,6 +36,7 @@ class ChatData {
     String? lastMessage,
     String? lastMessageTime,
     List<String>? participants,
+    bool? hasStory,
   }) {
     return ChatData(
       chatId: chatId ?? this.chatId,
@@ -45,6 +48,7 @@ class ChatData {
       lastMessage: lastMessage ?? this.lastMessage,
       lastMessageTime: lastMessageTime ?? this.lastMessageTime,
       participants: participants ?? this.participants,
+      hasStory: hasStory ?? this.hasStory,
     );
   }
 
@@ -59,6 +63,7 @@ class ChatData {
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime,
       'participants': participants,
+      'hasStory':hasStory
     };
   }
 
@@ -73,7 +78,11 @@ class ChatData {
       dp: map['dp'] as String,
       lastMessage:
           map['lastMessage'] != null ? map['lastMessage'] as String : "",
-      lastMessageTime:map['lastMessageTime']!=null? (map['lastMessageTime'] as Timestamp).toDate().toIso8601String():"",
+      lastMessageTime:
+          map['lastMessageTime'] != null
+              ? (map['lastMessageTime'] as Timestamp).toDate().toIso8601String()
+              : "",
+              hasStory: map['hasStory'] as bool,
       participants:
           (map["participants"] as List).map((e) => e.toString()).toList(),
     );
