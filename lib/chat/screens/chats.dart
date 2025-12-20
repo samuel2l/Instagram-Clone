@@ -103,13 +103,13 @@ class Chats extends ConsumerWidget {
                   //     );
                   //   },
                   // ),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     ref.read(authRepositoryProvider).logoutUser(context);
-                  //     ref.invalidate(userProvider);
-                  //   },
-                  //   child: Text("Logout"),
-                  // ),
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(authRepositoryProvider).logoutUser(context);
+                      ref.invalidate(userProvider);
+                    },
+                    child: Text("Logout"),
+                  ),
 
                   // GestureDetector(
                   //   onTap: () {

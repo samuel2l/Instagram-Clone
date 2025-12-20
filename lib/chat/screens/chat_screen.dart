@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
@@ -41,7 +42,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     localChatData = widget.chatData;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      
       ref.read(chatIdProvider.notifier).state = localChatData.chatId;
     });
   }
@@ -54,7 +54,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -240,7 +239,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 },
                               ),
                             );
-                            // }, // <-- Fixed missing comma
                             // title: Text(
                             //   "Incoming call from ${callData['callerId']}",
                             // ),
@@ -288,6 +286,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final currMessage = messages[index];
+                    final isSender =
+                        currMessage.senderId ==
+                        ref.read(userProvider).value!.firebaseUID;
                     if (!currMessage.isSeen &&
                         FirebaseAuth.instance.currentUser?.uid !=
                             currMessage.senderId) {
@@ -351,7 +352,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   ),
 
                               Container(
-                                width:null,
                                 padding: EdgeInsets.all(5),
                                 color:
                                     currMessage.senderId ==
@@ -435,9 +435,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
                             VideoMessage(
                               url: currMessage.content,
-                              isSender:
-                                  currMessage.senderId ==
-                                  FirebaseAuth.instance.currentUser!.uid,
+                              isSender: isSender,
                             ),
                           ],
                         ),
@@ -453,77 +451,85 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           };
                           setState(() {});
                         },
-                        child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Column(
-                            children: [
-                              ListTile(
-                                tileColor:
-                                    currMessage.senderId ==
-                                            FirebaseAuth
-                                                .instance
-                                                .currentUser!
-                                                .uid
-                                        ? const Color.fromARGB(
-                                          255,
-                                          143,
-                                          207,
-                                          145,
-                                        )
-                                        : Colors.white,
-                                title: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    currMessage.repliedTo.toString().isEmpty
-                                        ? SizedBox.shrink()
-                                        :
-                                        // Text(
-                                        //   currMessage.repliedTo ?? "",
-                                        // ),
-                                        Container(
-                                          width: double.infinity,
-                                          color: Colors.lightGreenAccent,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(currMessage.repliedTo),
-                                              currMessage.replyType == image ||
-                                                      currMessage.replyType ==
-                                                          GIF
-                                                  ? SizedBox(
-                                                    height: 70,
-                                                    width: 70,
-                                                    child: CachedNetworkImage(
-                                                      imageUrl:
-                                                          currMessage.reply,
-                                                    ),
-                                                  )
-                                                  : currMessage.replyType ==
-                                                      video
-                                                  ? SizedBox(
-                                                    height: 70,
-                                                    width: 70,
-                                                    child: VideoMessage(
-                                                      url: currMessage.reply,
-                                                      isSender:
-                                                          currMessage.repliedTo ==
-                                                                  "Me"
-                                                              ? true
-                                                              : false,
-                                                    ),
-                                                  )
-                                                  : Text(currMessage.reply),
-                                            ],
-                                          ),
-                                        ),
+                        child: Align(
+                          alignment:
+                              isSender
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
 
-                                    Text(currMessage.content),
-                                  ],
-                                ),
-                                subtitle: Text(currMessage.senderId),
+                          child: Container(
+                            margin: EdgeInsets.only(
+                              right: isSender ? 3 : 0,
+                              bottom: 2,
+                              left: !isSender ? 3 : 0,
+                            ),
+                            
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.76,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSender
+                                      ? Colors.deepPurpleAccent
+                                      : const Color.fromARGB(255, 59, 59, 59),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10),
+                                bottomLeft: Radius.circular(10),
                               ),
-                            ],
+                            ),
+                            padding: EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                currMessage.repliedTo.toString().isEmpty
+                                    ? SizedBox.shrink()
+                                    :
+                                    // Text(
+                                    //   currMessage.repliedTo ?? "",
+                                    // ),
+                                    Container(
+                                      width: double.infinity,
+                                      color: Colors.lightGreenAccent,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(currMessage.repliedTo),
+                                          currMessage.replyType == image ||
+                                                  currMessage.replyType == GIF
+                                              ? SizedBox(
+                                                height: 70,
+                                                width: 70,
+                                                child: CachedNetworkImage(
+                                                  imageUrl: currMessage.reply,
+                                                ),
+                                              )
+                                              : currMessage.replyType == video
+                                              ? SizedBox(
+                                                height: 70,
+                                                width: 70,
+                                                child: VideoMessage(
+                                                  url: currMessage.reply,
+                                                  isSender:
+                                                      currMessage.repliedTo ==
+                                                              "Me"
+                                                          ? true
+                                                          : false,
+                                                ),
+                                              )
+                                              : Text(currMessage.reply),
+                                        ],
+                                      ),
+                                    ),
+
+                                Text(
+                                  currMessage.content,
+                                  style: TextStyle(fontSize: 20,color: Colors.white),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
