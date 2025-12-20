@@ -39,9 +39,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // getChatId();
     localChatData = widget.chatData;
-    print("ah this local chat data? $localChatData");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       
       ref.read(chatIdProvider.notifier).state = localChatData.chatId;
@@ -353,6 +351,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   ),
 
                               Container(
+                                width:null,
                                 padding: EdgeInsets.all(5),
                                 color:
                                     currMessage.senderId ==

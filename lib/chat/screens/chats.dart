@@ -230,29 +230,55 @@ class Chats extends ConsumerWidget {
 
                                     final receiver = snapshot.data!;
 
-                                    return Row(
-                                      children: [
-                                        Container(
-                                          //chats with stories and without will have different sizes for their avatars + story indicator
-                                          //sp center needs to be used to center it nicely even with varying sizes
-                                          //also set a width as container will only use space it needs. giving fixed size means all elements center the same
-                                          width: 86,
-                                          margin: EdgeInsets.symmetric(horizontal: 5,vertical: 11),
-                                          child: Center(
-                                            child:
-                                                !chat.hasStory
-                                                    ? CircleAvatar(
-                                                      radius: 37,
+                                    return GestureDetector(
+                                      onTap: () {
+                                        print("tapped?????");
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => ChatScreen(
+                                                  chatData: chat,
+                                                  user: receiver,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        //wrapping the row with a container is important cos GestureDetector only receives taps on areas that have a hit-testable render box.
+                                        //A Row by itself:
+                                        // 	•	Has no background
+                                        // 	•	Only hit-tests where its children paint pixels
+                                        // So:
+                                        // 	•	Tapping empty space inside the row means there's nothing to hit
+                                        // This does two important things:
+                                        // 	1.	Forces the widget to paint a box
+                                        // 	2.	Makes the entire rectangular area hit-testable
+                                        color: Colors.transparent,
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              //chats with stories and without will have different sizes for their avatars + story indicator
+                                              //sp center needs to be used to center it nicely even with varying sizes
+                                              //also set a width as container will only use space it needs. giving fixed size means all elements center the same
+                                              width: 86,
+                                              margin: EdgeInsets.symmetric(
+                                                horizontal: 5,
+                                                vertical: 11,
+                                              ),
+                                              child: Center(
+                                                child:
+                                                    !chat.hasStory
+                                                        ? CircleAvatar(
+                                                          radius: 37,
 
-                                                      backgroundImage:
-                                                          CachedNetworkImageProvider(
-                                                            chat.dp,
-                                                          ),
-                                                    )
-                                                    : GestureDetector(
-                                                      onTap: () async {
-                                                        final userStories =
-                                                            await ref
+                                                          backgroundImage:
+                                                              CachedNetworkImageProvider(
+                                                                chat.dp,
+                                                              ),
+                                                        )
+                                                        : GestureDetector(
+                                                          onTap: () async {
+                                                            final userStories = await ref
                                                                 .read(
                                                                   storyRepositoryProvider,
                                                                 )
@@ -260,69 +286,113 @@ class Chats extends ConsumerWidget {
                                                                   chat.userId!,
                                                                 );
 
-                                                        Navigator.of(
-                                                          context,
-                                                        ).push(
-                                                          MaterialPageRoute(
-                                                            builder:
-                                                                (
-                                                                  context,
-                                                                ) => UserStories(
-                                                                  userStories:
-                                                                      userStories,
+                                                            Navigator.of(
+                                                              context,
+                                                            ).push(
+                                                              MaterialPageRoute(
+                                                                builder:
+                                                                    (
+                                                                      context,
+                                                                    ) => UserStories(
+                                                                      userStories:
+                                                                          userStories,
+                                                                    ),
+                                                              ),
+                                                            );
+                                                          },
+                                                          child: FutureBuilder(
+                                                            future: ref
+                                                                .read(
+                                                                  storyRepositoryProvider,
+                                                                )
+                                                                .hasUserWatchedAllStories(
+                                                                  ownerId:
+                                                                      chat.userId!,
+                                                                  currentUserId:
+                                                                      ref
+                                                                          .read(
+                                                                            userProvider,
+                                                                          )
+                                                                          .value!
+                                                                          .firebaseUID,
                                                                 ),
-                                                          ),
-                                                        );
-                                                      },
-                                                      child: FutureBuilder(
-                                                        future: ref
-                                                            .read(
-                                                              storyRepositoryProvider,
-                                                            )
-                                                            .hasUserWatchedAllStories(
-                                                              ownerId:
-                                                                  chat.userId!,
-                                                              currentUserId:
-                                                                  ref
-                                                                      .read(
-                                                                        userProvider,
-                                                                      )
-                                                                      .value!
-                                                                      .firebaseUID,
-                                                            ),
-                                                        builder: (
-                                                          context,
-                                                          asyncSnapshot,
-                                                        ) {
-                                                          if (asyncSnapshot
-                                                              .hasData) {
-                                                            final hasWatched =
-                                                                asyncSnapshot
-                                                                    .data!;
-                                                            if (hasWatched) {
+                                                            builder: (
+                                                              context,
+                                                              asyncSnapshot,
+                                                            ) {
+                                                              if (asyncSnapshot
+                                                                  .hasData) {
+                                                                final hasWatched =
+                                                                    asyncSnapshot
+                                                                        .data!;
+                                                                if (hasWatched) {
+                                                                  return Container(
+                                                                    padding:
+                                                                        const EdgeInsets.all(
+                                                                          3,
+                                                                        ),
+
+                                                                    decoration: const BoxDecoration(
+                                                                      shape:
+                                                                          BoxShape
+                                                                              .circle,
+                                                                      color:
+                                                                          Color.fromARGB(
+                                                                            255,
+                                                                            211,
+                                                                            211,
+                                                                            211,
+                                                                          ),
+                                                                    ),
+                                                                    child: Container(
+                                                                      padding:
+                                                                          EdgeInsets.all(
+                                                                            3,
+                                                                          ),
+                                                                      decoration: BoxDecoration(
+                                                                        color:
+                                                                            Colors.white,
+                                                                        shape:
+                                                                            BoxShape.circle,
+                                                                      ),
+                                                                      child: CircleAvatar(
+                                                                        radius:
+                                                                            37,
+                                                                        backgroundImage:
+                                                                            CachedNetworkImageProvider(
+                                                                              chat.dp,
+                                                                            ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              }
                                                               return Container(
                                                                 padding:
                                                                     const EdgeInsets.all(
                                                                       3,
                                                                     ),
-
                                                                 decoration: const BoxDecoration(
                                                                   shape:
                                                                       BoxShape
                                                                           .circle,
-                                                                  color:
-                                                                      Color.fromARGB(
-                                                                        255,
-                                                                        211,
-                                                                        211,
-                                                                        211,
+                                                                  gradient: LinearGradient(
+                                                                    colors: [
+                                                                      Color(
+                                                                        0xFF833AB4,
                                                                       ),
+                                                                      Color(
+                                                                        0xFFFD1D1D,
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                                 child: Container(
                                                                   padding:
                                                                       EdgeInsets.all(
                                                                         3,
                                                                       ),
+
                                                                   decoration: BoxDecoration(
                                                                     color:
                                                                         Colors
@@ -340,104 +410,35 @@ class Chats extends ConsumerWidget {
                                                                   ),
                                                                 ),
                                                               );
-                                                            }
-                                                          }
-                                                          return Container(
-                                                            padding:
-                                                                const EdgeInsets.all(
-                                                                  3,
-                                                                ),
-                                                            decoration: const BoxDecoration(
-                                                              shape:
-                                                                  BoxShape
-                                                                      .circle,
-                                                              gradient: LinearGradient(
-                                                                colors: [
-                                                                  Color(
-                                                                    0xFF833AB4,
-                                                                  ),
-                                                                  Color(
-                                                                    0xFFFD1D1D,
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            child: Container(
-                                                              padding:
-                                                                  EdgeInsets.all(
-                                                                    3,
-                                                                  ),
-
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                    color:
-                                                                        Colors
-                                                                            .white,
-                                                                    shape:
-                                                                        BoxShape
-                                                                            .circle,
-                                                                  ),
-                                                              child: CircleAvatar(
-                                                                radius: 37,
-                                                                backgroundImage:
-                                                                    CachedNetworkImageProvider(
-                                                                      chat.dp,
-                                                                    ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                          ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) => ChatScreen(
-                                                      chatData: chat,
-                                                      user: receiver,
-                                                    ),
+                                                            },
+                                                          ),
+                                                        ),
                                               ),
-                                            );
-                                          },
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                receiver.profile.name,
-                                                style: TextStyle(fontSize: 18),
-                                              ),
-                                              SizedBox(
-                                                width:
-                                                    MediaQuery.of(
-                                                      context,
-                                                    ).size.width *
-                                                    0.65,
-                                                child: Row(
-                                                  children: [
-                                                    chat.lastMessage!.length <
-                                                            40
-                                                        ? Text(
-                                                          chat.lastMessage ??
-                                                              '',
-                                                          maxLines: 1,
-                                                          overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          style:
-                                                              const TextStyle(
-                                                                fontSize: 14,
-                                                              ),
-                                                        )
-                                                        : Expanded(
-                                                          child: Text(
+                                            ),
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  receiver.profile.name,
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width:
+                                                      MediaQuery.of(
+                                                        context,
+                                                      ).size.width *
+                                                      0.65,
+                                                  child: Row(
+                                                    children: [
+                                                      chat.lastMessage!.length <
+                                                              40
+                                                          ? Text(
                                                             chat.lastMessage ??
                                                                 '',
                                                             maxLines: 1,
@@ -448,24 +449,39 @@ class Chats extends ConsumerWidget {
                                                                 const TextStyle(
                                                                   fontSize: 14,
                                                                 ),
+                                                          )
+                                                          : Expanded(
+                                                            child: Text(
+                                                              chat.lastMessage ??
+                                                                  '',
+                                                              maxLines: 1,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style:
+                                                                  const TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                  ),
+                                                            ),
                                                           ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        timeAgoFromIso(
+                                                          chat.lastMessageTime!,
                                                         ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      timeAgoFromIso(
-                                                        chat.lastMessageTime!,
+                                                        style: const TextStyle(
+                                                          fontSize: 14,
+                                                        ),
                                                       ),
-                                                      style: const TextStyle(
-                                                        fontSize: 14,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     );
                                   },
                                 );
