@@ -22,7 +22,6 @@ class Chats extends ConsumerWidget {
           .watch(userProvider)
           .when(
             data: (user) {
-              print("ah gotten user? ${user?.firebaseUID}");
               return Column(
                 children: [
                   // StreamBuilder(
@@ -245,46 +244,126 @@ class Chats extends ConsumerWidget {
                                                       .getUserStories(
                                                         chat.userId!,
                                                       );
+
                                                   Navigator.of(context).push(
                                                     MaterialPageRoute(
                                                       builder:
-                                                          (context) => UserStories(userStories: userStories)
-
+                                                          (context) =>
+                                                              UserStories(
+                                                                userStories:
+                                                                    userStories,
+                                                              ),
                                                     ),
                                                   );
                                                 },
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(
-                                                    5,
-                                                  ),
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        gradient:
-                                                            LinearGradient(
-                                                              colors: [
-                                                                Color(
-                                                                  0xFF833AB4,
-                                                                ),
-                                                                Color(
-                                                                  0xFFFD1D1D,
-                                                                ),
-                                                              ],
-                                                            ),
+                                                child: FutureBuilder(
+                                                  future: ref
+                                                      .read(
+                                                        storyRepositoryProvider,
+                                                      )
+                                                      .hasUserWatchedAllStories(
+                                                        ownerId: chat.userId!,
+                                                        currentUserId:
+                                                            ref
+                                                                .read(
+                                                                  userProvider,
+                                                                )
+                                                                .value!
+                                                                .firebaseUID,
                                                       ),
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(3),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: CircleAvatar(
-                                                      backgroundImage:
-                                                          CachedNetworkImageProvider(
-                                                            chat.dp,
+                                                  builder: (
+                                                    context,
+                                                    asyncSnapshot,
+                                                  ) {
+                                                    if (asyncSnapshot.hasData) {
+                                                      final hasWatched =
+                                                          asyncSnapshot.data!;
+                                                      if (hasWatched) {
+                                                        return Container(
+                                                          padding:
+                                                              const EdgeInsets.all(
+                                                                5,
+                                                              ),
+                                                          decoration:
+                                                              const BoxDecoration(
+                                                                shape:
+                                                                    BoxShape
+                                                                        .circle,
+                                                                color:
+                                                                    Color.fromARGB(
+                                                                      255,
+                                                                      211,
+                                                                      211,
+                                                                      211,
+                                                                    ),
+                                                              ),
+                                                          child: Container(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                  3,
+                                                                ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                  shape:
+                                                                      BoxShape
+                                                                          .circle,
+                                                                ),
+                                                            child: CircleAvatar(
+                                                              backgroundImage:
+                                                                  CachedNetworkImageProvider(
+                                                                    chat.dp,
+                                                                  ),
+                                                            ),
                                                           ),
-                                                    ),
-                                                  ),
+                                                        );
+                                                      }
+                                                    }
+
+                                                    return Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            5,
+                                                          ),
+                                                      decoration:
+                                                          const BoxDecoration(
+                                                            shape:
+                                                                BoxShape.circle,
+                                                            gradient:
+                                                                LinearGradient(
+                                                                  colors: [
+                                                                    Color(
+                                                                      0xFF833AB4,
+                                                                    ),
+                                                                    Color(
+                                                                      0xFFFD1D1D,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                          ),
+                                                      child: Container(
+                                                        padding: EdgeInsets.all(
+                                                          3,
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                              color:
+                                                                  Colors.white,
+                                                              shape:
+                                                                  BoxShape
+                                                                      .circle,
+                                                            ),
+                                                        child: CircleAvatar(
+                                                          backgroundImage:
+                                                              CachedNetworkImageProvider(
+                                                                chat.dp,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
                                                 ),
                                               ),
                                       splashColor: Colors.transparent,
