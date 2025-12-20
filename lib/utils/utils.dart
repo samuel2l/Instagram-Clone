@@ -50,14 +50,12 @@ Future<String> uploadImageToCloudinary(path) async {
     );
     return cloudinaryResponse.secureUrl;
   } catch (e) {
-
     return "";
   }
 }
 
 Future<String> uploadVideoToCloudinary(path) async {
   try {
-    
     final cloudinary = CloudinaryPublic(
       dotenv.env["CLOUDINARY_KEY2"]!,
       dotenv.env["CLOUDINARY_KEY1"]!,
@@ -73,7 +71,6 @@ Future<String> uploadVideoToCloudinary(path) async {
 
     return cloudinaryResponse.secureUrl;
   } catch (e) {
-
     return "";
   }
 }
@@ -93,4 +90,26 @@ Future<GiphyGif?> pickGIF(BuildContext context) async {
     showSnackBar(context: context, content: e.toString());
   }
   return null;
+}
+
+String timeAgoFromIso(String isoString) {
+  print("iso string gotten? ${isoString}");
+  final DateTime dateTime = DateTime.parse(isoString);
+  final Duration diff = DateTime.now().difference(dateTime);
+
+  if (diff.inSeconds < 60) {
+    return 'Just now';
+  } else if (diff.inMinutes < 60) {
+    final m = diff.inMinutes;
+    return '${m}min';
+  } else if (diff.inHours < 24) {
+    final h = diff.inHours;
+    return '${h}h';
+  } else if (diff.inDays < 7) {
+    final d = diff.inDays;
+    return '${d}d';
+  } else {
+    final w = (diff.inDays / 7).floor();
+    return '${w}w';
+  }
 }

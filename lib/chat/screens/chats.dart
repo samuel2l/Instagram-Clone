@@ -10,6 +10,7 @@ import 'package:instagram/chat/screens/chat_screen.dart';
 import 'package:instagram/home/screens/find_users.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
+import 'package:instagram/utils/utils.dart';
 
 class Chats extends ConsumerWidget {
   const Chats({super.key});
@@ -119,14 +120,14 @@ class Chats extends ConsumerWidget {
                   //   },
                   //   child: Text("Create Group"),
                   // ),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     Navigator.of(context).push(
-                  //       MaterialPageRoute(builder: (context) => FindUsers()),
-                  //     );
-                  //   },
-                  //   child: Text("Connect with others"),
-                  // ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => FindUsers()),
+                      );
+                    },
+                    child: Text("Connect with others"),
+                  ),
                   // GestureDetector(
                   //   onTap: () {
                   //     Navigator.of(context).push(
@@ -231,7 +232,6 @@ class Chats extends ConsumerWidget {
                                     final receiver = snapshot.data!;
 
                                     return Row(
-
                                       children: [
                                         Container(
                                           //chats with stories and without will have different sizes for their avatars + story indicator
@@ -343,7 +343,7 @@ class Chats extends ConsumerWidget {
                                                               );
                                                             }
                                                           }
-
+                                                          print(";AST MESSAGE LENGTH ${chat.lastMessage} ${chat.lastMessage?.length}");
                                                           return Container(
                                                             padding:
                                                                 const EdgeInsets.all(
@@ -396,16 +396,58 @@ class Chats extends ConsumerWidget {
                                         Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
                                               receiver.profile.name,
                                               style: TextStyle(fontSize: 18),
                                             ),
-                                                                                        Text(
-                                              chat.lastMessage!,
-                                              style: TextStyle(fontSize: 14),
+                                            SizedBox(
+                                              width:
+                                                  MediaQuery.of(
+                                                    context,
+                                                  ).size.width *
+                                                  0.65,
+                                              child: Row(
+                                                children: [
+                                                  chat.lastMessage!.length < 40
+                                                      ? Text(
+                                                        chat.lastMessage ?? '',
+                                                        maxLines: 1,
+                                                        overflow:
+                                                            TextOverflow
+                                                                .ellipsis,
+                                                        style: const TextStyle(
+                                                          fontSize: 14,
+                                                        ),
+                                                      )
+                                                      : Expanded(
+                                                        child: Text(
+                                                          chat.lastMessage ??
+                                                              '',
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 14,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    timeAgoFromIso(
+                                                      chat.lastMessageTime!,
+                                                    ),
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ],
                                         ),
