@@ -179,7 +179,7 @@ class Chats extends ConsumerWidget {
 
                                   splashColor: Colors.transparent,
                                   leading: CircleAvatar(
-                                    radius: 40,
+                                    radius: 37,
                                     backgroundImage: CachedNetworkImageProvider(
                                       chat.dp,
                                     ),
@@ -236,13 +236,13 @@ class Chats extends ConsumerWidget {
                                           //chats with stories and without will have different sizes for their avatars + story indicator
                                           //sp center needs to be used to center it nicely even with varying sizes
                                           //also set a width as container will only use space it needs. giving fixed size means all elements center the same
-                                          width: 80,
+                                          width: 86,
                                           margin: EdgeInsets.symmetric(horizontal: 5,vertical: 11),
                                           child: Center(
                                             child:
                                                 !chat.hasStory
                                                     ? CircleAvatar(
-                                                      radius: 30,
+                                                      radius: 37,
 
                                                       backgroundImage:
                                                           CachedNetworkImageProvider(
@@ -332,7 +332,7 @@ class Chats extends ConsumerWidget {
                                                                             .circle,
                                                                   ),
                                                                   child: CircleAvatar(
-                                                                    radius: 30,
+                                                                    radius: 37,
                                                                     backgroundImage:
                                                                         CachedNetworkImageProvider(
                                                                           chat.dp,
@@ -378,7 +378,7 @@ class Chats extends ConsumerWidget {
                                                                             .circle,
                                                                   ),
                                                               child: CircleAvatar(
-                                                                radius: 30,
+                                                                radius: 37,
                                                                 backgroundImage:
                                                                     CachedNetworkImageProvider(
                                                                       chat.dp,
