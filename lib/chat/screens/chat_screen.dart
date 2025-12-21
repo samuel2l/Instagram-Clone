@@ -629,12 +629,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                       .text,
                                             ),
                                           )
-                                          : ref
-                                                  .watch(
-                                                    messageToReplyProvider
-                                                        .notifier,
-                                                  )
-                                                  .state
+                                          : messageToReply
                                                   ?.type ==
                                               video
                                           ? SizedBox(
@@ -646,7 +641,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                       .text,
                                               isSender:
                                                   messageToReply
-                                                      ?.senderId ==
+                                                      .senderId ==
                                                   FirebaseAuth
                                                       .instance
                                                       .currentUser!
@@ -654,8 +649,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                             ),
                                           )
                                           : Text(
-                                            ref
-                                                .watch(messageToReplyProvider)!
+                                            messageToReply!
                                                 .text,
                                           ),
                                     ],
