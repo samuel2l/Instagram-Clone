@@ -80,18 +80,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                             messageType: image,
                             imageUrl: mediaFilePath!,
                             repliedTo:
-                                FirebaseAuth.instance.currentUser?.uid ==
-                                        ref
-                                            .read(
-                                              messageToReplyProvider.notifier,
-                                            )
-                                            .state
-                                            ?.senderId
-                                    ? "Me"
-                                    : ref
-                                        .read(messageToReplyProvider.notifier)
-                                        .state!
-                                        .senderId,
+                                ref.read(messageToReplyProvider)!.senderId,
                             reply:
                                 ref
                                     .read(messageToReplyProvider.notifier)
@@ -140,18 +129,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                             messageType: GIF,
                             imageUrl: gif.images?.original?.url ?? "",
                             repliedTo:
-                                FirebaseAuth.instance.currentUser?.uid ==
-                                        ref
-                                            .read(
-                                              messageToReplyProvider.notifier,
-                                            )
-                                            .state
-                                            ?.senderId
-                                    ? "Me"
-                                    : ref
-                                        .read(messageToReplyProvider.notifier)
-                                        .state!
-                                        .senderId,
+                                ref.read(messageToReplyProvider)!.senderId,
                             reply:
                                 ref
                                     .read(messageToReplyProvider.notifier)
@@ -201,18 +179,8 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                               messageType: video,
                               imageUrl: mediaFilePath!,
                               repliedTo:
-                                  FirebaseAuth.instance.currentUser?.uid ==
-                                          ref
-                                              .read(
-                                                messageToReplyProvider.notifier,
-                                              )
-                                              .state
-                                              ?.senderId
-                                      ? "Me"
-                                      : ref
-                                          .read(messageToReplyProvider.notifier)
-                                          .state!
-                                          .senderId,
+                                  ref.read(messageToReplyProvider)!.senderId,
+
                               reply:
                                   ref
                                       .read(messageToReplyProvider.notifier)
@@ -250,11 +218,8 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                 final text = messageController.text.trim();
 
                 if (text.isNotEmpty) {
-                  print(
-                    "so the current reply details? ${ref.watch(messageToReplyProvider.notifier).state?.text}",
-                  );
                   final chatData =
-                      ref.watch(showReplyProvider.notifier).state
+                      ref.watch(showReplyProvider)
                           ? await ref
                               .read(chatRepositoryProvider)
                               .sendMessage(
@@ -267,21 +232,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                                 messageText: text,
                                 chatId: ref.watch(chatIdProvider),
                                 repliedTo:
-                                    FirebaseAuth.instance.currentUser?.uid ==
-                                            ref
-                                                .read(
-                                                  messageToReplyProvider
-                                                      .notifier,
-                                                )
-                                                .state
-                                                ?.senderId
-                                        ? "Me"
-                                        : ref
-                                            .read(
-                                              messageToReplyProvider.notifier,
-                                            )
-                                            .state!
-                                            .senderId,
+                                    ref.read(messageToReplyProvider)!.senderId,
                                 reply:
                                     ref
                                         .read(messageToReplyProvider.notifier)
@@ -292,6 +243,7 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                                         .read(messageToReplyProvider.notifier)
                                         .state!
                                         .type,
+                                
                               )
                           : await ref
                               .read(chatRepositoryProvider)

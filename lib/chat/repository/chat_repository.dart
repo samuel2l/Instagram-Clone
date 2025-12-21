@@ -12,8 +12,8 @@ final chatRepositoryProvider = Provider((ref) {
 });
 
 final chatIdProvider = StateProvider<String>((ref) => '');
-final showReplyProvider=StateProvider<bool>((ref) => false);
-final messageToReplyProvider=StateProvider<MessageToReply?>((ref) => null);
+final showReplyProvider = StateProvider<bool>((ref) => false);
+final messageToReplyProvider = StateProvider<MessageToReply?>((ref) => null);
 
 class ChatRepository {
   FirebaseFirestore firestore;
@@ -265,6 +265,9 @@ class ChatRepository {
   Future<String> sendMessage({
     required String receiverId,
     required String senderId,
+    required String senderName,
+    required String senderUsername,
+    required String senderDp,
     required String messageText,
     required String chatId,
     String repliedTo = "",
@@ -288,6 +291,9 @@ class ChatRepository {
 
       final messageData = {
         'senderId': senderId,
+        'senderName':senderName,
+        'senderUsername':senderName,
+        'senderDp':senderDp,
         'text': messageText,
         "type": text,
         "repliedTo": repliedTo,

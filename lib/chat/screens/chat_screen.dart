@@ -468,6 +468,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   : Alignment.centerLeft,
 
                           child: Column(
+                            crossAxisAlignment:isSender? CrossAxisAlignment.end:CrossAxisAlignment.start,
                             children: [
                               currMessage.repliedTo.toString().isEmpty
                                   ? SizedBox.shrink()
@@ -485,9 +486,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color:
-
-                                          currMessage.repliedTo ==
-                                          "Me"
+                                          currMessage.repliedTo == "Me"
                                               ? Colors.deepPurpleAccent
                                               : const Color.fromARGB(
                                                 255,
@@ -503,10 +502,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     ),
                                     padding: EdgeInsets.all(10),
                                     child: Column(
+                                    
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        
                                         Text(currMessage.repliedTo),
                                         currMessage.replyType == image ||
                                                 currMessage.replyType == GIF
