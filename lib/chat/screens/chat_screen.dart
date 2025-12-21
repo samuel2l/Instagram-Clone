@@ -288,6 +288,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     final isSender =
                         currMessage.senderId ==
                         ref.read(userProvider).value!.firebaseUID;
+
+                    print(
+                      "message dets???? ${currMessage.repliedTo} ${currMessage.senderId}",
+                    );
+
                     if (!currMessage.isSeen &&
                         FirebaseAuth.instance.currentUser?.uid !=
                             currMessage.senderId) {
@@ -324,7 +329,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text("currMessage.repliedTo"),
+                                        Text(currMessage.repliedTo),
                                         currMessage.replyType == image ||
                                                 currMessage.replyType == GIF
                                             ? SizedBox(
@@ -446,7 +451,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     } else {
                       return SwipeTo(
                         onLeftSwipe: (details) {
-                          print("messag dets ${currMessage.repliedTo} ${ref.read(userProvider).value?.firebaseUID}");
                           final messageToReply = {
                             "senderId": currMessage.senderId,
                             "text": currMessage.content,
@@ -481,11 +485,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color:
+
                                           currMessage.repliedTo ==
-                                                  ref
-                                                      .read(userProvider)
-                                                      .value!
-                                                      .firebaseUID
+                                          "Me"
                                               ? Colors.deepPurpleAccent
                                               : const Color.fromARGB(
                                                 255,
@@ -504,6 +506,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                        
                                         Text(currMessage.repliedTo),
                                         currMessage.replyType == image ||
                                                 currMessage.replyType == GIF
