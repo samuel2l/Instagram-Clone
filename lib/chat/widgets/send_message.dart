@@ -9,9 +9,9 @@ import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
 class SendMessage extends ConsumerStatefulWidget {
-final AppUserModel? user;
-    const SendMessage( {super.key,required this.user});
+  final AppUserModel? user;
 
+  const SendMessage({super.key, required this.user});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _SendMessageState();
@@ -20,10 +20,9 @@ final AppUserModel? user;
 class _SendMessageState extends ConsumerState<SendMessage> {
   String? file;
   String? mediaFilePath;
-  bool showReply = false;
-  Map<String, dynamic> messageToReply = {};
+
   FocusNode focusNode = FocusNode();
-    bool showEmojis = false;
+  bool showEmojis = false;
   final TextEditingController messageController = TextEditingController();
   @override
   void initState() {
@@ -68,34 +67,56 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                 if (file != "") {
                   mediaFilePath = await uploadImageToCloudinary(file);
 
-                  showReply
+                  ref.watch(showReplyProvider.notifier).state
                       ? ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
+                            receiverId:
+                                widget.user != null
+                                    ? widget.user!.firebaseUID
+                                    : "",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: image,
                             imageUrl: mediaFilePath!,
                             repliedTo:
                                 FirebaseAuth.instance.currentUser?.uid ==
-                                        messageToReply["senderId"]
+                                        ref
+                                            .read(
+                                              messageToReplyProvider.notifier,
+                                            )
+                                            .state
+                                            ?.senderId
                                     ? "Me"
-                                    : messageToReply["senderId"],
-                            reply: messageToReply["text"],
-                            replyType: messageToReply["type"],
+                                    : ref
+                                        .read(messageToReplyProvider.notifier)
+                                        .state!
+                                        .senderId,
+                            reply:
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state!
+                                    .text,
+                            replyType:
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state!
+                                    .type,
                           )
                       : ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
+                            receiverId:
+                                widget.user != null
+                                    ? widget.user!.firebaseUID
+                                    : "",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: image,
                             imageUrl: mediaFilePath!,
                           );
                   mediaFilePath = "";
-                  showReply = false;
+                  ref.watch(showReplyProvider.notifier).state = false;
                   setState(() {});
                 }
               },
@@ -106,34 +127,56 @@ class _SendMessageState extends ConsumerState<SendMessage> {
               onPressed: () async {
                 GiphyGif? gif = await pickGIF(context);
                 if (gif != null) {
-                  showReply
+                  ref.watch(showReplyProvider.notifier).state
                       ? ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
+                            receiverId:
+                                widget.user != null
+                                    ? widget.user!.firebaseUID
+                                    : "",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: GIF,
                             imageUrl: gif.images?.original?.url ?? "",
                             repliedTo:
                                 FirebaseAuth.instance.currentUser?.uid ==
-                                        messageToReply["senderId"]
+                                        ref
+                                            .read(
+                                              messageToReplyProvider.notifier,
+                                            )
+                                            .state
+                                            ?.senderId
                                     ? "Me"
-                                    : messageToReply["senderId"],
-                            reply: messageToReply["text"],
-                            replyType: messageToReply["type"],
+                                    : ref
+                                        .read(messageToReplyProvider.notifier)
+                                        .state!
+                                        .senderId,
+                            reply:
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state!
+                                    .text,
+                            replyType:
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state!
+                                    .type,
                           )
                       : ref
                           .read(chatRepositoryProvider)
                           .sendFile(
-                            receiverId: widget.user!=null?widget.user!.firebaseUID:"",
+                            receiverId:
+                                widget.user != null
+                                    ? widget.user!.firebaseUID
+                                    : "",
                             senderId: FirebaseAuth.instance.currentUser!.uid,
                             chatId: ref.watch(chatIdProvider),
                             messageType: GIF,
                             imageUrl: gif.images?.original?.url ?? "",
                           );
-                  messageToReply = {};
-                  showReply = false;
+                  ref.watch(messageToReplyProvider.notifier).state = null;
+                  ref.watch(showReplyProvider.notifier).state = false;
                   setState(() {});
                 }
               },
@@ -145,34 +188,56 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                 if (file != "" || file != null) {
                   mediaFilePath = await uploadVideoToCloudinary(file);
                   if (mediaFilePath != "") {
-                    showReply
+                    ref.watch(showReplyProvider.notifier).state
                         ? ref
                             .read(chatRepositoryProvider)
                             .sendFile(
-                              receiverId: widget.user!=null?widget.user!.firebaseUID:"",
+                              receiverId:
+                                  widget.user != null
+                                      ? widget.user!.firebaseUID
+                                      : "",
                               senderId: FirebaseAuth.instance.currentUser!.uid,
                               chatId: ref.watch(chatIdProvider),
                               messageType: video,
                               imageUrl: mediaFilePath!,
                               repliedTo:
                                   FirebaseAuth.instance.currentUser?.uid ==
-                                          messageToReply["senderId"]
+                                          ref
+                                              .read(
+                                                messageToReplyProvider.notifier,
+                                              )
+                                              .state
+                                              ?.senderId
                                       ? "Me"
-                                      : messageToReply["senderId"],
-                              reply: messageToReply["text"],
-                              replyType: messageToReply["type"],
+                                      : ref
+                                          .read(messageToReplyProvider.notifier)
+                                          .state!
+                                          .senderId,
+                              reply:
+                                  ref
+                                      .read(messageToReplyProvider.notifier)
+                                      .state!
+                                      .text,
+                              replyType:
+                                  ref
+                                      .read(messageToReplyProvider.notifier)
+                                      .state!
+                                      .type,
                             )
                         : ref
                             .read(chatRepositoryProvider)
                             .sendFile(
-                              receiverId:widget.user!=null?widget.user!.firebaseUID:"",
+                              receiverId:
+                                  widget.user != null
+                                      ? widget.user!.firebaseUID
+                                      : "",
                               senderId: FirebaseAuth.instance.currentUser!.uid,
                               chatId: ref.watch(chatIdProvider),
                               messageType: video,
                               imageUrl: mediaFilePath!,
                             );
                     mediaFilePath = "";
-                    showReply = false;
+                    ref.watch(showReplyProvider.notifier).state = false;
                     setState(() {});
                   }
                 }
@@ -185,28 +250,56 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                 final text = messageController.text.trim();
 
                 if (text.isNotEmpty) {
+                  print(
+                    "so the current reply details? ${ref.watch(messageToReplyProvider.notifier).state?.text}",
+                  );
                   final chatData =
-                      showReply
+                      ref.watch(showReplyProvider.notifier).state
                           ? await ref
                               .read(chatRepositoryProvider)
                               .sendMessage(
-                                receiverId: widget.user!=null?widget.user!.firebaseUID:"",
+                                receiverId:
+                                    widget.user != null
+                                        ? widget.user!.firebaseUID
+                                        : "",
                                 senderId:
                                     FirebaseAuth.instance.currentUser!.uid,
                                 messageText: text,
                                 chatId: ref.watch(chatIdProvider),
                                 repliedTo:
                                     FirebaseAuth.instance.currentUser?.uid ==
-                                            messageToReply["senderId"]
+                                            ref
+                                                .read(
+                                                  messageToReplyProvider
+                                                      .notifier,
+                                                )
+                                                .state
+                                                ?.senderId
                                         ? "Me"
-                                        : messageToReply["senderId"],
-                                reply: messageToReply["text"],
-                                replyType: messageToReply["type"],
+                                        : ref
+                                            .read(
+                                              messageToReplyProvider.notifier,
+                                            )
+                                            .state!
+                                            .senderId,
+                                reply:
+                                    ref
+                                        .read(messageToReplyProvider.notifier)
+                                        .state!
+                                        .text,
+                                replyType:
+                                    ref
+                                        .read(messageToReplyProvider.notifier)
+                                        .state!
+                                        .type,
                               )
                           : await ref
                               .read(chatRepositoryProvider)
                               .sendMessage(
-                                receiverId:widget.user!=null?widget.user!.firebaseUID:"" ,
+                                receiverId:
+                                    widget.user != null
+                                        ? widget.user!.firebaseUID
+                                        : "",
                                 senderId:
                                     FirebaseAuth.instance.currentUser!.uid,
                                 messageText: text,
@@ -217,8 +310,8 @@ class _SendMessageState extends ConsumerState<SendMessage> {
                     ref.read(chatIdProvider.notifier).state = chatData;
                   }
                 }
-                messageToReply = {};
-                showReply = false;
+                ref.watch(messageToReplyProvider.notifier).state = null;
+                ref.watch(showReplyProvider.notifier).state = false;
                 setState(() {});
               },
             ),

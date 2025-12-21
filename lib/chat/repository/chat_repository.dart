@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
+import 'package:instagram/chat/models/message_to_reply.dart';
 import 'package:instagram/utils/constants.dart';
 
 final chatRepositoryProvider = Provider((ref) {
@@ -11,6 +12,8 @@ final chatRepositoryProvider = Provider((ref) {
 });
 
 final chatIdProvider = StateProvider<String>((ref) => '');
+final showReplyProvider=StateProvider<bool>((ref) => false);
+final messageToReplyProvider=StateProvider<MessageToReply?>((ref) => null);
 
 class ChatRepository {
   FirebaseFirestore firestore;
