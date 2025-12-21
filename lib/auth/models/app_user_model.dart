@@ -43,7 +43,7 @@ class AppUserModel {
   }
 
   factory AppUserModel.fromMap(Map<String, dynamic> map) {
-    print("map at user model> $map");
+    // print("map at user model> $map");
 
     return AppUserModel(
       email: map['email'] as String,

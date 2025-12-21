@@ -99,7 +99,7 @@ class ProfileRepository {
   }) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      print("Fetching profile ONCE for UID: $uid");
+      // print("Fetching profile ONCE for UID: $uid");
 
       final docSnapshot = await firestore.collection('users').doc(uid).get();
 

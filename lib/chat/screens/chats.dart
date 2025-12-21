@@ -232,7 +232,7 @@ class Chats extends ConsumerWidget {
 
                                     return GestureDetector(
                                       onTap: () {
-                                        print("tapped?????");
+
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder:

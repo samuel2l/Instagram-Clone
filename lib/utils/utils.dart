@@ -93,7 +93,7 @@ Future<GiphyGif?> pickGIF(BuildContext context) async {
 }
 
 String timeAgoFromIso(String isoString) {
-  print("iso string gotten? ${isoString}");
+
   final DateTime dateTime = DateTime.parse(isoString);
   final Duration diff = DateTime.now().difference(dateTime);
 

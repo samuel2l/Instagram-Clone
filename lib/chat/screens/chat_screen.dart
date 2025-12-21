@@ -324,7 +324,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(currMessage.repliedTo),
+                                        Text("currMessage.repliedTo"),
                                         currMessage.replyType == image ||
                                                 currMessage.replyType == GIF
                                             ? SizedBox(
@@ -446,7 +446,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     } else {
                       return SwipeTo(
                         onLeftSwipe: (details) {
-                          print("this is the bit that executes?");
+                          print("messag dets ${currMessage.repliedTo} ${ref.read(userProvider).value?.firebaseUID}");
                           final messageToReply = {
                             "senderId": currMessage.senderId,
                             "text": currMessage.content,
@@ -456,10 +456,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ref
                               .read(messageToReplyProvider.notifier)
                               .state = MessageToReply.fromMap(messageToReply);
-
-                          // print(
-                          //   "so after updates? ${ref.watch(messageToReplyProvider.notifier).state!.text}",
-                          // );
                         },
                         child: Align(
                           alignment:
@@ -467,82 +463,111 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   ? Alignment.centerRight
                                   : Alignment.centerLeft,
 
-                          child: Container(
-                            margin: EdgeInsets.only(
-                              right: isSender ? 3 : 0,
-                              bottom: 2,
-                              left: !isSender ? 3 : 0,
-                            ),
-
-                            constraints: BoxConstraints(
-                              maxWidth:
-                                  MediaQuery.of(context).size.width * 0.76,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSender
-                                      ? Colors.deepPurpleAccent
-                                      : const Color.fromARGB(255, 59, 59, 59),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
-                                bottomLeft: Radius.circular(10),
-                              ),
-                            ),
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                currMessage.repliedTo.toString().isEmpty
-                                    ? SizedBox.shrink()
-                                    :
-                                    // Text(
-                                    //   currMessage.repliedTo ?? "",
-                                    // ),
-                                    Container(
-                                      width: double.infinity,
-                                      color: Colors.lightGreenAccent,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(currMessage.repliedTo),
-                                          currMessage.replyType == image ||
-                                                  currMessage.replyType == GIF
-                                              ? SizedBox(
-                                                height: 70,
-                                                width: 70,
-                                                child: CachedNetworkImage(
-                                                  imageUrl: currMessage.reply,
-                                                ),
-                                              )
-                                              : currMessage.replyType == video
-                                              ? SizedBox(
-                                                height: 70,
-                                                width: 70,
-                                                child: VideoMessage(
-                                                  url: currMessage.reply,
-                                                  isSender:
-                                                      currMessage.repliedTo ==
-                                                              "Me"
-                                                          ? true
-                                                          : false,
-                                                ),
-                                              )
-                                              : Text(currMessage.reply),
-                                        ],
-                                      ),
+                          child: Column(
+                            children: [
+                              currMessage.repliedTo.toString().isEmpty
+                                  ? SizedBox.shrink()
+                                  : Container(
+                                    margin: EdgeInsets.only(
+                                      right: isSender ? 3 : 0,
+                                      bottom: 2,
+                                      left: !isSender ? 3 : 0,
                                     ),
 
-                                Text(
+                                    constraints: BoxConstraints(
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width *
+                                          0.76,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          currMessage.repliedTo ==
+                                                  ref
+                                                      .read(userProvider)
+                                                      .value!
+                                                      .firebaseUID
+                                              ? Colors.deepPurpleAccent
+                                              : const Color.fromARGB(
+                                                255,
+                                                59,
+                                                59,
+                                                59,
+                                              ),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10),
+                                        bottomLeft: Radius.circular(10),
+                                      ),
+                                    ),
+                                    padding: EdgeInsets.all(10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(currMessage.repliedTo),
+                                        currMessage.replyType == image ||
+                                                currMessage.replyType == GIF
+                                            ? SizedBox(
+                                              height: 70,
+                                              width: 70,
+                                              child: CachedNetworkImage(
+                                                imageUrl: currMessage.reply,
+                                              ),
+                                            )
+                                            : currMessage.replyType == video
+                                            ? SizedBox(
+                                              height: 70,
+                                              width: 70,
+                                              child: VideoMessage(
+                                                url: currMessage.reply,
+                                                isSender:
+                                                    currMessage.repliedTo ==
+                                                            "Me"
+                                                        ? true
+                                                        : false,
+                                              ),
+                                            )
+                                            : Text(currMessage.reply),
+                                      ],
+                                    ),
+                                  ),
+                              Container(
+                                margin: EdgeInsets.only(
+                                  right: isSender ? 3 : 0,
+                                  bottom: 2,
+                                  left: !isSender ? 3 : 0,
+                                ),
+
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.76,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      isSender
+                                          ? Colors.deepPurpleAccent
+                                          : const Color.fromARGB(
+                                            255,
+                                            59,
+                                            59,
+                                            59,
+                                          ),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10),
+                                    bottomLeft: Radius.circular(10),
+                                  ),
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: Text(
                                   currMessage.content,
                                   style: TextStyle(
                                     fontSize: 20,
                                     color: Colors.white,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -614,44 +639,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                           ),
                                         ],
                                       ),
-                                     messageToReply
-                                                      ?.type ==
-                                                  image ||
-                                              messageToReply
-                                                      ?.type ==
-                                                  GIF
+                                      messageToReply?.type == image ||
+                                              messageToReply?.type == GIF
                                           ? SizedBox(
                                             height: 70,
                                             width: 70,
                                             child: CachedNetworkImage(
-                                              imageUrl:
-                                                  messageToReply!
-                                                      .text,
+                                              imageUrl: messageToReply!.text,
                                             ),
                                           )
-                                          : messageToReply
-                                                  ?.type ==
-                                              video
+                                          : messageToReply?.type == video
                                           ? SizedBox(
                                             height: 70,
                                             width: 70,
                                             child: VideoMessage(
-                                              url:
-                                                  messageToReply!
-                                                      .text,
+                                              url: messageToReply!.text,
                                               isSender:
-                                                  messageToReply
-                                                      .senderId ==
+                                                  messageToReply.senderId ==
                                                   FirebaseAuth
                                                       .instance
                                                       .currentUser!
                                                       .uid,
                                             ),
                                           )
-                                          : Text(
-                                            messageToReply!
-                                                .text,
-                                          ),
+                                          : Text(messageToReply!.text),
                                     ],
                                   ),
                                 )
