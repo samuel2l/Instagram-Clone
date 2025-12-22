@@ -5,9 +5,6 @@ class Message {
   final String id;
   final bool isSeen;
   final String senderId;
-  final String senderName;
-  final String senderUsername;
-  final String senderDp;
 
   final String type;
   final String repliedTo;
@@ -24,9 +21,6 @@ class Message {
     required this.replyType,
     required this.reply,
     required this.content,
-    required this.senderDp,
-    required this.senderUsername,
-    required this.senderName,
   });
 
   Map<String, dynamic> toMap() {
@@ -52,18 +46,6 @@ class Message {
       replyType: map['replyType'] as String,
       reply: map['reply'] as String,
       content: map['text'] as String,
-      senderDp:
-      //check for null for sender data as previous messages will not have them
-          map['senderDp'] != null
-              ? map['senderDp'] as String
-              : "https://plus.unsplash.com/premium_photo-1669748157617-a3a83cc8ea23?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmVhdXRpZnVsJTIwdmlld3N8ZW58MHx8MHx8fDA%3D",
-
-      senderName: map['name'] != null
-              ? map['name'] as String
-              : "old message",        
-      senderUsername: map['senderUsername'] != null
-              ? map['senderUsername'] as String
-              : "old message",        
     );
   }
 

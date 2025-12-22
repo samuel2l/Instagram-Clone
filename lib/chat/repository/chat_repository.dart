@@ -265,9 +265,6 @@ class ChatRepository {
   Future<String> sendMessage({
     required String receiverId,
     required String senderId,
-    required String senderName,
-    required String senderUsername,
-    required String senderDp,
     required String messageText,
     required String chatId,
     String repliedTo = "",
@@ -291,9 +288,6 @@ class ChatRepository {
 
       final messageData = {
         'senderId': senderId,
-        'senderName':senderName,
-        'senderUsername':senderName,
-        'senderDp':senderDp,
         'text': messageText,
         "type": text,
         "repliedTo": repliedTo,
@@ -316,6 +310,34 @@ class ChatRepository {
       return "";
     }
   }
+
+  Future<List<AppUserModel>> getUsersByIds(List<String> uids) async {
+  if (uids.isEmpty) return [];
+
+  final List<AppUserModel> users = [];
+
+  const int batchSize = 10;
+
+  for (int i = 0; i < uids.length; i += batchSize) {
+    final batch = uids.sublist(
+      i,
+      i + batchSize > uids.length ? uids.length : i + batchSize,
+    );
+
+    final snapshot = await firestore
+        .collection('users')
+        .where('uid', whereIn: batch)
+        .get();
+
+    users.addAll(
+      snapshot.docs.map((doc) {
+        return AppUserModel.fromMap(doc.data());
+      }),
+    );
+  }
+
+  return users;
+}
 
   Stream<List<Message>> getMessages(String chatId) {
     if (chatId.isEmpty) {
@@ -413,4 +435,6 @@ class ChatRepository {
       });
     }
   }
+
+
 }

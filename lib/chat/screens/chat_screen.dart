@@ -35,10 +35,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
+  List<AppUserModel> participantsData = [];
 
   @override
   void initState() {
     super.initState();
+    if (widget.chatData.isGroup) {
+      //if its not the group then the other user will just be the user received as a param so this function call would be redundant
+      ref
+          .read(chatRepositoryProvider)
+          .getUsersByIds(widget.chatData.participants);
+    }
     localChatData = widget.chatData;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(chatIdProvider.notifier).state = localChatData.chatId;
@@ -468,7 +475,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   : Alignment.centerLeft,
 
                           child: Column(
-                            crossAxisAlignment:isSender? CrossAxisAlignment.end:CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                                isSender
+                                    ? CrossAxisAlignment.end
+                                    : CrossAxisAlignment.start,
                             children: [
                               currMessage.repliedTo.toString().isEmpty
                                   ? SizedBox.shrink()
@@ -502,7 +512,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     ),
                                     padding: EdgeInsets.all(10),
                                     child: Column(
-                                    
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
