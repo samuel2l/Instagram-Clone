@@ -311,10 +311,13 @@ class ChatRepository {
     }
   }
 
-  Future<List<AppUserModel>> getUsersByIds(List<String> uids) async {
-  if (uids.isEmpty) return [];
+Future<Map<String, AppUserModel>> getUsersByIds(
+  List<String> uids,
+  bool isGroup,
+) async {
+  if (uids.isEmpty || !isGroup) return {};
 
-  final List<AppUserModel> users = [];
+  final Map<String, AppUserModel> usersMap = {};
 
   const int batchSize = 10;
 
@@ -329,16 +332,14 @@ class ChatRepository {
         .where('uid', whereIn: batch)
         .get();
 
-    users.addAll(
-      snapshot.docs.map((doc) {
-        return AppUserModel.fromMap(doc.data());
-      }),
-    );
+    for (final doc in snapshot.docs) {
+      final user = AppUserModel.fromMap(doc.data());
+      usersMap[user.firebaseUID] = user; // uid → model
+    }
   }
 
-  return users;
+  return usersMap;
 }
-
   Stream<List<Message>> getMessages(String chatId) {
     if (chatId.isEmpty) {
       return firestore

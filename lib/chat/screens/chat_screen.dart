@@ -35,16 +35,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
-  List<AppUserModel> participantsData = [];
 
   @override
   void initState() {
     super.initState();
     if (widget.chatData.isGroup) {
       //if its not the group then the other user will just be the user received as a param so this function call would be redundant
-      ref
-          .read(chatRepositoryProvider)
-          .getUsersByIds(widget.chatData.participants);
     }
     localChatData = widget.chatData;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -257,435 +253,488 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder<List<Message>>(
-              stream: ref
-                  .watch(chatRepositoryProvider)
-                  .getMessages(ref.watch(chatIdProvider) ?? ""),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text("Error: ${snapshot.error}"));
-                }
-
-                final messages = snapshot.data ?? [];
-                if (messages.isEmpty) {
-                  return Center(child: Text("No messages with this user"));
-                }
-                SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                  scrollController.jumpTo(
-                    scrollController.position.minScrollExtent,
-                  );
-                });
-
-                return ListView.builder(
-                  //observed that if i do not sort the messages in descending firebase returns in ascending
-                  //to prevent this manipulation you could just sort
-                  //another way is to make the list view reversed allowing it to show elements in the opposite
-                  //and for the schenduler binding it should be to max scroll extent in the normal case but since its reversed its min scroll extent and will will rather go to the bottom not to the top
-                  reverse: true,
-                  controller: scrollController,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final currMessage = messages[index];
-                    final isSender =
-                        currMessage.senderId ==
-                        ref.read(userProvider).value!.firebaseUID;
-
-                    print(
-                      "message dets???? ${currMessage.repliedTo} ${currMessage.senderId}",
-                    );
-
-                    if (!currMessage.isSeen &&
-                        FirebaseAuth.instance.currentUser?.uid !=
-                            currMessage.senderId) {
-                      ref
-                          .read(chatRepositoryProvider)
-                          .updateSeen(
-                            ref.watch(chatIdProvider) ?? "123",
-                            currMessage.id,
-                          );
-                    }
-                    if (currMessage.type == image || currMessage.type == GIF) {
-                      return SwipeTo(
-                        onLeftSwipe: (details) {
-                          final messageToReply = {
-                            "senderId": currMessage.senderId,
-                            "text": currMessage.content,
-                            "type": currMessage.type,
-                          };
-                          ref.read(showReplyProvider.notifier).state = true;
-                          ref
-                              .read(messageToReplyProvider.notifier)
-                              .state = MessageToReply.fromMap(messageToReply);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              currMessage.repliedTo.isEmpty
-                                  ? SizedBox.shrink()
-                                  : Container(
-                                    width: double.infinity,
-                                    color: Colors.lightGreenAccent,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(currMessage.repliedTo),
-                                        currMessage.replyType == image ||
-                                                currMessage.replyType == GIF
-                                            ? SizedBox(
-                                              height: 70,
-                                              width: 70,
-                                              child: CachedNetworkImage(
-                                                imageUrl: currMessage.reply,
-                                              ),
-                                            )
-                                            : currMessage.replyType == video
-                                            ? SizedBox(
-                                              height: 70,
-                                              width: 70,
-                                              child: VideoMessage(
-                                                url: currMessage.reply,
-                                                isSender:
-                                                    currMessage.repliedTo ==
-                                                            "Me"
-                                                        ? true
-                                                        : false,
-                                              ),
-                                            )
-                                            : Text(currMessage.reply),
-                                      ],
-                                    ),
-                                  ),
-
-                              Container(
-                                padding: EdgeInsets.all(5),
-                                color:
-                                    currMessage.senderId ==
-                                            FirebaseAuth
-                                                .instance
-                                                .currentUser!
-                                                .uid
-                                        ? const Color.fromARGB(
-                                          255,
-                                          143,
-                                          207,
-                                          145,
-                                        )
-                                        : Colors.white,
-                                height: 350,
-
-                                child: CachedNetworkImage(
-                                  imageUrl: currMessage.content,
-                                  placeholder:
-                                      (context, url) => Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                  errorWidget:
-                                      (context, url, error) =>
-                                          Icon(Icons.error),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    } else if (currMessage.type == video) {
-                      return SwipeTo(
-                        onLeftSwipe: (details) {
-                          final messageToReply = {
-                            "senderId": currMessage.senderId,
-                            "text": currMessage.content,
-                            "type": currMessage.type,
-                          };
-                          ref.read(showReplyProvider.notifier).state = true;
-                          ref
-                              .read(messageToReplyProvider.notifier)
-                              .state = MessageToReply.fromMap(messageToReply);
-                        },
-
-                        child: Column(
-                          children: [
-                            currMessage.repliedTo.toString().isEmpty
-                                ? SizedBox.shrink()
-                                : Container(
-                                  width: double.infinity,
-                                  color: Colors.lightGreenAccent,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(currMessage.repliedTo),
-                                      currMessage.replyType == image ||
-                                              currMessage.replyType == GIF
-                                          ? SizedBox(
-                                            height: 70,
-                                            width: 70,
-                                            child: CachedNetworkImage(
-                                              imageUrl: currMessage.reply,
-                                            ),
-                                          )
-                                          : currMessage.replyType == video
-                                          ? SizedBox(
-                                            height: 70,
-                                            width: 70,
-                                            child: VideoMessage(
-                                              url: currMessage.reply,
-                                              isSender:
-                                                  currMessage.repliedTo == "Me"
-                                                      ? true
-                                                      : false,
-                                            ),
-                                          )
-                                          : Text(currMessage.reply),
-                                    ],
-                                  ),
-                                ),
-
-                            VideoMessage(
-                              url: currMessage.content,
-                              isSender: isSender,
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      return SwipeTo(
-                        onLeftSwipe: (details) {
-                          final messageToReply = {
-                            "senderId": currMessage.senderId,
-                            "text": currMessage.content,
-                            "type": currMessage.type,
-                          };
-                          ref.read(showReplyProvider.notifier).state = true;
-                          ref
-                              .read(messageToReplyProvider.notifier)
-                              .state = MessageToReply.fromMap(messageToReply);
-                        },
-                        child: Align(
-                          alignment:
-                              isSender
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
-
-                          child: Column(
-                            crossAxisAlignment:
-                                isSender
-                                    ? CrossAxisAlignment.end
-                                    : CrossAxisAlignment.start,
-                            children: [
-                              currMessage.repliedTo.toString().isEmpty
-                                  ? SizedBox.shrink()
-                                  : Container(
-                                    margin: EdgeInsets.only(
-                                      right: isSender ? 3 : 0,
-                                      bottom: 2,
-                                      left: !isSender ? 3 : 0,
-                                    ),
-
-                                    constraints: BoxConstraints(
-                                      maxWidth:
-                                          MediaQuery.of(context).size.width *
-                                          0.76,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          currMessage.repliedTo == "Me"
-                                              ? Colors.deepPurpleAccent
-                                              : const Color.fromARGB(
-                                                255,
-                                                59,
-                                                59,
-                                                59,
-                                              ),
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(10),
-                                        topRight: Radius.circular(10),
-                                        bottomLeft: Radius.circular(10),
-                                      ),
-                                    ),
-                                    padding: EdgeInsets.all(10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(currMessage.repliedTo),
-                                        currMessage.replyType == image ||
-                                                currMessage.replyType == GIF
-                                            ? SizedBox(
-                                              height: 70,
-                                              width: 70,
-                                              child: CachedNetworkImage(
-                                                imageUrl: currMessage.reply,
-                                              ),
-                                            )
-                                            : currMessage.replyType == video
-                                            ? SizedBox(
-                                              height: 70,
-                                              width: 70,
-                                              child: VideoMessage(
-                                                url: currMessage.reply,
-                                                isSender:
-                                                    currMessage.repliedTo ==
-                                                            "Me"
-                                                        ? true
-                                                        : false,
-                                              ),
-                                            )
-                                            : Text(currMessage.reply),
-                                      ],
-                                    ),
-                                  ),
-                              Container(
-                                margin: EdgeInsets.only(
-                                  right: isSender ? 3 : 0,
-                                  bottom: 2,
-                                  left: !isSender ? 3 : 0,
-                                ),
-
-                                constraints: BoxConstraints(
-                                  maxWidth:
-                                      MediaQuery.of(context).size.width * 0.76,
-                                ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      isSender
-                                          ? Colors.deepPurpleAccent
-                                          : const Color.fromARGB(
-                                            255,
-                                            59,
-                                            59,
-                                            59,
-                                          ),
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(10),
-                                    topRight: Radius.circular(10),
-                                    bottomLeft: Radius.circular(10),
-                                  ),
-                                ),
-                                padding: EdgeInsets.all(10),
-                                child: Text(
-                                  currMessage.content,
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                );
-              },
+      body: FutureBuilder(
+        future: ref
+            .read(chatRepositoryProvider)
+            .getUsersByIds(
+              widget.chatData.participants,
+              widget.chatData.isGroup,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
+        builder: (context, asyncSnapshot) {
+          if (asyncSnapshot.hasError) {
+            return Center(child: Text("error loading chat data"));
+          }
+          if (asyncSnapshot.hasData) {
+            final participantData = asyncSnapshot.data!;
+            return Column(
               children: [
-                Consumer(
-                  // child: Container(),
-                  builder: (context, ref, child) {
-                    final showReply = ref.watch(showReplyProvider);
-                    final messageToReply = ref.watch(messageToReplyProvider);
-                    return ClipRect(
-                      child: AnimatedAlign(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut,
-                        heightFactor: showReply ? 1.0 : 0.0,
-                        alignment: Alignment.topCenter,
-                        child:
-                            showReply
-                                ? Container(
-                                  color: Colors.lightGreenAccent,
-                                  width: double.infinity,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            ref
-                                                        .read(
-                                                          messageToReplyProvider
-                                                              .notifier,
-                                                        )
-                                                        .state
-                                                        ?.senderId ==
-                                                    ref
-                                                        .read(userProvider)
-                                                        .value
-                                                        ?.firebaseUID
-                                                ? "Me"
-                                                : ref
-                                                        .read(
-                                                          messageToReplyProvider
-                                                              .notifier,
-                                                        )
-                                                        .state
-                                                        ?.senderId ??
-                                                    "",
-                                          ),
-                                          IconButton(
-                                            onPressed: () {
-                                              ref
-                                                  .read(
-                                                    showReplyProvider.notifier,
+                Expanded(
+                  child: StreamBuilder<List<Message>>(
+                    stream: ref
+                        .watch(chatRepositoryProvider)
+                        .getMessages(ref.watch(chatIdProvider) ?? ""),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      }
+
+                      final messages = snapshot.data ?? [];
+                      if (messages.isEmpty) {
+                        return Center(
+                          child: Text("No messages with this user"),
+                        );
+                      }
+                      SchedulerBinding.instance.addPostFrameCallback((
+                        timeStamp,
+                      ) {
+                        scrollController.jumpTo(
+                          scrollController.position.minScrollExtent,
+                        );
+                      });
+
+                      return ListView.builder(
+                        //observed that if i do not sort the messages in descending firebase returns in ascending
+                        //to prevent this manipulation you could just sort
+                        //another way is to make the list view reversed allowing it to show elements in the opposite
+                        //and for the schenduler binding it should be to max scroll extent in the normal case but since its reversed its min scroll extent and will will rather go to the bottom not to the top
+                        reverse: true,
+                        controller: scrollController,
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final currMessage = messages[index];
+                          final isMyReplyMessage =
+                              currMessage.repliedTo ==
+                              ref.watch(userProvider).value!.firebaseUID;
+                          final isSender =
+                              currMessage.senderId ==
+                              ref.read(userProvider).value!.firebaseUID;
+
+                          print(
+                            "message dets???? ${currMessage.repliedTo} ${currMessage.senderId}",
+                          );
+
+                          if (!currMessage.isSeen &&
+                              FirebaseAuth.instance.currentUser?.uid !=
+                                  currMessage.senderId) {
+                            ref
+                                .read(chatRepositoryProvider)
+                                .updateSeen(
+                                  ref.watch(chatIdProvider) ?? "123",
+                                  currMessage.id,
+                                );
+                          }
+                          if (currMessage.type == image ||
+                              currMessage.type == GIF) {
+                            return SwipeTo(
+                              onLeftSwipe: (details) {
+                                final messageToReply = {
+                                  "senderId": currMessage.senderId,
+                                  "text": currMessage.content,
+                                  "type": currMessage.type,
+                                };
+                                ref.read(showReplyProvider.notifier).state =
+                                    true;
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state = MessageToReply.fromMap(
+                                  messageToReply,
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    currMessage.repliedTo.isEmpty
+                                        ? SizedBox.shrink()
+                                        : Container(
+                                          width: double.infinity,
+                                          color: Colors.lightGreenAccent,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(currMessage.repliedTo),
+                                              currMessage.replyType == image ||
+                                                      currMessage.replyType ==
+                                                          GIF
+                                                  ? SizedBox(
+                                                    height: 70,
+                                                    width: 70,
+                                                    child: CachedNetworkImage(
+                                                      imageUrl:
+                                                          currMessage.reply,
+                                                    ),
                                                   )
-                                                  .state = false;
-                                            },
-                                            icon: Icon(Icons.close),
+                                                  : currMessage.replyType ==
+                                                      video
+                                                  ? SizedBox(
+                                                    height: 70,
+                                                    width: 70,
+                                                    child: VideoMessage(
+                                                      url: currMessage.reply,
+                                                      isSender:
+                                                          currMessage.repliedTo ==
+                                                                  "Me"
+                                                              ? true
+                                                              : false,
+                                                    ),
+                                                  )
+                                                  : Text(currMessage.reply),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                      messageToReply?.type == image ||
-                                              messageToReply?.type == GIF
-                                          ? SizedBox(
-                                            height: 70,
-                                            width: 70,
-                                            child: CachedNetworkImage(
-                                              imageUrl: messageToReply!.text,
-                                            ),
-                                          )
-                                          : messageToReply?.type == video
-                                          ? SizedBox(
-                                            height: 70,
-                                            width: 70,
-                                            child: VideoMessage(
-                                              url: messageToReply!.text,
-                                              isSender:
-                                                  messageToReply.senderId ==
+                                        ),
+
+                                    Container(
+                                      padding: EdgeInsets.all(5),
+                                      color:
+                                          currMessage.senderId ==
                                                   FirebaseAuth
                                                       .instance
                                                       .currentUser!
-                                                      .uid,
+                                                      .uid
+                                              ? const Color.fromARGB(
+                                                255,
+                                                143,
+                                                207,
+                                                145,
+                                              )
+                                              : Colors.white,
+                                      height: 350,
+
+                                      child: CachedNetworkImage(
+                                        imageUrl: currMessage.content,
+                                        placeholder:
+                                            (context, url) => Center(
+                                              child:
+                                                  CircularProgressIndicator(),
                                             ),
-                                          )
-                                          : Text(messageToReply!.text),
-                                    ],
+                                        errorWidget:
+                                            (context, url, error) =>
+                                                Icon(Icons.error),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          } else if (currMessage.type == video) {
+                            return SwipeTo(
+                              onLeftSwipe: (details) {
+                                final messageToReply = {
+                                  "senderId": currMessage.senderId,
+                                  "text": currMessage.content,
+                                  "type": currMessage.type,
+                                };
+                                ref.read(showReplyProvider.notifier).state =
+                                    true;
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state = MessageToReply.fromMap(
+                                  messageToReply,
+                                );
+                              },
+
+                              child: Column(
+                                children: [
+                                  currMessage.repliedTo.toString().isEmpty
+                                      ? SizedBox.shrink()
+                                      : Container(
+                                        width: double.infinity,
+                                        color: Colors.lightGreenAccent,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(currMessage.repliedTo),
+                                            currMessage.replyType == image ||
+                                                    currMessage.replyType == GIF
+                                                ? SizedBox(
+                                                  height: 70,
+                                                  width: 70,
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: currMessage.reply,
+                                                  ),
+                                                )
+                                                : currMessage.replyType == video
+                                                ? SizedBox(
+                                                  height: 70,
+                                                  width: 70,
+                                                  child: VideoMessage(
+                                                    url: currMessage.reply,
+                                                    isSender:
+                                                        currMessage.repliedTo ==
+                                                                "Me"
+                                                            ? true
+                                                            : false,
+                                                  ),
+                                                )
+                                                : Text(currMessage.reply),
+                                          ],
+                                        ),
+                                      ),
+
+                                  VideoMessage(
+                                    url: currMessage.content,
+                                    isSender: isSender,
                                   ),
-                                )
-                                : SizedBox.shrink(),
-                      ),
-                    );
-                  },
+                                ],
+                              ),
+                            );
+                          } else {
+                            return SwipeTo(
+                              onLeftSwipe: (details) {
+                                final messageToReply = {
+                                  "senderId": currMessage.senderId,
+                                  "text": currMessage.content,
+                                  "type": currMessage.type,
+                                };
+                                ref.read(showReplyProvider.notifier).state =
+                                    true;
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state = MessageToReply.fromMap(
+                                  messageToReply,
+                                );
+                              },
+                              child: Align(
+                                alignment:
+                                    isSender
+                                        ? Alignment.centerRight
+                                        : Alignment.centerLeft,
+
+                                child: Column(
+                                  crossAxisAlignment:
+                                      isSender
+                                          ? CrossAxisAlignment.end
+                                          : CrossAxisAlignment.start,
+                                  children: [
+                                    currMessage.repliedTo.toString().isEmpty
+                                        ? SizedBox.shrink()
+                                        : ReplyWidget(
+                                          isSender,
+                                          isMyReplyMessage,
+                                          currMessage,
+                                          participantData,
+                                        ),
+                                    Container(
+                                      margin: EdgeInsets.only(
+                                        right: isSender ? 3 : 0,
+                                        bottom: 2,
+                                        left: !isSender ? 3 : 0,
+                                      ),
+
+                                      constraints: BoxConstraints(
+                                        maxWidth:
+                                            MediaQuery.of(context).size.width *
+                                            0.76,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isSender
+                                                ? Colors.deepPurpleAccent
+                                                : const Color.fromARGB(
+                                                  255,
+                                                  59,
+                                                  59,
+                                                  59,
+                                                ),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          topRight: Radius.circular(10),
+                                          bottomLeft: Radius.circular(10),
+                                        ),
+                                      ),
+                                      padding: EdgeInsets.all(10),
+                                      child: Text(
+                                        currMessage.content,
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
                 ),
-                SendMessage(user: widget.user),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Consumer(
+                        // child: Container(),
+                        builder: (context, ref, child) {
+                          final showReply = ref.watch(showReplyProvider);
+                          final messageToReply = ref.watch(
+                            messageToReplyProvider,
+                          );
+                          return ClipRect(
+                            child: AnimatedAlign(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeInOut,
+                              heightFactor: showReply ? 1.0 : 0.0,
+                              alignment: Alignment.topCenter,
+                              child:
+                                  showReply
+                                      ? Container(
+                                        color: Colors.lightGreenAccent,
+                                        width: double.infinity,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  ref
+                                                              .read(
+                                                                messageToReplyProvider
+                                                                    .notifier,
+                                                              )
+                                                              .state
+                                                              ?.senderId ==
+                                                          ref
+                                                              .read(
+                                                                userProvider,
+                                                              )
+                                                              .value
+                                                              ?.firebaseUID
+                                                      ? "Me"
+                                                      : ref
+                                                              .read(
+                                                                messageToReplyProvider
+                                                                    .notifier,
+                                                              )
+                                                              .state
+                                                              ?.senderId ??
+                                                          "",
+                                                ),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    ref
+                                                        .read(
+                                                          showReplyProvider
+                                                              .notifier,
+                                                        )
+                                                        .state = false;
+                                                  },
+                                                  icon: Icon(Icons.close),
+                                                ),
+                                              ],
+                                            ),
+                                            messageToReply?.type == image ||
+                                                    messageToReply?.type == GIF
+                                                ? SizedBox(
+                                                  height: 70,
+                                                  width: 70,
+                                                  child: CachedNetworkImage(
+                                                    imageUrl:
+                                                        messageToReply!.text,
+                                                  ),
+                                                )
+                                                : messageToReply?.type == video
+                                                ? SizedBox(
+                                                  height: 70,
+                                                  width: 70,
+                                                  child: VideoMessage(
+                                                    url: messageToReply!.text,
+                                                    isSender:
+                                                        messageToReply
+                                                            .senderId ==
+                                                        FirebaseAuth
+                                                            .instance
+                                                            .currentUser!
+                                                            .uid,
+                                                  ),
+                                                )
+                                                : Text(messageToReply!.text),
+                                          ],
+                                        ),
+                                      )
+                                      : SizedBox.shrink(),
+                            ),
+                          );
+                        },
+                      ),
+                      SendMessage(user: widget.user),
+                    ],
+                  ),
+                ),
               ],
-            ),
+            );
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
+  }
+
+  Widget ReplyWidget(
+    bool isSender,
+    bool isMyReplyMessage,
+    Message currMessage,
+    Map<String, AppUserModel> participantData,
+  ) {
+    return Container(
+      margin: EdgeInsets.only(
+        right: isSender ? 3 : 0,
+        bottom: 2,
+        left: !isSender ? 3 : 0,
+      ),
+
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.76,
+      ),
+      decoration: BoxDecoration(
+        color:
+            isMyReplyMessage
+                ? Colors.deepPurpleAccent
+                : const Color.fromARGB(255, 59, 59, 59),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+          bottomLeft: Radius.circular(10),
+        ),
+      ),
+      padding: EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isMyReplyMessage
+                ? "Me"
+                : widget.chatData.isGroup
+                ? participantData[currMessage.senderId]!.profile.name
+                : widget.user!.profile.name,
           ),
+          currMessage.replyType == image || currMessage.replyType == GIF
+              ? SizedBox(
+                height: 70,
+                width: 70,
+                child: CachedNetworkImage(imageUrl: currMessage.reply),
+              )
+              : currMessage.replyType == video
+              ? SizedBox(
+                height: 70,
+                width: 70,
+                child: VideoMessage(
+                  url: currMessage.reply,
+                  isSender: currMessage.repliedTo == "Me" ? true : false,
+                ),
+              )
+              : Text(currMessage.reply),
         ],
       ),
     );
