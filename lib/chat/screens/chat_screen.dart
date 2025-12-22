@@ -600,10 +600,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                 Text(
                                                   ref
                                                               .read(
-                                                                messageToReplyProvider
-                                                                    .notifier,
+                                                                messageToReplyProvider,
                                                               )
-                                                              .state
                                                               ?.senderId ==
                                                           ref
                                                               .read(
@@ -612,14 +610,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                               .value
                                                               ?.firebaseUID
                                                       ? "Me"
-                                                      : ref
+                                                      : widget.chatData.isGroup
+                                                      ? participantData[ref
                                                               .read(
-                                                                messageToReplyProvider
-                                                                    .notifier,
-                                                              )
-                                                              .state
-                                                              ?.senderId ??
-                                                          "",
+                                                                messageToReplyProvider,
+                                                              )!
+                                                              .senderId]!
+                                                          .profile
+                                                          .name
+                                                      : widget
+                                                          .user!
+                                                          .profile
+                                                          .name,
                                                 ),
                                                 IconButton(
                                                   onPressed: () {
