@@ -11,6 +11,7 @@ import 'package:instagram/chat/models/message_to_reply.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
 import 'package:instagram/chat/screens/remove_member.dart';
+import 'package:instagram/chat/widgets/reply_widget.dart';
 import 'package:instagram/chat/widgets/send_message.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
@@ -36,12 +37,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
 
+  late final bool isGroup;
   @override
   void initState() {
     super.initState();
-    if (widget.chatData.isGroup) {
-      //if its not the group then the other user will just be the user received as a param so this function call would be redundant
-    }
+    isGroup = widget.chatData.isGroup;
+
     localChatData = widget.chatData;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(chatIdProvider.notifier).state = localChatData.chatId;
@@ -59,12 +60,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.chatData.isGroup
-              ? widget.chatData.groupName!
-              : widget.user!.profile.name,
+          isGroup ? widget.chatData.groupName! : widget.user!.profile.name,
         ),
         actions:
-            widget.chatData.isGroup
+            isGroup
                 ? [
                   GestureDetector(
                     onDoubleTap: () {
@@ -256,10 +255,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: FutureBuilder(
         future: ref
             .read(chatRepositoryProvider)
-            .getUsersByIds(
-              widget.chatData.participants,
-              widget.chatData.isGroup,
-            ),
+            .getUsersByIds(widget.chatData.participants, isGroup),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return Center(child: Text("error loading chat data"));
@@ -486,18 +482,36 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           } else {
                             return SwipeTo(
                               onLeftSwipe: (details) {
-                                final messageToReply = {
-                                  "senderId": currMessage.senderId,
-                                  "text": currMessage.content,
-                                  "type": currMessage.type,
-                                };
-                                ref.read(showReplyProvider.notifier).state =
-                                    true;
-                                ref
-                                    .read(messageToReplyProvider.notifier)
-                                    .state = MessageToReply.fromMap(
-                                  messageToReply,
-                                );
+                                if (isSender) {
+                                  final messageToReply = {
+                                    "senderId": currMessage.senderId,
+                                    "text": currMessage.content,
+                                    "type": currMessage.type,
+                                  };
+                                  ref.read(showReplyProvider.notifier).state =
+                                      true;
+                                  ref
+                                      .read(messageToReplyProvider.notifier)
+                                      .state = MessageToReply.fromMap(
+                                    messageToReply,
+                                  );
+                                }
+                              },
+                              onRightSwipe: (details) {
+                                if (!isSender) {
+                                  final messageToReply = {
+                                    "senderId": currMessage.senderId,
+                                    "text": currMessage.content,
+                                    "type": currMessage.type,
+                                  };
+                                  ref.read(showReplyProvider.notifier).state =
+                                      true;
+                                  ref
+                                      .read(messageToReplyProvider.notifier)
+                                      .state = MessageToReply.fromMap(
+                                    messageToReply,
+                                  );
+                                }
                               },
                               child: Align(
                                 alignment:
@@ -514,10 +528,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     currMessage.repliedTo.toString().isEmpty
                                         ? SizedBox.shrink()
                                         : ReplyWidget(
-                                          isSender,
-                                          isMyReplyMessage,
-                                          currMessage,
-                                          participantData,
+                                          isSender: isSender,
+                                          isMyReplyMessage: isMyReplyMessage,
+                                          currMessage: currMessage,
+                                          participantData: participantData,
+                                          user: widget.user,
+                                          isGroup: isGroup,
                                         ),
                                     Container(
                                       margin: EdgeInsets.only(
@@ -610,7 +626,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                               .value
                                                               ?.firebaseUID
                                                       ? "Me"
-                                                      : widget.chatData.isGroup
+                                                      : isGroup
                                                       ? participantData[ref
                                                               .read(
                                                                 messageToReplyProvider,
@@ -679,65 +695,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           }
           return Center(child: CircularProgressIndicator());
         },
-      ),
-    );
-  }
-
-  Widget ReplyWidget(
-    bool isSender,
-    bool isMyReplyMessage,
-    Message currMessage,
-    Map<String, AppUserModel> participantData,
-  ) {
-    return Container(
-      margin: EdgeInsets.only(
-        right: isSender ? 3 : 0,
-        bottom: 2,
-        left: !isSender ? 3 : 0,
-      ),
-
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.76,
-      ),
-      decoration: BoxDecoration(
-        color:
-            isMyReplyMessage
-                ? Colors.deepPurpleAccent
-                : const Color.fromARGB(255, 59, 59, 59),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(10),
-          topRight: Radius.circular(10),
-          bottomLeft: Radius.circular(10),
-        ),
-      ),
-      padding: EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isMyReplyMessage
-                ? "Me"
-                : widget.chatData.isGroup
-                ? participantData[currMessage.senderId]!.profile.name
-                : widget.user!.profile.name,
-          ),
-          currMessage.replyType == image || currMessage.replyType == GIF
-              ? SizedBox(
-                height: 70,
-                width: 70,
-                child: CachedNetworkImage(imageUrl: currMessage.reply),
-              )
-              : currMessage.replyType == video
-              ? SizedBox(
-                height: 70,
-                width: 70,
-                child: VideoMessage(
-                  url: currMessage.reply,
-                  isSender: currMessage.repliedTo == "Me" ? true : false,
-                ),
-              )
-              : Text(currMessage.reply),
-        ],
       ),
     );
   }
