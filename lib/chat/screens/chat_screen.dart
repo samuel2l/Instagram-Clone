@@ -14,6 +14,7 @@ import 'package:instagram/chat/screens/remove_member.dart';
 import 'package:instagram/chat/widgets/image_message.dart';
 import 'package:instagram/chat/widgets/reply_widget.dart';
 import 'package:instagram/chat/widgets/send_message.dart';
+import 'package:instagram/chat/widgets/text_message.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
@@ -435,44 +436,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                             currMessage: currMessage,
                                             isSender: isSender,
                                           )
-                                          :
-                                    Container(
-                                      margin: EdgeInsets.only(
-                                        right: isSender ? 3 : 0,
-                                        bottom: 2,
-                                        left: !isSender ? 3 : 0,
-                                      ),
-
-                                      constraints: BoxConstraints(
-                                        maxWidth:
-                                            MediaQuery.of(context).size.width *
-                                            0.76,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            isSender
-                                                ? Colors.deepPurpleAccent
-                                                : const Color.fromARGB(
-                                                  255,
-                                                  59,
-                                                  59,
-                                                  59,
-                                                ),
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          topRight: Radius.circular(10),
-                                          bottomLeft: Radius.circular(10),
-                                        ),
-                                      ),
-                                      padding: EdgeInsets.all(10),
-                                      child: Text(
-                                        currMessage.content,
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
+                                          :TextMessage(currMessage: currMessage, isSender: isSender)
                                   ],
                                 ),
                               ),
