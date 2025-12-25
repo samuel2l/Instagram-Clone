@@ -29,9 +29,9 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
       )
       ..initialize().then((value) async {
         await controller.setLooping(false);
-        
-        if (widget.playOnInit==true){
-controller.play();
+
+        if (widget.playOnInit == true) {
+          controller.play();
         }
         if (mounted) {
           setState(() {});
@@ -47,20 +47,36 @@ controller.play();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 17, vertical: 7),
+      margin: EdgeInsets.only(
+        right: widget.isSender ? 3 : 0,
+        bottom: 2,
+        left: !widget.isSender ? 3 : 0,
+      ),
+      
+
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.76,
+      ),
+      decoration: BoxDecoration(
+        color:
+            widget.isSender
+                ? Colors.deepPurpleAccent
+                : const Color.fromARGB(255, 59, 59, 59),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+          bottomLeft: Radius.circular(10),
+        ),
+      ),
+
       child:
           controller.value.isInitialized
               ? Stack(
                 children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 17, vertical: 7),
+                  SizedBox(
                     height: 250,
-                    width: double.infinity,
-                    color:
-                        widget.isSender
-                            ? const Color.fromARGB(255, 143, 207, 145)
-                            : Colors.white,
-
                     child: CachedVideoPlayerPlus(controller),
                   ),
                   GestureDetector(

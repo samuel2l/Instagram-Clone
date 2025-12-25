@@ -317,9 +317,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   currMessage.id,
                                 );
                           }
-                          if (currMessage.type == video) {
-                            return SwipeTo(
-                              onLeftSwipe: (details) {
+
+                          return SwipeTo(
+                            onLeftSwipe: (details) {
+                              if (isSender) {
                                 final messageToReply = {
                                   "senderId": currMessage.senderId,
                                   "text": currMessage.content,
@@ -332,116 +333,65 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     .state = MessageToReply.fromMap(
                                   messageToReply,
                                 );
-                              },
+                              }
+                            },
+                            onRightSwipe: (details) {
+                              if (!isSender) {
+                                final messageToReply = {
+                                  "senderId": currMessage.senderId,
+                                  "text": currMessage.content,
+                                  "type": currMessage.type,
+                                };
+                                ref.read(showReplyProvider.notifier).state =
+                                    true;
+                                ref
+                                    .read(messageToReplyProvider.notifier)
+                                    .state = MessageToReply.fromMap(
+                                  messageToReply,
+                                );
+                              }
+                            },
+                            child: Align(
+                              alignment:
+                                  isSender
+                                      ? Alignment.centerRight
+                                      : Alignment.centerLeft,
 
                               child: Column(
+                                crossAxisAlignment:
+                                    isSender
+                                        ? CrossAxisAlignment.end
+                                        : CrossAxisAlignment.start,
                                 children: [
                                   currMessage.repliedTo.toString().isEmpty
                                       ? SizedBox.shrink()
-                                      : Container(
-                                        width: double.infinity,
-                                        color: Colors.lightGreenAccent,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(currMessage.repliedTo),
-                                            currMessage.replyType == image ||
-                                                    currMessage.replyType == GIF
-                                                ? SizedBox(
-                                                  height: 70,
-                                                  width: 70,
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: currMessage.reply,
-                                                  ),
-                                                )
-                                                : currMessage.replyType == video
-                                                ? SizedBox(
-                                                  height: 70,
-                                                  width: 70,
-                                                  child: VideoMessage(
-                                                    url: currMessage.reply,
-                                                    isSender:
-                                                        currMessage.repliedTo ==
-                                                                "Me"
-                                                            ? true
-                                                            : false,
-                                                  ),
-                                                )
-                                                : Text(currMessage.reply),
-                                          ],
-                                        ),
+                                      : ReplyWidget(
+                                        isSender: isSender,
+                                        isMyReplyMessage: isMyReplyMessage,
+                                        currMessage: currMessage,
+                                        participantData: participantData,
+                                        user: widget.user,
+                                        isGroup: isGroup,
+                                      ),
+                                  currMessage.type == image ||
+                                          currMessage.type == GIF
+                                      ? ImageMessage(
+                                        currMessage: currMessage,
+                                        isSender: isSender,
+                                      )
+                                      : currMessage.type == video
+                                      ? VideoMessage(
+                                        url: currMessage.content,
+                                        isSender: isSender,
+                                      )
+                                      : TextMessage(
+                                        currMessage: currMessage,
+                                        isSender: isSender,
                                       ),
                                 ],
                               ),
-                            );
-                          } else {
-                            return SwipeTo(
-                              onLeftSwipe: (details) {
-                                if (isSender) {
-                                  final messageToReply = {
-                                    "senderId": currMessage.senderId,
-                                    "text": currMessage.content,
-                                    "type": currMessage.type,
-                                  };
-                                  ref.read(showReplyProvider.notifier).state =
-                                      true;
-                                  ref
-                                      .read(messageToReplyProvider.notifier)
-                                      .state = MessageToReply.fromMap(
-                                    messageToReply,
-                                  );
-                                }
-                              },
-                              onRightSwipe: (details) {
-                                if (!isSender) {
-                                  final messageToReply = {
-                                    "senderId": currMessage.senderId,
-                                    "text": currMessage.content,
-                                    "type": currMessage.type,
-                                  };
-                                  ref.read(showReplyProvider.notifier).state =
-                                      true;
-                                  ref
-                                      .read(messageToReplyProvider.notifier)
-                                      .state = MessageToReply.fromMap(
-                                    messageToReply,
-                                  );
-                                }
-                              },
-                              child: Align(
-                                alignment:
-                                    isSender
-                                        ? Alignment.centerRight
-                                        : Alignment.centerLeft,
-
-                                child: Column(
-                                  crossAxisAlignment:
-                                      isSender
-                                          ? CrossAxisAlignment.end
-                                          : CrossAxisAlignment.start,
-                                  children: [
-                                    currMessage.repliedTo.toString().isEmpty
-                                        ? SizedBox.shrink()
-                                        : ReplyWidget(
-                                          isSender: isSender,
-                                          isMyReplyMessage: isMyReplyMessage,
-                                          currMessage: currMessage,
-                                          participantData: participantData,
-                                          user: widget.user,
-                                          isGroup: isGroup,
-                                        ),
-                                      currMessage.type == image || currMessage.type == GIF
-                                          ? ImageMessage(
-                                            currMessage: currMessage,
-                                            isSender: isSender,
-                                          )
-                                          :TextMessage(currMessage: currMessage, isSender: isSender)
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
+                            ),
+                          );
                         },
                       );
                     },
