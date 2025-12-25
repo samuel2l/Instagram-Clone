@@ -11,6 +11,7 @@ import 'package:instagram/chat/models/message_to_reply.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
 import 'package:instagram/chat/screens/remove_member.dart';
+import 'package:instagram/chat/widgets/image_message.dart';
 import 'package:instagram/chat/widgets/reply_widget.dart';
 import 'package:instagram/chat/widgets/send_message.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
@@ -301,20 +302,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
                           final currMessage = messages[index];
-                          final isMyReplyMessage =
-                              currMessage.repliedTo ==
-                              ref.watch(userProvider).value!.firebaseUID;
-                          final isSender =
-                              currMessage.senderId ==
+                          final currUserId =
                               ref.read(userProvider).value!.firebaseUID;
-
-                          print(
-                            "message dets???? ${currMessage.repliedTo} ${currMessage.senderId}",
-                          );
-
+                          final isMyReplyMessage =
+                              currMessage.repliedTo == currUserId;
+                          final isSender = currMessage.senderId == currUserId;
                           if (!currMessage.isSeen &&
-                              FirebaseAuth.instance.currentUser?.uid !=
-                                  currMessage.senderId) {
+                              currUserId != currMessage.senderId) {
                             ref
                                 .read(chatRepositoryProvider)
                                 .updateSeen(
@@ -322,101 +316,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   currMessage.id,
                                 );
                           }
-                          if (currMessage.type == image ||
-                              currMessage.type == GIF) {
-                            return SwipeTo(
-                              onLeftSwipe: (details) {
-                                final messageToReply = {
-                                  "senderId": currMessage.senderId,
-                                  "text": currMessage.content,
-                                  "type": currMessage.type,
-                                };
-                                ref.read(showReplyProvider.notifier).state =
-                                    true;
-                                ref
-                                    .read(messageToReplyProvider.notifier)
-                                    .state = MessageToReply.fromMap(
-                                  messageToReply,
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  children: [
-                                    currMessage.repliedTo.isEmpty
-                                        ? SizedBox.shrink()
-                                        : Container(
-                                          width: double.infinity,
-                                          color: Colors.lightGreenAccent,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(currMessage.repliedTo),
-                                              currMessage.replyType == image ||
-                                                      currMessage.replyType ==
-                                                          GIF
-                                                  ? SizedBox(
-                                                    height: 70,
-                                                    width: 70,
-                                                    child: CachedNetworkImage(
-                                                      imageUrl:
-                                                          currMessage.reply,
-                                                    ),
-                                                  )
-                                                  : currMessage.replyType ==
-                                                      video
-                                                  ? SizedBox(
-                                                    height: 70,
-                                                    width: 70,
-                                                    child: VideoMessage(
-                                                      url: currMessage.reply,
-                                                      isSender:
-                                                          currMessage.repliedTo ==
-                                                                  "Me"
-                                                              ? true
-                                                              : false,
-                                                    ),
-                                                  )
-                                                  : Text(currMessage.reply),
-                                            ],
-                                          ),
-                                        ),
-
-                                    Container(
-                                      padding: EdgeInsets.all(5),
-                                      color:
-                                          currMessage.senderId ==
-                                                  FirebaseAuth
-                                                      .instance
-                                                      .currentUser!
-                                                      .uid
-                                              ? const Color.fromARGB(
-                                                255,
-                                                143,
-                                                207,
-                                                145,
-                                              )
-                                              : Colors.white,
-                                      height: 350,
-
-                                      child: CachedNetworkImage(
-                                        imageUrl: currMessage.content,
-                                        placeholder:
-                                            (context, url) => Center(
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            ),
-                                        errorWidget:
-                                            (context, url, error) =>
-                                                Icon(Icons.error),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          } else if (currMessage.type == video) {
+                          if (currMessage.type == video) {
                             return SwipeTo(
                               onLeftSwipe: (details) {
                                 final messageToReply = {
@@ -471,11 +371,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                           ],
                                         ),
                                       ),
-
-                                  VideoMessage(
-                                    url: currMessage.content,
-                                    isSender: isSender,
-                                  ),
                                 ],
                               ),
                             );
@@ -535,6 +430,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                           user: widget.user,
                                           isGroup: isGroup,
                                         ),
+                                      currMessage.type == image || currMessage.type == GIF
+                                          ? ImageMessage(
+                                            currMessage: currMessage,
+                                            isSender: isSender,
+                                          )
+                                          :
                                     Container(
                                       margin: EdgeInsets.only(
                                         right: isSender ? 3 : 0,

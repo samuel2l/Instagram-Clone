@@ -1,5 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
@@ -43,13 +41,14 @@ class ReplyWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          user!=null?
           Text(
             isMyReplyMessage
                 ? "Me"
                 : isGroup
                 ? participantData[currMessage.senderId]!.profile.name
                 : user!.profile.name,
-          ),
+          ):SizedBox.shrink(),
           currMessage.replyType == image || currMessage.replyType == GIF
               ? SizedBox(
                 height: 70,
