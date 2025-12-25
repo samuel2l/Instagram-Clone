@@ -48,13 +48,11 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 17, vertical: 7),
       margin: EdgeInsets.only(
         right: widget.isSender ? 3 : 0,
         bottom: 2,
         left: !widget.isSender ? 3 : 0,
       ),
-      
 
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.76,
@@ -65,36 +63,47 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
                 ? Colors.deepPurpleAccent
                 : const Color.fromARGB(255, 59, 59, 59),
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(10),
-          topRight: Radius.circular(10),
-          bottomLeft: Radius.circular(10),
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(10),
         ),
       ),
 
       child:
           controller.value.isInitialized
-              ? Stack(
-                children: [
-                  SizedBox(
-                    height: 250,
-                    child: CachedVideoPlayerPlus(controller),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      isPlay = !isPlay;
-                      isPlay ? controller.play() : controller.pause();
-                      setState(() {});
-                    },
-                    child: Container(
-                      margin: EdgeInsets.only(top: 120),
-                      alignment: Alignment.bottomCenter,
-                      child: Icon(
-                        isPlay ? Icons.pause : Icons.play_arrow,
-                        color: Colors.white,
+              ? ClipRRect(
+                //use clip rect to clip any element to have your desired border radius
+                //normally you would use container decoration border radius but video player is not an image 
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(10),
+                ),
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      height: 250,
+                      child: CachedVideoPlayerPlus(controller),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        isPlay = !isPlay;
+                        isPlay ? controller.play() : controller.pause();
+                        setState(() {});
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(top: 120),
+                        alignment: Alignment.bottomCenter,
+                        child: Icon(
+                          isPlay ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               )
               : const CircularProgressIndicator.adaptive(),
     );

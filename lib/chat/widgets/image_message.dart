@@ -14,27 +14,33 @@ class ImageMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
- 
       margin: EdgeInsets.only(
         right: isSender ? 3 : 0,
         bottom: 2,
         left: !isSender ? 3 : 0,
       ),
 
-      color:
-          isSender
-              ? Colors.deepPurpleAccent
-              : const Color.fromARGB(255, 59, 59, 59),
       height: 350,
-    
-
-      child: CachedNetworkImage(
-      
-fit: BoxFit.cover,        imageUrl: currMessage.content,
-        placeholder:
-            (context, url) => Center(child: CircularProgressIndicator()),
-        errorWidget: (context, url, error) => Icon(Icons.error),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.76,
       ),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: CachedNetworkImageProvider(currMessage.content),
+          fit: BoxFit.cover,
+        ),
+        color:
+            isSender
+                ? Colors.deepPurpleAccent
+                : const Color.fromARGB(255, 59, 59, 59),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(10),
+        ),
+      ),
+
     );
   }
 }
