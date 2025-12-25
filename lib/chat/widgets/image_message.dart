@@ -22,7 +22,7 @@ class ImageMessage extends StatelessWidget {
 
       height: 350,
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.76,
+        maxWidth: MediaQuery.of(context).size.width * 0.55,
       ),
       decoration: BoxDecoration(
         image: DecorationImage(

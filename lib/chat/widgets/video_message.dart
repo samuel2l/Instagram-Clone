@@ -53,9 +53,9 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
         bottom: 2,
         left: !widget.isSender ? 3 : 0,
       ),
-
+      height: 350,
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.76,
+        maxWidth: MediaQuery.of(context).size.width * 0.55,
       ),
       decoration: BoxDecoration(
         color:
@@ -74,7 +74,7 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
           controller.value.isInitialized
               ? ClipRRect(
                 //use clip rect to clip any element to have your desired border radius
-                //normally you would use container decoration border radius but video player is not an image 
+                //normally you would use container decoration border radius but video player is not an image
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
@@ -84,7 +84,7 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
                 child: Stack(
                   children: [
                     SizedBox(
-                      height: 250,
+                      height: 350,
                       child: CachedVideoPlayerPlus(controller),
                     ),
                     GestureDetector(
@@ -94,8 +94,7 @@ class _VideoMessageState extends ConsumerState<VideoMessage> {
                         setState(() {});
                       },
                       child: Container(
-                        margin: EdgeInsets.only(top: 120),
-                        alignment: Alignment.bottomCenter,
+                        alignment: Alignment.center,
                         child: Icon(
                           isPlay ? Icons.pause : Icons.play_arrow,
                           color: Colors.white,
