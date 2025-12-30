@@ -8,6 +8,7 @@ import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
 import 'package:instagram/chat/screens/create_group.dart';
+import 'package:instagram/home/screens/find_users.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
 import 'package:instagram/utils/utils.dart';
@@ -124,23 +125,14 @@ class Chats extends ConsumerWidget {
                     },
                     child: Text("Logout"),
                   ),
-
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     Navigator.of(context).push(
-                  //       MaterialPageRoute(builder: (context) => CreateGroup()),
-                  //     );
-                  //   },
-                  //   child: Text("Create Group"),
-                  // ),
-                  // GestureDetector(
-                  //   onTap: () {
-                  //     Navigator.of(context).push(
-                  //       MaterialPageRoute(builder: (context) => FindUsers()),
-                  //     );
-                  //   },
-                  //   child: Text("Connect with others"),
-                  // ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => FindUsers()),
+                      );
+                    },
+                    child: Text("Connect with others"),
+                  ),
                   // GestureDetector(
                   //   onTap: () {
                   //     Navigator.of(context).push(

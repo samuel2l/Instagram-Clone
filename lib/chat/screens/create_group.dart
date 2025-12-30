@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
 
@@ -11,26 +12,33 @@ class CreateGroup extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _CreateGroupState();
 }
 
+//
 class _CreateGroupState extends ConsumerState<CreateGroup> {
   final groupNameController = TextEditingController();
-  Set<String> selectedGroupMembers = {};
+  final Set<String> selectedGroupMembers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    selectedGroupMembers.add(FirebaseAuth.instance.currentUser!.uid);
+  }
 
   @override
   Widget build(BuildContext context) {
-    selectedGroupMembers.add(FirebaseAuth.instance.currentUser!.uid);
     return Scaffold(
-      appBar: AppBar(title: Text("create new group")),
+      appBar: AppBar(title: const Text("create new group")),
       body: Column(
         children: [
           TextField(controller: groupNameController),
           Expanded(
-            child: StreamBuilder(
-              stream: ref.watch(chatRepositoryProvider).getUsers(),
+            child: FutureBuilder(
+              future: ref
+                  .read(chatRepositoryProvider)
+                  .getMutualFollowers(
+                    ref.read(userProvider).value!.firebaseUID,
+                  ),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
+          
                 if (snapshot.hasError) {
                   return Center(child: Text("Error: ${snapshot.error}"));
                 }
@@ -38,26 +46,36 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                 final users = snapshot.data ?? [];
 
                 if (users.isEmpty) {
-                  return Center(child: Text("No users in app"));
+                  return Center(
+                    child: Text("No mutual followers to add to group"),
+                  );
                 }
+
+                // final users = snapshot.data!;
 
                 return ListView.builder(
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final user = users[index];
-                    return ListTile(
-                      selected: selectedGroupMembers.contains(user["uid"]),
-                      onTap: () {
-                        setState(() {
-                          if (selectedGroupMembers.contains(user["uid"])) {
-                            selectedGroupMembers.remove(user["uid"]);
-                          } else {
-                            selectedGroupMembers.add(user["uid"]);
-                          }
-                        });
+                    return Consumer(
+                      builder: (context, ref, child) {
+                        return CheckboxListTile(
+                          value: selectedGroupMembers.contains(
+                            user.firebaseUID,
+                          ),
 
+                          onChanged: (bool? val) {
+                            setState(() {
+                              if (val == false) {
+                                selectedGroupMembers.remove(user.firebaseUID);
+                              } else {
+                                selectedGroupMembers.add(user.firebaseUID);
+                              }
+                            });
+                          },
+                          title: Text(user.profile.username),
+                        );
                       },
-                      title: Text(user["email"]),
                     );
                   },
                 );
@@ -65,23 +83,22 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
             ),
           ),
           TextButton(
-            onPressed: ()async {
-              final res=await ref
+            onPressed: () async {
+              final res = await ref
                   .read(chatRepositoryProvider)
                   .createGroupChat(
                     userIds: selectedGroupMembers.toList(),
                     groupName: groupNameController.text.trim(),
                   );
 
-              Navigator.of(context).push(
+              Navigator.push(
+                context,
                 MaterialPageRoute(
-                  builder: (context) {
-                    return ChatScreen(chatData:res ,user: null);
-                  },
+                  builder: (_) => ChatScreen(chatData: res, user: null),
                 ),
               );
             },
-            child: Text("Create"),
+            child: const Text("Create"),
           ),
         ],
       ),
