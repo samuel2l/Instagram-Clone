@@ -46,8 +46,15 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                   itemBuilder: (context, index) {
                     final user = users[index];
                     return ListTile(
+                      selected: selectedGroupMembers.contains(user["uid"]),
                       onTap: () {
-                        selectedGroupMembers.add(user["uid"]);
+                        setState(() {
+                          if (selectedGroupMembers.contains(user["uid"])) {
+                            selectedGroupMembers.remove(user["uid"]);
+                          } else {
+                            selectedGroupMembers.add(user["uid"]);
+                          }
+                        });
 
                       },
                       title: Text(user["email"]),

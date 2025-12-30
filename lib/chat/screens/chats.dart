@@ -7,6 +7,7 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
+import 'package:instagram/chat/screens/create_group.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
 import 'package:instagram/utils/utils.dart';
@@ -17,7 +18,20 @@ class Chats extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: Text("Chats")),
+      appBar: AppBar(
+        title: Text("Chats"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (context) => CreateGroup()));
+            },
+          ),
+        ],
+      ),
+
       body: ref
           .watch(userProvider)
           .when(
@@ -232,7 +246,6 @@ class Chats extends ConsumerWidget {
 
                                     return GestureDetector(
                                       onTap: () {
-
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder:
