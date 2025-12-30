@@ -38,7 +38,6 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                     ref.read(userProvider).value!.firebaseUID,
                   ),
               builder: (context, snapshot) {
-          
                 if (snapshot.hasError) {
                   return Center(child: Text("Error: ${snapshot.error}"));
                 }
@@ -60,6 +59,14 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                     return Consumer(
                       builder: (context, ref, child) {
                         return CheckboxListTile(
+                          checkboxShape: CircleBorder(),
+
+                          checkColor: Colors.black,
+                          checkboxScaleFactor: 1.4,
+                          visualDensity: const VisualDensity(
+                            horizontal: -1,
+                            vertical: -1,
+                          ),
                           value: selectedGroupMembers.contains(
                             user.firebaseUID,
                           ),
