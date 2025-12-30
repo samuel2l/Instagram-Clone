@@ -158,6 +158,45 @@ class ChatRepository {
     return AppUserModel.fromMap(snapshot.docs.first.data());
   }
 
+  Future<List<AppUserModel>> getMutualFollowers(String currentUid) async {
+    final userDoc = await firestore.collection('users').doc(currentUid).get();
+
+    if (!userDoc.exists) return [];
+
+    final data = userDoc.data()!;
+    final List<String> following = List<String>.from(data['following'] ?? []);
+    final List<String> followers = List<String>.from(data['followers'] ?? []);
+
+    // intersection
+    final mutualUids =
+        following.where((uid) => followers.contains(uid)).toList();
+
+    if (mutualUids.isEmpty) return [];
+
+    // Firestore whereIn limit handling
+    const batchSize = 10;
+    final List<AppUserModel> users = [];
+
+    for (int i = 0; i < mutualUids.length; i += batchSize) {
+      final batch = mutualUids.sublist(
+        i,
+        i + batchSize > mutualUids.length ? mutualUids.length : i + batchSize,
+      );
+
+      final snapshot =
+          await firestore
+              .collection('users')
+              .where('uid', whereIn: batch)
+              .get();
+
+      users.addAll(
+        snapshot.docs.map((doc) => AppUserModel.fromMap(doc.data())),
+      );
+    }
+
+    return users;
+  }
+
   Future<String> getOrCreateChatId(
     List<String> userIds, {
     bool isGroup = false,
@@ -311,35 +350,37 @@ class ChatRepository {
     }
   }
 
-Future<Map<String, AppUserModel>> getUsersByIds(
-  List<String> uids,
-  bool isGroup,
-) async {
-  if (uids.isEmpty || !isGroup) return {};
+  Future<Map<String, AppUserModel>> getUsersByIds(
+    List<String> uids,
+    bool isGroup,
+  ) async {
+    if (uids.isEmpty || !isGroup) return {};
 
-  final Map<String, AppUserModel> usersMap = {};
+    final Map<String, AppUserModel> usersMap = {};
 
-  const int batchSize = 10;
+    const int batchSize = 10;
 
-  for (int i = 0; i < uids.length; i += batchSize) {
-    final batch = uids.sublist(
-      i,
-      i + batchSize > uids.length ? uids.length : i + batchSize,
-    );
+    for (int i = 0; i < uids.length; i += batchSize) {
+      final batch = uids.sublist(
+        i,
+        i + batchSize > uids.length ? uids.length : i + batchSize,
+      );
 
-    final snapshot = await firestore
-        .collection('users')
-        .where('uid', whereIn: batch)
-        .get();
+      final snapshot =
+          await firestore
+              .collection('users')
+              .where('uid', whereIn: batch)
+              .get();
 
-    for (final doc in snapshot.docs) {
-      final user = AppUserModel.fromMap(doc.data());
-      usersMap[user.firebaseUID] = user; // uid → model
+      for (final doc in snapshot.docs) {
+        final user = AppUserModel.fromMap(doc.data());
+        usersMap[user.firebaseUID] = user; // uid → model
+      }
     }
+
+    return usersMap;
   }
 
-  return usersMap;
-}
   Stream<List<Message>> getMessages(String chatId) {
     if (chatId.isEmpty) {
       return firestore
@@ -436,6 +477,4 @@ Future<Map<String, AppUserModel>> getUsersByIds(
       });
     }
   }
-
-
 }
