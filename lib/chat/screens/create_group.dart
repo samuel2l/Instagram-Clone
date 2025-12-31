@@ -74,6 +74,9 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                   if (snapshot.hasError) {
                     return Center(child: Text("Error: ${snapshot.error}"));
                   }
+                          if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
                   final users = snapshot.data ?? [];
 
