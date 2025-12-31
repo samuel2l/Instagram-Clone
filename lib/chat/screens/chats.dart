@@ -306,6 +306,28 @@ class Chats extends ConsumerWidget {
                                       //     HitTestBehavior
                                       //         .opaque, //Treat the whole area as tappable even if nothing is painted.
                                       onTap: () {
+                                        //if you swiped a message to reply and leave that chat it should clear when you enter another chat but remain if you leave and come back to same chat
+                                       
+                                        if (!chat.participants.contains(
+                                          ref
+                                              .read(messageToReplyProvider)
+                                              ?.senderId,
+                                        )) {
+                                          ref
+                                              .read(
+                                                messageToReplyProvider.notifier,
+                                              )
+                                              .state = null;
+                                          ref
+                                              .read(
+                                                showReplyProvider.notifier,
+                                              )
+                                              .state = false;
+                                        }
+                                        ref
+                                            .read(chatIdProvider.notifier)
+                                            .state = chat.chatId;
+
                                         ref
                                             .read(chatDataProvider.notifier)
                                             .state = chat;
@@ -588,7 +610,6 @@ class Chats extends ConsumerWidget {
             },
             error: (error, stackTrace) => Center(child: Text(error.toString())),
             loading: () {
-
               return Center(child: CircularProgressIndicator());
             },
           ),

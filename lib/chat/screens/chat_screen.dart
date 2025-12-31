@@ -31,7 +31,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController scrollController = ScrollController();
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
-
   late final bool isGroup;
   @override
   void initState() {
@@ -65,7 +64,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             width: MediaQuery.of(context).size.width * 0.6,
             padding: EdgeInsets.all(8),
             child: Text(
-              isGroup ? ref.read(chatDataProvider)!.groupName! : ref.read(messageRecipientProvider)!.profile.name,
+              isGroup
+                  ? ref.read(chatDataProvider)!.groupName!
+                  : ref.read(messageRecipientProvider)!.profile.name,
             ),
           ),
         ),
@@ -195,7 +196,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 .sendCallData(
                                   calleeId:
                                       ref.read(messageRecipientProvider) != null
-                                          ? ref.read(messageRecipientProvider)!.firebaseUID
+                                          ? ref
+                                              .read(messageRecipientProvider)!
+                                              .firebaseUID
                                           : "",
                                   callType: "video",
                                   channelId:
@@ -210,8 +213,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                     channelId:
                                         "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(messageRecipientProvider)?.firebaseUID}",
                                     calleeId:
-                                        ref.read(messageRecipientProvider) != null
-                                            ? ref.read(messageRecipientProvider)!.firebaseUID
+                                        ref.read(messageRecipientProvider) !=
+                                                null
+                                            ? ref
+                                                .read(messageRecipientProvider)!
+                                                .firebaseUID
                                             : "",
                                   );
                                 },
@@ -235,8 +241,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   return VideoCallScreen(
                                     channelId: callData['channelId'],
                                     calleeId:
-                                        ref.read(messageRecipientProvider) != null
-                                            ? ref.read(messageRecipientProvider)!.firebaseUID
+                                        ref.read(messageRecipientProvider) !=
+                                                null
+                                            ? ref
+                                                .read(messageRecipientProvider)!
+                                                .firebaseUID
                                             : "",
                                   );
                                 },
@@ -325,6 +334,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   "senderId": currMessage.senderId,
                                   "text": currMessage.content,
                                   "type": currMessage.type,
+                                  "chatId": ref.watch(chatIdProvider),
                                 };
                                 ref.read(showReplyProvider.notifier).state =
                                     true;
@@ -341,6 +351,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   "senderId": currMessage.senderId,
                                   "text": currMessage.content,
                                   "type": currMessage.type,
+                                  "chatId": ref.watch(chatIdProvider),
                                 };
                                 ref.read(showReplyProvider.notifier).state =
                                     true;
@@ -370,7 +381,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         isMyReplyMessage: isMyReplyMessage,
                                         currMessage: currMessage,
                                         participantData: participantData,
-                                        user: ref.read(messageRecipientProvider),
+                                        user: ref.read(
+                                          messageRecipientProvider,
+                                        ),
                                         isGroup: isGroup,
                                       ),
                                   currMessage.type == image ||
@@ -449,7 +462,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                               .senderId]!
                                                           .profile
                                                           .name
-                                                      : ref.read(messageRecipientProvider)!
+                                                      : ref
+                                                          .read(
+                                                            messageRecipientProvider,
+                                                          )!
                                                           .profile
                                                           .name,
                                                 ),
