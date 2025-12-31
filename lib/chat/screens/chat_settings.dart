@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
+import 'package:instagram/chat/screens/add_member.dart';
 import 'package:instagram/chat/screens/create_group.dart';
 
 class ChatSettings extends ConsumerStatefulWidget {
@@ -50,7 +51,15 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
 
               children: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return AddMember(chatId: ref.read(chatDataProvider)!.chatId);
+                        },
+                      ),
+                    );
+                  },
                   style: TextButton.styleFrom(foregroundColor: Colors.black),
                   child: Column(
                     children: [
@@ -111,12 +120,10 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
             ),
 
             ListTile(
-              onTap: (){
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => CreateGroup(),
-                  ),
-                );  
+              onTap: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (context) => CreateGroup()));
               },
               leading: Icon(Icons.group_add),
               title: Text("Create a new group chat"),

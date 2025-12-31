@@ -1,11 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/models/message_to_reply.dart';
 import 'package:instagram/utils/constants.dart';
+import 'package:instagram/utils/utils.dart';
 
 final chatRepositoryProvider = Provider((ref) {
   return ChatRepository(firestore: FirebaseFirestore.instance);
@@ -257,6 +259,7 @@ class ChatRepository {
 
     return ChatData.fromMap(chatData);
   }
+
   Future<List<String>> getGroupMembers({required String chatId}) async {
     final docSnapshot =
         await FirebaseFirestore.instance.collection('chats').doc(chatId).get();
@@ -272,39 +275,45 @@ class ChatRepository {
     return [];
   }
 
-  Future<void> addMemberToGroup({
-    required String userId,
+  Future<void> addMembersToGroup({
+    required List<String> userIds,
     required String chatId,
+    required BuildContext context,
   }) async {
-    final doc = await firestore.collection('chats').doc(chatId).get();
-
-    if (doc.exists) {
-      final data = doc.data();
-      final List<dynamic> participants = data?['participants'] ?? [];
-
-      if (!participants.contains(userId)) {
-        await firestore.collection('chats').doc(chatId).update({
-          'participants': FieldValue.arrayUnion([userId]),
-        });
+    try {
+      if (chatId.trim().isEmpty) {
+        throw ArgumentError('Chat ID cannot be empty');
       }
+
+      if (userIds.isEmpty) return;
+
+      await firestore.collection('chats').doc(chatId).update({
+        'participants': FieldValue.arrayUnion(userIds),
+      });
+    } catch (e) {
+      // debugPrint('Error adding members to group: $e');
+      // rethrow;
+      showSnackBar(context: context, content: "error adding members");
     }
   }
 
-  Future<void> removeMemberFromGroup({
-    required String userId,
+  Future<void> removeMembersFromGroup({
+    required List<String> userIds,
     required String chatId,
+    required BuildContext context,
   }) async {
-    final doc = await firestore.collection('chats').doc(chatId).get();
-
-    if (doc.exists) {
-      final data = doc.data();
-      final List<dynamic> participants = data?['participants'] ?? [];
-
-      if (participants.contains(userId)) {
-        await firestore.collection('chats').doc(chatId).update({
-          'participants': FieldValue.arrayRemove([userId]),
-        });
+    try {
+      if (chatId.trim().isEmpty) {
+        throw ArgumentError('Chat ID cannot be empty');
       }
+
+      if (userIds.isEmpty) return;
+
+      await firestore.collection('chats').doc(chatId).update({
+        'participants': FieldValue.arrayRemove(userIds),
+      });
+    } catch (e) {
+      showSnackBar(context: context, content: "error removing members");
     }
   }
 

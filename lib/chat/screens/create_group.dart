@@ -178,6 +178,9 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                     );
                 ref.read(chatDataProvider.notifier).state = res;
                 ref.read(messageRecipientProvider.notifier).state = null;
+                ref.read(chatIdProvider.notifier).state = res.chatId;
+                //clear the selected members provider
+                ref.read(selectedGroupMembersProvider.notifier).state = {};
 
                 Navigator.push(
                   context,
