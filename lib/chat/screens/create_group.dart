@@ -20,12 +20,11 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-    final notifier = ref.read(selectedGroupMembersProvider.notifier);
-    notifier.state = {
-      ...notifier.state,
-      FirebaseAuth.instance.currentUser!.uid,
-    };
- 
+      final notifier = ref.read(selectedGroupMembersProvider.notifier);
+      notifier.state = {
+        ...notifier.state,
+        FirebaseAuth.instance.currentUser!.uid,
+      };
     });
   }
 
@@ -65,9 +64,10 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                     return Consumer(
                       builder: (context, ref, child) {
                         return CheckboxListTile(
+                          activeColor: const Color.fromARGB(255, 1, 86, 242),
                           checkboxShape: CircleBorder(),
 
-                          checkColor: Colors.black,
+                          checkColor: Colors.white,
                           checkboxScaleFactor: 1.4,
 
                           value: ref
@@ -101,6 +101,16 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
             ),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+              fixedSize: Size(MediaQuery.sizeOf(context).width * 0.9, 60),
+
+              backgroundColor: const Color.fromARGB(255, 1, 86, 242),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               final res = await ref
                   .read(chatRepositoryProvider)
@@ -116,8 +126,12 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                 ),
               );
             },
-            child: const Text("Create"),
+            child: const Text(
+              "Create Group Chat",
+              style: TextStyle(fontSize: 20),
+            ),
           ),
+          SizedBox(height: 20),
         ],
       ),
     );
