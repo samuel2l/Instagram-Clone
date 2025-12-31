@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
-import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/models/message_to_reply.dart';
@@ -342,29 +341,21 @@ class ChatRepository {
       if (chatId.trim().isEmpty) {
         throw ArgumentError('Chat ID cannot be empty');
       }
+
       if (userIds.isEmpty) return;
 
-      final currentUserId = ref.read(userProvider).value!.firebaseUID;
-
-      // Fetch chat doc
-      final chatDoc = await firestore.collection('chats').doc(chatId).get();
-      if (!chatDoc.exists) {
-        showSnackBar(context: context, content: "Chat does not exist");
-        return;
-      }
-
-      final chatData = chatDoc.data()!;
-      final List<dynamic> groupAdmins = chatData['groupAdmins'] ?? [];
-
-      // Check if current user is admin
-      if (!groupAdmins.contains(currentUserId)) {
-        showSnackBar(context: context, content: "You do not have permission");
-        return;
-      }
-
+      // Add users
       await firestore.collection('chats').doc(chatId).update({
         'participants': FieldValue.arrayUnion(userIds),
       });
+
+      // Fetch updated participants list
+      final chatDoc = await firestore.collection('chats').doc(chatId).get();
+      final List<String> updatedParticipants = List<String>.from(
+        chatDoc.data()?['participants'] ?? [],
+      );
+ref.read(chatDataProvider.notifier).state=ref.read(chatDataProvider)!.copyWith(participants: updatedParticipants);
+
 
       showSnackBar(context: context, content: "Members added successfully");
     } catch (e) {
@@ -381,35 +372,23 @@ class ChatRepository {
       if (chatId.trim().isEmpty) {
         throw ArgumentError('Chat ID cannot be empty');
       }
+
       if (userIds.isEmpty) return;
-
-      final currentUserId = ref.read(userProvider).value!.firebaseUID;
-
-      // Fetch chat doc
-      final chatDoc = await firestore.collection('chats').doc(chatId).get();
-      if (!chatDoc.exists) {
-        showSnackBar(context: context, content: "Chat does not exist");
-        return;
-      }
-
-      final chatData = chatDoc.data()!;
-      final List<dynamic> groupAdmins = chatData['groupAdmins'] ?? [];
-      print("ah the group admins? $groupAdmins");
-
-      // Check if current user is admin
-      if (!groupAdmins.contains(currentUserId)) {
-        showSnackBar(context: context, content: "You do not have permission");
-        return;
-      }
 
       await firestore.collection('chats').doc(chatId).update({
         'participants': FieldValue.arrayRemove(userIds),
       });
 
+      final chatDoc = await firestore.collection('chats').doc(chatId).get();
+      final List<String> updatedParticipants = List<String>.from(
+        chatDoc.data()?['participants'] ?? [],
+      );
+
+      ref.read(chatDataProvider.notifier).state=ref.read(chatDataProvider)!.copyWith(participants: updatedParticipants);
+
       showSnackBar(context: context, content: "Members removed successfully");
     } catch (e) {
-      print(e);
-      showSnackBar(context: context, content: "Error removing members $e");
+      showSnackBar(context: context, content: "Error removing members");
     }
   }
 
