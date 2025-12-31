@@ -175,6 +175,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                       userIds: ref.read(selectedGroupMembersProvider).toList(),
                       groupName: groupNameController.text.trim(),
                       groupDp: imgString,
+                      currentUserId: ref.read(userProvider).value!.firebaseUID, 
                     );
 
                 Navigator.push(

@@ -46,9 +46,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     isGroup = widget.chatData.isGroup;
 
     localChatData = widget.chatData;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(chatIdProvider.notifier).state = localChatData.chatId;
-    });
+
+  
   }
 
   @override
