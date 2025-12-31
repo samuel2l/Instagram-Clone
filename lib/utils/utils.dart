@@ -93,7 +93,6 @@ Future<GiphyGif?> pickGIF(BuildContext context) async {
 }
 
 String timeAgoFromIso(String isoString) {
-  print("iso string $isoString");
   if (isoString == "") {
     return "";
   }

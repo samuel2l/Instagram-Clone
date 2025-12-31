@@ -14,6 +14,7 @@ final chatRepositoryProvider = Provider((ref) {
 final chatIdProvider = StateProvider<String>((ref) => '');
 final showReplyProvider = StateProvider<bool>((ref) => false);
 final messageToReplyProvider = StateProvider<MessageToReply?>((ref) => null);
+final selectedGroupMembersProvider = StateProvider<Set<String>>((ref) => {});
 
 class ChatRepository {
   FirebaseFirestore firestore;

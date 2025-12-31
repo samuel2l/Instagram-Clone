@@ -15,12 +15,18 @@ class CreateGroup extends ConsumerStatefulWidget {
 //
 class _CreateGroupState extends ConsumerState<CreateGroup> {
   final groupNameController = TextEditingController();
-  final Set<String> selectedGroupMembers = {};
 
   @override
   void initState() {
     super.initState();
-    selectedGroupMembers.add(FirebaseAuth.instance.currentUser!.uid);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    final notifier = ref.read(selectedGroupMembersProvider.notifier);
+    notifier.state = {
+      ...notifier.state,
+      FirebaseAuth.instance.currentUser!.uid,
+    };
+ 
+    });
   }
 
   @override
@@ -63,22 +69,27 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
 
                           checkColor: Colors.black,
                           checkboxScaleFactor: 1.4,
-                          visualDensity: const VisualDensity(
-                            horizontal: -1,
-                            vertical: -1,
-                          ),
-                          value: selectedGroupMembers.contains(
-                            user.firebaseUID,
-                          ),
 
-                          onChanged: (bool? val) {
-                            setState(() {
-                              if (val == false) {
-                                selectedGroupMembers.remove(user.firebaseUID);
-                              } else {
-                                selectedGroupMembers.add(user.firebaseUID);
-                              }
-                            });
+                          value: ref
+                              .watch(selectedGroupMembersProvider)
+                              .contains(user.firebaseUID),
+
+                          onChanged: (val) {
+                            final notifier = ref.read(
+                              selectedGroupMembersProvider.notifier,
+                            );
+
+                            if (val == true) {
+                              notifier.state = {
+                                ...notifier.state,
+                                user.firebaseUID,
+                              };
+                            } else {
+                              notifier.state =
+                                  notifier.state
+                                      .where((id) => id != user.firebaseUID)
+                                      .toSet();
+                            }
                           },
                           title: Text(user.profile.username),
                         );
@@ -94,7 +105,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
               final res = await ref
                   .read(chatRepositoryProvider)
                   .createGroupChat(
-                    userIds: selectedGroupMembers.toList(),
+                    userIds: ref.read(selectedGroupMembersProvider).toList(),
                     groupName: groupNameController.text.trim(),
                   );
 
