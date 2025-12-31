@@ -40,9 +40,8 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
           children: [
             GestureDetector(
               onTap: () async {
-
                 final img = await pickImageFromGallery(context) ?? "";
-                imgString=await uploadImageToCloudinary(img);
+                imgString = await uploadImageToCloudinary(img);
                 setState(() {});
               },
               child: CircleAvatar(
@@ -175,14 +174,14 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                       userIds: ref.read(selectedGroupMembersProvider).toList(),
                       groupName: groupNameController.text.trim(),
                       groupDp: imgString,
-                      currentUserId: ref.read(userProvider).value!.firebaseUID, 
+                      currentUserId: ref.read(userProvider).value!.firebaseUID,
                     );
+                ref.read(chatDataProvider.notifier).state = res;
+                ref.read(messageRecipientProvider.notifier).state = null;
 
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => ChatScreen(chatData: res, user: null),
-                  ),
+                  MaterialPageRoute(builder: (_) => ChatScreen()),
                 );
               },
               child: const Text(

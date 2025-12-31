@@ -3,14 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
-import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/models/message_to_reply.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
-import 'package:instagram/chat/screens/add_member.dart';
-import 'package:instagram/chat/screens/remove_member.dart';
+import 'package:instagram/chat/screens/chat_settings.dart';
 import 'package:instagram/chat/widgets/image_message.dart';
 import 'package:instagram/chat/widgets/reply_widget.dart';
 import 'package:instagram/chat/widgets/send_message.dart';
@@ -24,9 +21,7 @@ import 'package:instagram/video%20calls/screens/video_call_screen.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key, required this.user, required this.chatData});
-  final AppUserModel? user;
-  final ChatData chatData;
+  const ChatScreen({super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ChatScreenState();
@@ -34,8 +29,6 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController scrollController = ScrollController();
-  late ChatData localChatData;
-
   bool showEmojis = false;
   FocusNode focusNode = FocusNode();
 
@@ -43,11 +36,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    isGroup = widget.chatData.isGroup;
-
-    localChatData = widget.chatData;
-
-  
+    isGroup = ref.read(chatDataProvider)!.isGroup;
   }
 
   @override
@@ -60,39 +49,57 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isGroup ? widget.chatData.groupName! : widget.user!.profile.name,
+        centerTitle: false,
+
+        title: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return ChatSettings();
+                },
+              ),
+            );
+          },
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.6,
+            padding: EdgeInsets.all(8),
+            child: Text(
+              isGroup ? ref.read(chatDataProvider)!.groupName! : ref.read(messageRecipientProvider)!.profile.name,
+            ),
+          ),
         ),
+        elevation: 1,
         actions:
             isGroup
                 ? [
-                  GestureDetector(
-                    onDoubleTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return RemoveMember(
-                              chatId: ref.watch(chatIdProvider),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                    child: const Text("remove"),
-                  ),
-                  const SizedBox(width: 10),
-                  GestureDetector(
-                    onDoubleTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return AddMember(chatId: ref.watch(chatIdProvider));
-                          },
-                        ),
-                      );
-                    },
-                    child: const Text("add"),
-                  ),
+                  // GestureDetector(
+                  //   onDoubleTap: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (context) {
+                  //           return RemoveMember(
+                  //             chatId: ref.watch(chatIdProvider),
+                  //           );
+                  //         },
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: const Text("remove"),
+                  // ),
+                  // const SizedBox(width: 10),
+                  // GestureDetector(
+                  //   onDoubleTap: () {
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (context) {
+                  //           return AddMember(chatId: ref.watch(chatIdProvider));
+                  //         },
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: const Text("add"),
+                  // ),
                   StreamBuilder(
                     stream: ref
                         .watch(videoCallRepositoryProvider)
@@ -107,7 +114,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       }
 
                       final callData = snapshot.data ?? {};
-                      // print("$callData this is the group call Data");
 
                       if (callData.isEmpty) {
                         return IconButton(
@@ -118,7 +124,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   calleeId: ref.watch(chatIdProvider),
                                   callType: "video",
                                   channelId:
-                                      "${ref.watch(chatIdProvider)} ${widget.chatData.groupName}",
+                                      "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
                                 );
 
                             String? res;
@@ -127,7 +133,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return GroupVideoCallScreen(
                                     channelId:
-                                        "${ref.watch(chatIdProvider)} ${widget.chatData.groupName}",
+                                        "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
                                     calleeId: ref.watch(chatIdProvider),
                                   );
                                 },
@@ -140,7 +146,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               );
                             }
                           },
-                          icon: const Icon(Icons.call),
+                          icon: const Icon(Icons.video_call_outlined, size: 32),
                         );
                       } else {
                         return IconButton(
@@ -155,13 +161,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 },
                               ),
                             );
-                            // }, // <-- Fixed missing comma
-                            // title: Text(
-                            //   "Incoming call from ${callData['callerId']}",
-                            // ),
-                            // subtitle: Text("Channel: ${callData['channelId']}"
                           },
-                          icon: Icon(Icons.home),
+                          icon: Icon(Icons.call_made),
                         );
                       }
                     },
@@ -193,12 +194,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 .read(videoCallRepositoryProvider)
                                 .sendCallData(
                                   calleeId:
-                                      widget.user != null
-                                          ? widget.user!.firebaseUID
+                                      ref.read(messageRecipientProvider) != null
+                                          ? ref.read(messageRecipientProvider)!.firebaseUID
                                           : "",
                                   callType: "video",
                                   channelId:
-                                      "${FirebaseAuth.instance.currentUser?.uid} ${widget.user?.firebaseUID}",
+                                      "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(messageRecipientProvider)?.firebaseUID}",
                                 );
 
                             String? res;
@@ -207,10 +208,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 builder: (context) {
                                   return VideoCallScreen(
                                     channelId:
-                                        "${FirebaseAuth.instance.currentUser?.uid} ${widget.user?.firebaseUID}",
+                                        "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(messageRecipientProvider)?.firebaseUID}",
                                     calleeId:
-                                        widget.user != null
-                                            ? widget.user!.firebaseUID
+                                        ref.read(messageRecipientProvider) != null
+                                            ? ref.read(messageRecipientProvider)!.firebaseUID
                                             : "",
                                   );
                                 },
@@ -223,7 +224,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               );
                             }
                           },
-                          icon: const Icon(Icons.call),
+                          icon: const Icon(Icons.video_call_outlined, size: 32),
                         );
                       } else {
                         return IconButton(
@@ -234,8 +235,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   return VideoCallScreen(
                                     channelId: callData['channelId'],
                                     calleeId:
-                                        widget.user != null
-                                            ? widget.user!.firebaseUID
+                                        ref.read(messageRecipientProvider) != null
+                                            ? ref.read(messageRecipientProvider)!.firebaseUID
                                             : "",
                                   );
                                 },
@@ -246,7 +247,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             // ),
                             // subtitle: Text("Channel: ${callData['channelId']}"
                           },
-                          icon: Icon(Icons.home),
+                          icon: Icon(Icons.call_made),
                         );
                       }
                     },
@@ -256,7 +257,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: FutureBuilder(
         future: ref
             .read(chatRepositoryProvider)
-            .getUsersByIds(widget.chatData.participants, isGroup),
+            .getUsersByIds(ref.read(chatDataProvider)!.participants, isGroup),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return Center(child: Text("error loading chat data"));
@@ -369,7 +370,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         isMyReplyMessage: isMyReplyMessage,
                                         currMessage: currMessage,
                                         participantData: participantData,
-                                        user: widget.user,
+                                        user: ref.read(messageRecipientProvider),
                                         isGroup: isGroup,
                                       ),
                                   currMessage.type == image ||
@@ -448,8 +449,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                               .senderId]!
                                                           .profile
                                                           .name
-                                                      : widget
-                                                          .user!
+                                                      : ref.read(messageRecipientProvider)!
                                                           .profile
                                                           .name,
                                                 ),
@@ -500,7 +500,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           );
                         },
                       ),
-                      SendMessage(user: widget.user),
+                      SendMessage(user: ref.read(messageRecipientProvider)),
                     ],
                   ),
                 ),

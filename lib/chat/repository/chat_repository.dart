@@ -12,6 +12,9 @@ final chatRepositoryProvider = Provider((ref) {
 });
 
 final chatIdProvider = StateProvider<String>((ref) => '');
+final chatDataProvider = StateProvider<ChatData?>((ref) => null);
+final messageRecipientProvider = StateProvider<AppUserModel?>((ref) => null);
+
 final showReplyProvider = StateProvider<bool>((ref) => false);
 final messageToReplyProvider = StateProvider<MessageToReply?>((ref) => null);
 final selectedGroupMembersProvider = StateProvider<Set<String>>((ref) => {});

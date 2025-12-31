@@ -74,14 +74,16 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
                                   ], FirebaseAuth.instance.currentUser!.uid);
 
                               // if(chatData==null)
+                              ref
+                                  .read(messageRecipientProvider.notifier)
+                                  .state = profileData;
+                              ref.read(chatDataProvider.notifier).state =
+                                  chatData;
+
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) {
-                                    return ChatScreen(
-                                      user: profileData,
-
-                                      chatData: chatData,
-                                    );
+                                    return ChatScreen();
                                   },
                                 ),
                               );

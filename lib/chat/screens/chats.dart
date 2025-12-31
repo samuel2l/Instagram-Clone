@@ -175,21 +175,23 @@ class Chats extends ConsumerWidget {
                           itemCount: chats.length,
                           itemBuilder: (context, index) {
                             final chat = chats[index];
-                            print("ah the chat?? ${chat.chatId} ${chat.isGroup}");
                             return chat.isGroup
                                 ? GestureDetector(
                                   behavior:
                                       HitTestBehavior
                                           .opaque, //Treat the whole area as tappable even if nothing is painted.
-                                  onTap: () async{
-                                    ref.read(chatIdProvider.notifier).state = chat.chatId;
+                                  onTap: () async {
+                                    ref.read(chatIdProvider.notifier).state =
+                                        chat.chatId;
+                                    ref.read(chatDataProvider.notifier).state =
+                                        chat;
+                                    ref
+                                        .read(messageRecipientProvider.notifier)
+                                        .state = null;
+
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder:
-                                            (context) => ChatScreen(
-                                              chatData: chat,
-                                              user: null,
-                                            ),
+                                        builder: (context) => ChatScreen(),
                                       ),
                                     );
                                   },
@@ -229,7 +231,7 @@ class Chats extends ConsumerWidget {
                                                 0.65,
                                             child: Row(
                                               children: [
-                                                chat.lastMessage!.length < 40
+                                                chat.lastMessage!.length < 27
                                                     ? Text(
                                                       chat.lastMessage ?? '',
                                                       maxLines: 1,
@@ -304,13 +306,17 @@ class Chats extends ConsumerWidget {
                                       //     HitTestBehavior
                                       //         .opaque, //Treat the whole area as tappable even if nothing is painted.
                                       onTap: () {
+                                        ref
+                                            .read(chatDataProvider.notifier)
+                                            .state = chat;
+                                        ref
+                                            .read(
+                                              messageRecipientProvider.notifier,
+                                            )
+                                            .state = receiver;
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
-                                            builder:
-                                                (context) => ChatScreen(
-                                                  chatData: chat,
-                                                  user: receiver,
-                                                ),
+                                            builder: (context) => ChatScreen(),
                                           ),
                                         );
                                       },
