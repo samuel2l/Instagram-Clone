@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatData {
@@ -14,6 +12,8 @@ class ChatData {
   final bool hasStory;
   final String? userId;
   final List<String> participants;
+  final List<String>? groupAdmins;
+
   ChatData({
     required this.chatId,
     required this.isGroup,
@@ -26,51 +26,8 @@ class ChatData {
     this.userId,
     required this.participants,
     required this.hasStory,
+    this.groupAdmins,
   });
-
-  ChatData copyWith({
-    String? chatId,
-    bool? isGroup,
-    String? email,
-    String? name,
-    String? groupName,
-    String? dp,
-    String? lastMessage,
-    String? lastMessageTime,
-    String? userId,
-    List<String>? participants,
-    bool? hasStory,
-  }) {
-    return ChatData(
-      chatId: chatId ?? this.chatId,
-      isGroup: isGroup ?? this.isGroup,
-      email: email ?? this.email,
-      name: name ?? this.name,
-      groupName: groupName ?? this.groupName,
-      dp: dp ?? this.dp,
-      lastMessage: lastMessage ?? this.lastMessage,
-      lastMessageTime: lastMessageTime ?? this.lastMessageTime,
-      participants: participants ?? this.participants,
-      hasStory: hasStory ?? this.hasStory,
-      userId: userId ?? this.userId,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'chatId': chatId,
-      'isGroup': isGroup,
-      'email': email,
-      'name': name,
-      'groupName': groupName,
-      'dp': dp,
-      'lastMessage': lastMessage,
-      'lastMessageTime': lastMessageTime,
-      'participants': participants,
-      'hasStory': hasStory,
-      'userid': userId,
-    };
-  }
 
   factory ChatData.fromMap(Map<String, dynamic> map) {
     // print("chat data map $map");
@@ -87,12 +44,14 @@ class ChatData {
           map['lastMessageTime'] != null
               ? (map['lastMessageTime'] as Timestamp).toDate().toIso8601String()
               : "",
-      hasStory: map['hasStory']!=null ?map['hasStory'] as bool:false,
+      hasStory: map['hasStory'] != null ? map['hasStory'] as bool : false,
       userId: map["userId"] != null ? map["userId"] as String : "",
       participants:
           (map["participants"] as List).map((e) => e.toString()).toList(),
+      groupAdmins:
+          map["groupAdmins"] != null
+              ? (map["groupAdmins"] as List).map((e) => e.toString()).toList()
+              : [],
     );
   }
-
-  String toJson() => json.encode(toMap());
 }
