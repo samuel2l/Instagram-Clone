@@ -26,6 +26,8 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
         ...notifier.state,
         FirebaseAuth.instance.currentUser!.uid,
       };
+      //clear selected members provider
+      ref.invalidate(selectedGroupMembersProvider);
     });
   }
 
@@ -86,6 +88,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                     .read(chatRepositoryProvider)
                     .getMutualFollowers(
                       ref.read(userProvider).value!.firebaseUID,
+                      context,
                     ),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -180,7 +183,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                 ref.read(messageRecipientProvider.notifier).state = null;
                 ref.read(chatIdProvider.notifier).state = res.chatId;
                 //clear the selected members provider
-                ref.read(selectedGroupMembersProvider.notifier).state = {};
+                ref.invalidate(selectedGroupMembersProvider);
 
                 Navigator.push(
                   context,

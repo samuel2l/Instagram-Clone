@@ -55,7 +55,7 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) {
-                          return AddMember(chatId: ref.read(chatDataProvider)!.chatId);
+                          return AddMember();
                         },
                       ),
                     );

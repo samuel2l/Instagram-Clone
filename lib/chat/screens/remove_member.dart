@@ -39,12 +39,12 @@ class _RemoveMemberState extends ConsumerState<RemoveMember> {
               final user = users[index];
               return ListTile(
                 onTap: () {
-                  ref
-                      .read(chatRepositoryProvider)
-                      .removeMemberFromGroup(
-                        userId: user,
-                        chatId: widget.chatId,
-                      );
+                  // ref
+                  //     .read(chatRepositoryProvider)
+                  //     .removeMemberFromGroup(
+                  //       userId: user,
+                  //       chatId: widget.chatId,
+                  //     );
                 },
                 title: Text(user),
               );

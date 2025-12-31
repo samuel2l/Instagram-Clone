@@ -587,7 +587,10 @@ class Chats extends ConsumerWidget {
               );
             },
             error: (error, stackTrace) => Center(child: Text(error.toString())),
-            loading: () => Center(child: CircularProgressIndicator()),
+            loading: () {
+
+              return Center(child: CircularProgressIndicator());
+            },
           ),
     );
   }

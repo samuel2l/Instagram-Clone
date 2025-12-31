@@ -164,43 +164,69 @@ class ChatRepository {
     return AppUserModel.fromMap(snapshot.docs.first.data());
   }
 
-  Future<List<AppUserModel>> getMutualFollowers(String currentUid) async {
-    final userDoc = await firestore.collection('users').doc(currentUid).get();
+  Future<List<AppUserModel>> getMutualFollowers(
+    String currentUid,
+    BuildContext context, {
+    String? chatId,
+  }) async {
+    try {
+      final userDoc = await firestore.collection('users').doc(currentUid).get();
 
-    if (!userDoc.exists) return [];
+      if (!userDoc.exists) return [];
 
-    final data = userDoc.data()!;
-    final List<String> following = List<String>.from(data['following'] ?? []);
-    final List<String> followers = List<String>.from(data['followers'] ?? []);
+      final data = userDoc.data()!;
+      final List<String> following = List<String>.from(data['following'] ?? []);
+      final List<String> followers = List<String>.from(data['followers'] ?? []);
 
-    // intersection
-    final mutualUids =
-        following.where((uid) => followers.contains(uid)).toList();
+      // intersection (mutual followers)
+      List<String> mutualUids =
+          following.where((uid) => followers.contains(uid)).toList();
 
-    if (mutualUids.isEmpty) return [];
+      if (mutualUids.isEmpty) return [];
 
-    // Firestore whereIn limit handling
-    const batchSize = 10;
-    final List<AppUserModel> users = [];
+      // If chatId is provided, remove existing participants
+      if (chatId != null && chatId.isNotEmpty) {
+        final chatDoc = await firestore.collection('chats').doc(chatId).get();
 
-    for (int i = 0; i < mutualUids.length; i += batchSize) {
-      final batch = mutualUids.sublist(
-        i,
-        i + batchSize > mutualUids.length ? mutualUids.length : i + batchSize,
-      );
+        if (chatDoc.exists) {
+          final chatData = chatDoc.data()!;
+          final List<String> participants = List<String>.from(
+            chatData['participants'] ?? [],
+          );
 
-      final snapshot =
-          await firestore
-              .collection('users')
-              .where('uid', whereIn: batch)
-              .get();
+          mutualUids =
+              mutualUids.where((uid) => !participants.contains(uid)).toList();
+        }
+      }
 
-      users.addAll(
-        snapshot.docs.map((doc) => AppUserModel.fromMap(doc.data())),
-      );
+      if (mutualUids.isEmpty) return [];
+
+      // Firestore whereIn limit handling
+      const batchSize = 10;
+      final List<AppUserModel> users = [];
+
+      for (int i = 0; i < mutualUids.length; i += batchSize) {
+        final batch = mutualUids.sublist(
+          i,
+          i + batchSize > mutualUids.length ? mutualUids.length : i + batchSize,
+        );
+
+        final snapshot =
+            await firestore
+                .collection('users')
+                .where('uid', whereIn: batch)
+                .get();
+
+        users.addAll(
+          snapshot.docs.map((doc) => AppUserModel.fromMap(doc.data())),
+        );
+      }
+
+      return users;
+    } catch (e) {
+      showSnackBar(context: context, content: "error getting followers");
+      return [];
     }
-
-    return users;
   }
 
   Future<String> getOrCreateChatId(

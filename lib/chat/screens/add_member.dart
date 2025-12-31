@@ -4,13 +4,22 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 
 class AddMember extends ConsumerStatefulWidget {
-  const AddMember({super.key, required this.chatId});
-  final String chatId;
+  const AddMember({super.key});
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _AddMemberState();
 }
 
 class _AddMemberState extends ConsumerState<AddMember> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      //invalidate the selected members provider
+      ref.invalidate(selectedGroupMembersProvider);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,6 +34,8 @@ class _AddMemberState extends ConsumerState<AddMember> {
                     .read(chatRepositoryProvider)
                     .getMutualFollowers(
                       ref.read(userProvider).value!.firebaseUID,
+                      context,
+                      chatId: ref.read(chatDataProvider)!.chatId,
                     ),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -50,10 +61,11 @@ class _AddMemberState extends ConsumerState<AddMember> {
                     itemBuilder: (context, index) {
                       final user = users[index];
                       return CheckboxListTile(
-                        enabled: !ref
-                            .read(chatDataProvider)!
-                            .participants
-                            .contains(user.firebaseUID),
+                        enabled:
+                            !ref
+                                .read(chatDataProvider)!
+                                .participants
+                                .contains(user.firebaseUID),
                         contentPadding: EdgeInsets.all(0),
                         activeColor: const Color.fromARGB(255, 1, 86, 242),
                         checkboxShape: CircleBorder(),
@@ -62,8 +74,7 @@ class _AddMemberState extends ConsumerState<AddMember> {
                         checkboxScaleFactor: 1.4,
 
                         value: ref
-                            .read(chatDataProvider)!
-                            .participants
+                            .watch(selectedGroupMembersProvider)
                             .contains(user.firebaseUID),
 
                         onChanged: (val) {
@@ -102,9 +113,11 @@ class _AddMemberState extends ConsumerState<AddMember> {
                 backgroundColor: const Color.fromARGB(255, 1, 86, 242),
                 foregroundColor: Colors.white,
               ),
-              onPressed: () {},
+              onPressed: () {
+                ref.read(selectedGroupMembersProvider.notifier).state = {};
+              },
               child: const Text(
-                "Create Group Chat",
+                "Add Member(s)",
                 style: TextStyle(fontSize: 20),
               ),
             ),
