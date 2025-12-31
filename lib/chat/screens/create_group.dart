@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +34,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
     });
   }
 
-  String imgString = "";
+  String imgString = "https://www.pngall.com/wp-content/uploads/5/Profile-PNG-File.png";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,17 +45,17 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
           children: [
             GestureDetector(
               onTap: () async {
-                final img = await pickImageFromGallery(context) ?? "";
-                imgString = await uploadImageToCloudinary(img);
+                imgString = await pickImageFromGallery(context) ?? "";
                 setState(() {});
               },
               child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  imgString.isNotEmpty
-                      ? imgString
-                      : "https://www.pngall.com/wp-content/uploads/5/Profile-PNG-File.png",
-                ),
                 radius: 50,
+                backgroundImage:
+                    !imgString.startsWith("https")
+                        ? Image.file(File(imgString)).image
+                        : CachedNetworkImageProvider(
+                          "https://www.pngall.com/wp-content/uploads/5/Profile-PNG-File.png",
+                        ),
               ),
             ),
             TextField(
@@ -160,23 +163,29 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                 foregroundColor: Colors.white,
               ),
               onPressed: () async {
-                if (groupNameController.text.trim().isEmpty) {
+                if (groupNameController.text.trim().isEmpty ||
+                    ref.read(selectedGroupMembersProvider).length < 3) {
                   return showDialog(
                     context: context,
 
                     builder: (context) {
                       return AlertDialog(
-                        content: Text("Please enter a group name."),
+                        content: Text(
+                          groupNameController.text.trim().isEmpty
+                              ? "Please enter a group name."
+                              : "Select at least 3 members to create a group.",
+                        ),
                       );
                     },
                   );
                 }
+                final imageUrl = await uploadImageToCloudinary(imgString);
                 final res = await ref
                     .read(chatRepositoryProvider)
                     .createGroupChat(
                       userIds: ref.read(selectedGroupMembersProvider).toList(),
                       groupName: groupNameController.text.trim(),
-                      groupDp: imgString,
+                      groupDp: imageUrl,
                       currentUserId: ref.read(userProvider).value!.firebaseUID,
                     );
                 ref.read(chatDataProvider.notifier).state = res;
