@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatData {
@@ -13,7 +14,6 @@ class ChatData {
   final String? userId;
   final List<String> participants;
   final List<String>? groupAdmins;
-
   ChatData({
     required this.chatId,
     required this.isGroup,
@@ -23,11 +23,43 @@ class ChatData {
     required this.dp,
     this.lastMessage,
     this.lastMessageTime,
+    required this.hasStory,
     this.userId,
     required this.participants,
-    required this.hasStory,
     this.groupAdmins,
   });
+
+
+
+  ChatData copyWith({
+    String? chatId,
+    bool? isGroup,
+    String? email,
+    String? name,
+    String? groupName,
+    String? dp,
+    String? lastMessage,
+    String? lastMessageTime,
+    bool? hasStory,
+    String? userId,
+    List<String>? participants,
+    List<String>? groupAdmins,
+  }) {
+    return ChatData(
+      chatId: chatId ?? this.chatId,
+      isGroup: isGroup ?? this.isGroup,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      groupName: groupName ?? this.groupName,
+      dp: dp ?? this.dp,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastMessageTime: lastMessageTime ?? this.lastMessageTime,
+      hasStory: hasStory ?? this.hasStory,
+      userId: userId ?? this.userId,
+      participants: participants ?? this.participants,
+      groupAdmins: groupAdmins ?? this.groupAdmins,
+    );
+  }
 
   factory ChatData.fromMap(Map<String, dynamic> map) {
     // print("chat data map $map");
@@ -55,3 +87,6 @@ class ChatData {
     );
   }
 }
+
+
+
