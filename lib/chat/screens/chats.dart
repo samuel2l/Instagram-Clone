@@ -175,14 +175,22 @@ class Chats extends ConsumerWidget {
                           itemCount: chats.length,
                           itemBuilder: (context, index) {
                             final chat = chats[index];
-
-                            String formattedTime = chat.lastMessageTime!;
-
                             return chat.isGroup
                                 ? GestureDetector(
                                   behavior:
                                       HitTestBehavior
                                           .opaque, //Treat the whole area as tappable even if nothing is painted.
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => ChatScreen(
+                                              chatData: chat,
+                                              user: null,
+                                            ),
+                                      ),
+                                    );
+                                  },
                                   child: Row(
                                     children: [
                                       Container(
