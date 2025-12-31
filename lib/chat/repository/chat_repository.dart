@@ -32,6 +32,7 @@ class ChatRepository {
               chatData['chatId'] = doc.id;
 
               if (chatData["isGroup"]) {
+
                 return chatData;
               } else {
                 List participants = chatData['participants'];
@@ -229,6 +230,7 @@ class ChatRepository {
   Future<ChatData> createGroupChat({
     required List<String> userIds,
     required String groupName,
+    required String groupDp,
   }) async {
     final newChatDoc = firestore.collection('chats').doc();
 
@@ -236,6 +238,7 @@ class ChatRepository {
       'participants': userIds,
       'isGroup': true,
       'groupName': groupName,
+      'dp':groupDp,
       'createdAt': FieldValue.serverTimestamp(),
       'lastMessage': '',
       'lastMessageTime': FieldValue.serverTimestamp(),

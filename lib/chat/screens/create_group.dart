@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/chat_screen.dart';
+import 'package:instagram/utils/utils.dart';
 
 class CreateGroup extends ConsumerStatefulWidget {
   const CreateGroup({super.key});
@@ -28,6 +29,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
     });
   }
 
+  String imgString = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,6 +38,22 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
+            GestureDetector(
+              onTap: () async {
+
+                final img = await pickImageFromGallery(context) ?? "";
+                imgString=await uploadImageToCloudinary(img);
+                setState(() {});
+              },
+              child: CircleAvatar(
+                backgroundImage: NetworkImage(
+                  imgString.isNotEmpty
+                      ? imgString
+                      : "https://www.pngall.com/wp-content/uploads/5/Profile-PNG-File.png",
+                ),
+                radius: 50,
+              ),
+            ),
             TextField(
               controller: groupNameController,
               decoration: InputDecoration(
@@ -74,7 +92,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                   if (snapshot.hasError) {
                     return Center(child: Text("Error: ${snapshot.error}"));
                   }
-                          if (!snapshot.hasData) {
+                  if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator());
                   }
 
@@ -97,19 +115,19 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                         contentPadding: EdgeInsets.all(0),
                         activeColor: const Color.fromARGB(255, 1, 86, 242),
                         checkboxShape: CircleBorder(),
-                      
+
                         checkColor: Colors.white,
                         checkboxScaleFactor: 1.4,
-                      
+
                         value: ref
                             .watch(selectedGroupMembersProvider)
                             .contains(user.firebaseUID),
-                      
+
                         onChanged: (val) {
                           final notifier = ref.read(
                             selectedGroupMembersProvider.notifier,
                           );
-                      
+
                           if (val == true) {
                             notifier.state = {
                               ...notifier.state,
@@ -156,6 +174,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                     .createGroupChat(
                       userIds: ref.read(selectedGroupMembersProvider).toList(),
                       groupName: groupNameController.text.trim(),
+                      groupDp: imgString,
                     );
 
                 Navigator.push(

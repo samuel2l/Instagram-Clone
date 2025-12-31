@@ -15,6 +15,7 @@ Future<String?> pickImageFromGallery(BuildContext context) async {
     final pickedImage = await ImagePicker().pickImage(
       source: ImageSource.gallery,
     );
+
     return pickedImage?.path ?? "";
   } catch (e) {
     showSnackBar(context: context, content: e.toString());
