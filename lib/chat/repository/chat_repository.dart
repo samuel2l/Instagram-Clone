@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/models/chat_data.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/models/message_to_reply.dart';
@@ -10,7 +11,7 @@ import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
 final chatRepositoryProvider = Provider((ref) {
-  return ChatRepository(firestore: FirebaseFirestore.instance);
+  return ChatRepository(firestore: FirebaseFirestore.instance, ref: ref);
 });
 
 final chatIdProvider = StateProvider<String>((ref) => '');
@@ -23,7 +24,8 @@ final selectedGroupMembersProvider = StateProvider<Set<String>>((ref) => {});
 
 class ChatRepository {
   FirebaseFirestore firestore;
-  ChatRepository({required this.firestore});
+  Ref ref;
+  ChatRepository({required this.firestore, required this.ref});
   Stream<List<ChatData>> getUserChats(String userId) {
     return firestore
         .collection('chats')
@@ -229,6 +231,51 @@ class ChatRepository {
     }
   }
 
+  Future<List<AppUserModel>> getGroupMembers(
+    String chatId,
+    BuildContext context,
+  ) async {
+    try {
+      final chatDoc = await firestore.collection('chats').doc(chatId).get();
+
+      if (!chatDoc.exists) return [];
+
+      final chatData = chatDoc.data()!;
+      final List<String> participantIds = List<String>.from(
+        chatData['participants'] ?? [],
+      );
+
+      if (participantIds.isEmpty) return [];
+
+      const batchSize = 10;
+      final List<AppUserModel> members = [];
+
+      for (int i = 0; i < participantIds.length; i += batchSize) {
+        final batch = participantIds.sublist(
+          i,
+          i + batchSize > participantIds.length
+              ? participantIds.length
+              : i + batchSize,
+        );
+
+        final snapshot =
+            await firestore
+                .collection('users')
+                .where('uid', whereIn: batch)
+                .get();
+
+        members.addAll(
+          snapshot.docs.map((doc) => AppUserModel.fromMap(doc.data())),
+        );
+      }
+
+      return members;
+    } catch (e) {
+      showSnackBar(context: context, content: "Error getting group members");
+      return [];
+    }
+  }
+
   Future<String> getOrCreateChatId(
     List<String> userIds, {
     bool isGroup = false,
@@ -286,21 +333,6 @@ class ChatRepository {
     return ChatData.fromMap(chatData);
   }
 
-  Future<List<String>> getGroupMembers({required String chatId}) async {
-    final docSnapshot =
-        await FirebaseFirestore.instance.collection('chats').doc(chatId).get();
-
-    if (docSnapshot.exists) {
-      final data = docSnapshot.data();
-      if (data != null && data.containsKey('participants')) {
-        List<dynamic> participants = data['participants'];
-        return participants.cast<String>();
-      }
-    }
-
-    return [];
-  }
-
   Future<void> addMembersToGroup({
     required List<String> userIds,
     required String chatId,
@@ -310,16 +342,33 @@ class ChatRepository {
       if (chatId.trim().isEmpty) {
         throw ArgumentError('Chat ID cannot be empty');
       }
-
       if (userIds.isEmpty) return;
+
+      final currentUserId = ref.read(userProvider).value!.firebaseUID;
+
+      // Fetch chat doc
+      final chatDoc = await firestore.collection('chats').doc(chatId).get();
+      if (!chatDoc.exists) {
+        showSnackBar(context: context, content: "Chat does not exist");
+        return;
+      }
+
+      final chatData = chatDoc.data()!;
+      final List<dynamic> groupAdmins = chatData['groupAdmins'] ?? [];
+
+      // Check if current user is admin
+      if (!groupAdmins.contains(currentUserId)) {
+        showSnackBar(context: context, content: "You do not have permission");
+        return;
+      }
 
       await firestore.collection('chats').doc(chatId).update({
         'participants': FieldValue.arrayUnion(userIds),
       });
+
+      showSnackBar(context: context, content: "Members added successfully");
     } catch (e) {
-      // debugPrint('Error adding members to group: $e');
-      // rethrow;
-      showSnackBar(context: context, content: "error adding members");
+      showSnackBar(context: context, content: "Error adding members");
     }
   }
 
@@ -332,14 +381,35 @@ class ChatRepository {
       if (chatId.trim().isEmpty) {
         throw ArgumentError('Chat ID cannot be empty');
       }
-
       if (userIds.isEmpty) return;
+
+      final currentUserId = ref.read(userProvider).value!.firebaseUID;
+
+      // Fetch chat doc
+      final chatDoc = await firestore.collection('chats').doc(chatId).get();
+      if (!chatDoc.exists) {
+        showSnackBar(context: context, content: "Chat does not exist");
+        return;
+      }
+
+      final chatData = chatDoc.data()!;
+      final List<dynamic> groupAdmins = chatData['groupAdmins'] ?? [];
+      print("ah the group admins? $groupAdmins");
+
+      // Check if current user is admin
+      if (!groupAdmins.contains(currentUserId)) {
+        showSnackBar(context: context, content: "You do not have permission");
+        return;
+      }
 
       await firestore.collection('chats').doc(chatId).update({
         'participants': FieldValue.arrayRemove(userIds),
       });
+
+      showSnackBar(context: context, content: "Members removed successfully");
     } catch (e) {
-      showSnackBar(context: context, content: "error removing members");
+      print(e);
+      showSnackBar(context: context, content: "Error removing members $e");
     }
   }
 

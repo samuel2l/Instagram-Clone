@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
 import 'package:instagram/chat/screens/create_group.dart';
+import 'package:instagram/chat/screens/remove_members.dart';
 
 class ChatSettings extends ConsumerStatefulWidget {
   const ChatSettings({super.key});
@@ -71,7 +72,15 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
                 ),
                 SizedBox(width: 10),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return RemoveMembers();
+                        },
+                      ),
+                    );      
+                  },
                   style: TextButton.styleFrom(foregroundColor: Colors.black),
                   child: Column(
                     children: [

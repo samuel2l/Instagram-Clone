@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 
-class AddMember extends ConsumerStatefulWidget {
-  const AddMember({super.key});
+class RemoveMembers extends ConsumerStatefulWidget {
+  const RemoveMembers({super.key});
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _AddMemberState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _RemoveMembersState();
 }
 
-class _AddMemberState extends ConsumerState<AddMember> {
+class _RemoveMembersState extends ConsumerState<RemoveMembers> {
   @override
   void initState() {
     // TODO: implement initState
@@ -23,7 +22,7 @@ class _AddMemberState extends ConsumerState<AddMember> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Add member")),
+      appBar: AppBar(title: Text("Remove member")),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -32,10 +31,9 @@ class _AddMemberState extends ConsumerState<AddMember> {
               child: FutureBuilder(
                 future: ref
                     .read(chatRepositoryProvider)
-                    .getMutualFollowers(
-                      ref.read(userProvider).value!.firebaseUID,
+                    .getGroupMembers(
+                      ref.read(chatDataProvider)!.chatId,
                       context,
-                      chatId: ref.read(chatDataProvider)!.chatId,
                     ),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -61,11 +59,6 @@ class _AddMemberState extends ConsumerState<AddMember> {
                     itemBuilder: (context, index) {
                       final user = users[index];
                       return CheckboxListTile(
-                        enabled:
-                            !ref
-                                .read(chatDataProvider)!
-                                .participants
-                                .contains(user.firebaseUID),
                         contentPadding: EdgeInsets.all(0),
                         activeColor: const Color.fromARGB(255, 1, 86, 242),
                         checkboxShape: CircleBorder(),
@@ -113,20 +106,19 @@ class _AddMemberState extends ConsumerState<AddMember> {
                 backgroundColor: const Color.fromARGB(255, 1, 86, 242),
                 foregroundColor: Colors.white,
               ),
-              onPressed: ()async {
-                
-                await ref.read(chatRepositoryProvider).addMembersToGroup(
-                  chatId: ref.read(chatDataProvider)!.chatId,
-                  userIds:
-                      ref.read(selectedGroupMembersProvider).toList(),
-                  context: context,
-                );  
-                
-                ref.read(selectedGroupMembersProvider.notifier).state = {};
+              onPressed: () async {
+                await ref
+                    .read(chatRepositoryProvider)
+                    .removeMembersFromGroup(
+                      chatId: ref.read(chatDataProvider)!.chatId,
+                      userIds: ref.read(selectedGroupMembersProvider).toList(),
+                      context: context,
+                    );
 
+                ref.read(selectedGroupMembersProvider.notifier).state = {};
               },
               child: const Text(
-                "Add Member(s)",
+                "Remove Member(s)",
                 style: TextStyle(fontSize: 20),
               ),
             ),
