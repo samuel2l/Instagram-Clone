@@ -72,17 +72,13 @@ class StoryRepository {
 
   Future<List<AppUserModel>> getUsersWithStories(String? currentUserId) async {
     if (currentUserId == null) return [];
-    print("currentUserId in getUsersWithStories: ");
-    print(currentUserId);
 
     try {
       final firestore = FirebaseFirestore.instance;
       final List<AppUserModel> result = [];
-      print("before the fetch?");
 
       final currentUserDoc =
           await firestore.collection('users').doc(currentUserId).get();
-      print("never fetched?");
       if (!currentUserDoc.exists) return [];
 
       final currentUserData = currentUserDoc.data()!;
@@ -95,7 +91,6 @@ class StoryRepository {
       if (following.isEmpty) return result;
 
       following.remove(currentUserId);
-      print("or issue is at fetching followers>");
       // fetch followed users in chunks of 10 as firestore may throw error if query has contents of length>10
       for (var i = 0; i < following.length; i += 10) {
         final chunk = following.sublist(

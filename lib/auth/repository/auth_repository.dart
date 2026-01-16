@@ -23,8 +23,6 @@ final authStateProvider = StreamProvider<User?>((ref) {
 final userProvider = StreamProvider<AppUserModel?>((ref) {
   final auth = ref.watch(authStateProvider).value;
 
-  print("auth in userProvider: $auth");
-  print("auth?.uid in userProvider: ${auth?.uid}");
   if (auth == null) {
     return const Stream.empty();
   }

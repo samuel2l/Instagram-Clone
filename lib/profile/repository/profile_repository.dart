@@ -53,7 +53,7 @@ class ProfileRepository {
       }
     } catch (e) {
       if (context != null) {
-        print("profile update error: $e");
+
         showSnackBar(context: context, content: 'Error updating profile: $e');
       }
     }

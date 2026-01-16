@@ -48,8 +48,6 @@ class MyApp extends ConsumerWidget {
               return data == null ? const SignUp() : Home();
             },
             error: (error, stackTrace) {
-              print("Error in userProvider: $error");
-              print(stackTrace);
               return Center(child: Text(error.toString()));
             },
             loading: () => Center(child: CircularProgressIndicator()),
