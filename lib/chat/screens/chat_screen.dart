@@ -219,6 +219,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                 .read(messageRecipientProvider)!
                                                 .firebaseUID
                                             : "",
+                                  receiverDp: ref
+                                        .read(messageRecipientProvider)!
+                                        .profile
+                                        .dp,
+                                    receiverName: ref
+                                        .read(messageRecipientProvider)!
+                                        .profile
+                                        .name,
                                   );
                                 },
                               ),
@@ -247,6 +255,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                 .read(messageRecipientProvider)!
                                                 .firebaseUID
                                             : "",
+                                    receiverDp: ref
+                                        .read(messageRecipientProvider)!
+                                        .profile
+                                        .dp, 
+                                      receiverName: ref
+                                        .read(messageRecipientProvider)!
+                                        .profile
+                                        .name,   
                                   );
                                 },
                               ),

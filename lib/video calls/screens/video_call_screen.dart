@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/utils/utils.dart';
 import 'package:instagram/video%20calls/repository/video_call_repository.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -15,10 +16,13 @@ class VideoCallScreen extends ConsumerStatefulWidget {
     super.key,
     required this.channelId,
     required this.calleeId,
+    required this.receiverDp,
+    required this.receiverName,
   });
   final String channelId;
   final String calleeId;
-
+  final String receiverDp;
+  final String receiverName;
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
       _VideoCallScreenState();
@@ -40,19 +44,19 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   }
 
   Future<void> getToken() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
+    final userId = ref.read(userProvider).value!.firebaseUID;
     final res = await http.get(
       Uri.parse(
         "$baseUrl/rtc/${widget.channelId}/publisher/userAccount/$userId/",
       ),
     );
+    print("Response status: ${res.statusCode} ${res.body}");
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
-      if (mounted){
-      setState(() {
-        token = data["rtcToken"];
-      });
-
+      if (mounted) {
+        setState(() {
+          token = data["rtcToken"];
+        });
       }
     } else {
       throw Exception("Unable to get token");
@@ -126,6 +130,9 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     await _engine.release();
   }
 
+  bool isMuted = false;
+  bool isVideoOff = false;
+  bool isCameraFront = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,48 +154,148 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
           final data = snapshot.data ?? {};
 
           if (data.isEmpty) {
-            return Stack(
-              children: [
-                Center(child: _remoteVideo()),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: SizedBox(
-                    width: 100,
-                    height: 150,
-                    child: Center(
-                      child:
-                          _localUserJoined
-                              ? AgoraVideoView(
-                                controller: VideoViewController(
-                                  rtcEngine: _engine,
-                                  canvas: const VideoCanvas(uid: 0),
-                                ),
-                              )
-                              : const CircularProgressIndicator(),
+            //user has picked so put caller view in top right
+            if (_remoteUid != null && _localUserJoined) {
+              return Stack(
+                children: [
+                  Center(child: _remoteVideo()),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: 100,
+                      height: 150,
+                      child: Center(
+                        child:
+                            _localUserJoined
+                                ? AgoraVideoView(
+                                  controller: VideoViewController(
+                                    rtcEngine: _engine,
+                                    canvas: const VideoCanvas(uid: 0),
+                                  ),
+                                )
+                                : const CircularProgressIndicator(),
+                      ),
                     ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: SizedBox(
-                    width: 100,
-                    height: 150,
-                    child: IconButton(
-                      onPressed: () {
-                        ref
-                            .read(videoCallRepositoryProvider)
-                            .endCall(
-                              calleeId: widget.calleeId,
-                              channelId: widget.channelId,
-                            );
-                        Navigator.of(context).pop("call ended");
-                      },
-                      icon: Icon(Icons.call),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: SizedBox(
+                      width: 100,
+                      height: 150,
+                      child: IconButton(
+                        onPressed: () {
+                          ref
+                              .read(videoCallRepositoryProvider)
+                              .endCall(
+                                calleeId: widget.calleeId,
+                                channelId: widget.channelId,
+                              );
+                          Navigator.of(context).pop("call ended");
+                        },
+                        icon: Icon(Icons.call),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
+                ],
+              );
+            } else {
+              //user has not yet picked so show your preview at center
+              return Stack(
+                children: [
+                  Center(
+                    child:
+                        _localUserJoined
+                            ? AgoraVideoView(
+                              controller: VideoViewController(
+                                rtcEngine: _engine,
+                                canvas: const VideoCanvas(uid: 0),
+                              ),
+                            )
+                            : const CircularProgressIndicator(),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      margin: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(200, 7, 7, 7),
+
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              isVideoOff = !isVideoOff;
+                              _engine.muteLocalVideoStream(isVideoOff);
+                              setState(() {});
+                            },
+                            icon: Icon(
+                              isVideoOff
+                                  ? Icons.videocam_off_outlined
+                                  : Icons.videocam_outlined,
+                              color: Colors.white,
+                              size: 33,
+                            ),
+                          ),
+
+                          IconButton(
+                            onPressed: () {
+                              isMuted = !isMuted;
+                              _engine.muteLocalAudioStream(isMuted);
+                              setState(() {});
+                            },
+                            icon: Icon(
+                              isMuted ? Icons.mic_off : Icons.mic,
+                              color: Colors.white,
+                              size: 33,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              isCameraFront = !isCameraFront;
+                              _engine.switchCamera();
+                              setState(() {});
+                            },
+                            icon: Icon(
+                              isCameraFront ? Icons.camera_front : Icons.camera_rear,
+                              color: Colors.white,
+                              size: 33,
+                            ),
+                          ),
+
+                          GestureDetector(
+                            onTap: () {
+                              ref
+                                  .read(videoCallRepositoryProvider)
+                                  .endCall(
+                                    calleeId: widget.calleeId,
+                                    channelId: widget.channelId,
+                                  );
+                              Navigator.of(context).pop("call ended");
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 246, 20, 4),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.call_end,
+                                color: Colors.white,
+                                size: 33,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
           } else {
             // showSnackBar(context: context, content: "Call ended");
             WidgetsBinding.instance.addPostFrameCallback((_) {
