@@ -75,12 +75,6 @@ class VoiceCallRepository {
     if (currentUser == null) {
       throw Exception("No authenticated user found.");
     }
-    print("ENDING THE CALL?");
-    print(calleeId);
-    print(channelId);
-    print(isGroup);
-
-
       await firestore.collection('calls').doc(calleeId).update({
         "hasDialled": false,
       });
