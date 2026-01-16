@@ -137,7 +137,7 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Agora Video Call')),
+      appBar: AppBar(title: Text(widget.receiverName)),
       body: StreamBuilder(
         stream: ref
             .watch(videoCallRepositoryProvider)
@@ -178,25 +178,7 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: SizedBox(
-                      width: 100,
-                      height: 150,
-                      child: IconButton(
-                        onPressed: () {
-                          ref
-                              .read(videoCallRepositoryProvider)
-                              .endCall(
-                                calleeId: widget.calleeId,
-                                channelId: widget.channelId,
-                              );
-                          Navigator.of(context).pop("call ended");
-                        },
-                        icon: Icon(Icons.call),
-                      ),
-                    ),
-                  ),
+                  videoCallManipulationIconsWidget(),
                 ],
               );
             } else {
@@ -226,94 +208,16 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                           ),
                         ),
                         SizedBox(height: 5),
-                        Text(widget.receiverName,style: TextStyle(fontSize: 25),),
+                        Text(
+                          widget.receiverName,
+                          style: TextStyle(fontSize: 25),
+                        ),
                         // SizedBox(height: 10),
                         Text("Calling..."),
                       ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      margin: EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(200, 7, 7, 7),
-
-                        borderRadius: BorderRadius.circular(40),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              isVideoOff = !isVideoOff;
-                              _engine.muteLocalVideoStream(isVideoOff);
-                              setState(() {});
-                            },
-                            icon: Icon(
-                              isVideoOff
-                                  ? Icons.videocam_off_outlined
-                                  : Icons.videocam_outlined,
-                              color: Colors.white,
-                              size: 33,
-                            ),
-                          ),
-
-                          IconButton(
-                            onPressed: () {
-                              isMuted = !isMuted;
-                              _engine.muteLocalAudioStream(isMuted);
-                              setState(() {});
-                            },
-                            icon: Icon(
-                              isMuted ? Icons.mic_off : Icons.mic,
-                              color: Colors.white,
-                              size: 33,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              isCameraFront = !isCameraFront;
-                              _engine.switchCamera();
-                              setState(() {});
-                            },
-                            icon: Icon(
-                              isCameraFront
-                                  ? Icons.camera_front
-                                  : Icons.camera_rear,
-                              color: Colors.white,
-                              size: 33,
-                            ),
-                          ),
-
-                          GestureDetector(
-                            onTap: () {
-                              ref
-                                  .read(videoCallRepositoryProvider)
-                                  .endCall(
-                                    calleeId: widget.calleeId,
-                                    channelId: widget.channelId,
-                                  );
-                              Navigator.of(context).pop("call ended");
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 246, 20, 4),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.call_end,
-                                color: Colors.white,
-                                size: 33,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  videoCallManipulationIconsWidget(),
                 ],
               );
             }
@@ -325,6 +229,85 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
             return const Center(child: Text("Call ended"));
           }
         },
+      ),
+    );
+  }
+
+  Widget videoCallManipulationIconsWidget() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        padding: EdgeInsets.all(10),
+        margin: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(200, 7, 7, 7),
+
+          borderRadius: BorderRadius.circular(40),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () {
+                isVideoOff = !isVideoOff;
+                _engine.muteLocalVideoStream(isVideoOff);
+                setState(() {});
+              },
+              icon: Icon(
+                isVideoOff
+                    ? Icons.videocam_off_outlined
+                    : Icons.videocam_outlined,
+                color: Colors.white,
+                size: 33,
+              ),
+            ),
+
+            IconButton(
+              onPressed: () {
+                isMuted = !isMuted;
+                _engine.muteLocalAudioStream(isMuted);
+                setState(() {});
+              },
+              icon: Icon(
+                isMuted ? Icons.mic_off : Icons.mic,
+                color: Colors.white,
+                size: 33,
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                isCameraFront = !isCameraFront;
+                _engine.switchCamera();
+                setState(() {});
+              },
+              icon: Icon(
+                isCameraFront ? Icons.camera_front : Icons.camera_rear,
+                color: Colors.white,
+                size: 33,
+              ),
+            ),
+
+            GestureDetector(
+              onTap: () {
+                ref
+                    .read(videoCallRepositoryProvider)
+                    .endCall(
+                      calleeId: widget.calleeId,
+                      channelId: widget.channelId,
+                    );
+                Navigator.of(context).pop("call ended");
+              },
+              child: Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 246, 20, 4),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.call_end, color: Colors.white, size: 33),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
