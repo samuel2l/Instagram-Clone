@@ -114,7 +114,7 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
     await _engine.joinChannelWithUserAccount(
-      token: token!,
+      token: token??"",
       channelId: widget.channelId,
       userAccount: userId,
     );
@@ -168,10 +168,19 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                       child: Center(
                         child:
                             _localUserJoined
-                                ? AgoraVideoView(
-                                  controller: VideoViewController(
-                                    rtcEngine: _engine,
-                                    canvas: const VideoCanvas(uid: 0),
+                                ? Container(
+                                  decoration: BoxDecoration(
+                                    border: BoxBorder.all(
+                                      color: Colors.blueAccent,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+
+                                  child: AgoraVideoView(
+                                    controller: VideoViewController(
+                                      rtcEngine: _engine,
+                                      canvas: const VideoCanvas(uid: 0),
+                                    ),
                                   ),
                                 )
                                 : const CircularProgressIndicator(),
@@ -188,10 +197,17 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                   Center(
                     child:
                         _localUserJoined
-                            ? AgoraVideoView(
-                              controller: VideoViewController(
-                                rtcEngine: _engine,
-                                canvas: const VideoCanvas(uid: 0),
+                            ? Container(
+                              decoration: BoxDecoration(
+                                border: BoxBorder.all(color: Colors.blueAccent),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+
+                              child: AgoraVideoView(
+                                controller: VideoViewController(
+                                  rtcEngine: _engine,
+                                  canvas: const VideoCanvas(uid: 0),
+                                ),
                               ),
                             )
                             : const CircularProgressIndicator(),
@@ -314,11 +330,18 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
 
   Widget _remoteVideo() {
     if (_remoteUid != null) {
-      return AgoraVideoView(
-        controller: VideoViewController.remote(
-          rtcEngine: _engine,
-          canvas: VideoCanvas(uid: _remoteUid),
-          connection: RtcConnection(channelId: widget.channelId),
+      return Container(
+        decoration: BoxDecoration(
+          border: BoxBorder.all(color: Colors.blueAccent),
+          borderRadius: BorderRadius.circular(10),
+        ),
+
+        child: AgoraVideoView(
+          controller: VideoViewController.remote(
+            rtcEngine: _engine,
+            canvas: VideoCanvas(uid: _remoteUid),
+            connection: RtcConnection(channelId: widget.channelId),
+          ),
         ),
       );
     } else {

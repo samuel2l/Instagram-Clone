@@ -127,17 +127,15 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
 
   Widget _buildLocalVideo() {
     return Container(
-      color: Colors.black,
-      child: Column(
-        children: [
-          Text("MEEEEE"),
-          AgoraVideoView(
-            controller: VideoViewController(
-              rtcEngine: _engine!,
-              canvas: const VideoCanvas(uid: 0),
-            ),
-          ),
-        ],
+      decoration: BoxDecoration(
+        border: BoxBorder.all(color: Colors.blueAccent),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: AgoraVideoView(
+        controller: VideoViewController(
+          rtcEngine: _engine!,
+          canvas: const VideoCanvas(uid: 0),
+        ),
       ),
     );
   }
