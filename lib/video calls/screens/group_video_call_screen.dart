@@ -14,24 +14,30 @@ class GroupVideoCallScreen extends ConsumerStatefulWidget {
     super.key,
     required this.channelId,
     required this.calleeId,
-
   });
+
   final String channelId;
   final String calleeId;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
+  ConsumerState<GroupVideoCallScreen> createState() =>
       _GroupVideoCallScreenState();
 }
 
-class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
+class _GroupVideoCallScreenState
+    extends ConsumerState<GroupVideoCallScreen> {
+  RtcEngine? _engine;
+
   final List<int> _remoteUids = [];
-  // ignore: unused_field
   bool _localUserJoined = false;
-  RtcEngine? _engine; 
+
   String? appId = dotenv.env["AGORA_APP_ID"];
   String baseUrl = "https://agora-token-generator-mtk5.onrender.com";
   String? token;
+
+  bool isMuted = false;
+  bool isVideoOff = false;
+  bool isCameraFront = true;
 
   @override
   void initState() {
@@ -40,14 +46,16 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
   }
 
   Future<void> getToken() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
+    final userId = FirebaseAuth.instance.currentUser!.uid;
     final res = await http.get(
       Uri.parse(
         "$baseUrl/rtc/${widget.channelId}/publisher/userAccount/$userId/",
       ),
     );
+
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
+      if (!mounted) return;
       setState(() {
         token = data["rtcToken"];
       });
@@ -59,54 +67,49 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
   Future<void> initAgora() async {
     await [Permission.microphone, Permission.camera].request();
 
-    await getToken(); 
+    await getToken();
 
-    _engine = createAgoraRtcEngine(); 
+    _engine = createAgoraRtcEngine();
 
-    await _engine!.initialize(
+    await _engine?.initialize(
       RtcEngineContext(
         appId: appId,
         channelProfile: ChannelProfileType.channelProfileCommunication,
       ),
     );
 
-    _engine!.registerEventHandler(
+    _engine?.registerEventHandler(
       RtcEngineEventHandler(
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          // debugPrint("local user ${connection.localUid} joined");
+        onJoinChannelSuccess: (connection, elapsed) {
           setState(() {
             _localUserJoined = true;
           });
         },
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          // debugPrint("remote user $remoteUid joined");
-          setState(() {
-            _remoteUids.add(remoteUid);
-          });
+        onUserJoined: (connection, remoteUid, elapsed) {
+          if (!_remoteUids.contains(remoteUid)) {
+            setState(() {
+              _remoteUids.add(remoteUid);
+            });
+          }
         },
-        onUserOffline: (
-          RtcConnection connection,
-          int remoteUid,
-          UserOfflineReasonType reason,
-        ) {
-          // debugPrint("remote user $remoteUid left channel");
+        onUserOffline: (connection, remoteUid, reason) {
           setState(() {
             _remoteUids.remove(remoteUid);
           });
         },
-        onTokenPrivilegeWillExpire: (connection, token) async {
+        onTokenPrivilegeWillExpire: (connection, _) async {
           await getToken();
-          await _engine!.renewToken(token);
+          await _engine?.renewToken(token!);
         },
       ),
     );
 
-    await _engine!.enableVideo();
-    await _engine!.startPreview();
+    await _engine?.enableVideo();
+    await _engine?.startPreview();
 
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
-    await _engine!.joinChannelWithUserAccount(
+    await _engine?.joinChannelWithUserAccount(
       token: token!,
       channelId: widget.channelId,
       userAccount: userId,
@@ -115,21 +118,21 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
 
   @override
   void dispose() {
-    _dispose();
+    _engine?.leaveChannel();
+    _engine?.release();
     super.dispose();
   }
 
-  Future<void> _dispose() async {
-    if (_engine != null) {
-      await _engine!.leaveChannel();
-      await _engine!.release();
-    }
+  Widget _buildLocalVideo() {
+    return AgoraVideoView(
+      controller: VideoViewController(
+        rtcEngine: _engine!,
+        canvas: const VideoCanvas(uid: 0),
+      ),
+    );
   }
 
-  Widget _buildVideoView(int uid) {
-    if (_engine == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildRemoteVideo(int uid) {
     return AgoraVideoView(
       controller: VideoViewController.remote(
         rtcEngine: _engine!,
@@ -139,90 +142,133 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
     );
   }
 
-  Widget _buildLocalVideo() {
-    if (_engine == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return AgoraVideoView(
-      controller: VideoViewController(
-        rtcEngine: _engine!,
-        canvas: const VideoCanvas(uid: 0),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_engine == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     final views = <Widget>[
-      _buildLocalVideo(),
-      ..._remoteUids.map(_buildVideoView),
+      if (_localUserJoined) _buildLocalVideo(),
+      ..._remoteUids.map(_buildRemoteVideo),
     ];
 
+    int crossAxisCount = views.length <= 2 ? 1 : 2;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Agora Group Video Call')),
+      appBar: AppBar(title: const Text("Group Video Call")),
       body: StreamBuilder(
         stream: ref
             .watch(videoCallRepositoryProvider)
-            .checkCallEnded(widget.calleeId),
+            .checkCallEnded(widget.channelId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
-            showSnackBar(
-              context: context,
-              content: "An unexpected error occurred",
-            );
-          }
+
           final data = snapshot.data ?? {};
 
-          if (data.isEmpty) {
-            return Stack(
-              children: [
-                GridView.builder(
-                  itemCount: views.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // adjust based on your layout design
-                  ),
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.all(4),
-                      child: views[index],
-                    );
-                  },
-                ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: SizedBox(
-                    width: 100,
-                    height: 150,
-                    child: IconButton(
-                      onPressed: () {
-                        ref
-                            .read(videoCallRepositoryProvider)
-                            .endCall(
-                              calleeId: widget.calleeId,
-                              channelId: widget.channelId,
-                            );
-                        Navigator.of(context).pop("call ended");
-                      },
-                      icon: const Icon(Icons.call),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          } else {
+          if (data.isNotEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Navigator.of(context).pop();
             });
             return const Center(child: Text("Call ended"));
           }
+
+          return Stack(
+            children: [
+              GridView.builder(
+                itemCount: views.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                ),
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: views[index],
+                  );
+                },
+              ),
+              videoCallManipulationIconsWidget(),
+            ],
+          );
         },
+      ),
+    );
+  }
+
+  Widget videoCallManipulationIconsWidget() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(200, 7, 7, 7),
+          borderRadius: BorderRadius.circular(40),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () {
+                isVideoOff = !isVideoOff;
+                _engine?.enableLocalVideo(!isVideoOff);
+                setState(() {});
+              },
+              icon: Icon(
+                isVideoOff
+                    ? Icons.videocam_off_outlined
+                    : Icons.videocam_outlined,
+                color: Colors.white,
+                size: 33,
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                isMuted = !isMuted;
+                _engine?.muteLocalAudioStream(isMuted);
+                setState(() {});
+              },
+              icon: Icon(
+                isMuted ? Icons.mic_off : Icons.mic,
+                color: Colors.white,
+                size: 33,
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                isCameraFront = !isCameraFront;
+                _engine?.switchCamera();
+                setState(() {});
+              },
+              icon: Icon(
+                isCameraFront
+                    ? Icons.camera_front
+                    : Icons.camera_rear,
+                color: Colors.white,
+                size: 33,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                ref.read(videoCallRepositoryProvider).endCall(
+                      calleeId: widget.calleeId,
+                      channelId: widget.channelId,
+                    );
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 246, 20, 4),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.call_end,
+                  color: Colors.white,
+                  size: 33,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
