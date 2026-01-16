@@ -80,18 +80,13 @@ class VoiceCallRepository {
     print(channelId);
     print(isGroup);
 
-    if (!isGroup) {
+
       await firestore.collection('calls').doc(calleeId).update({
         "hasDialled": false,
       });
       await firestore.collection('calls').doc(currentUser.uid).update({
         "hasDialled": false,
       });
-    } else {
-      await firestore.collection('calls').doc(calleeId).update({
-        "hasDialled": false,
-      });
-    }
   }
 
   Stream<Map<String, dynamic>?> checkIncomingCalls(String uid) {

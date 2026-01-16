@@ -111,9 +111,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               MaterialPageRoute(
                                 builder: (context) {
                                   return VoiceCallScreen(
-                                    calleeId: ref.watch(chatIdProvider),
+                                    calleeId: ref.read(chatDataProvider) != null
+                                          ? ref.read(chatDataProvider)!.chatId
+                                          : "",
                                     channelId:
-                                        "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
+                                      "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(chatDataProvider) != null ? ref.read(chatDataProvider)!.chatId : ""}",
 
                                     receiverDp: ref.read(chatDataProvider)!.dp,
                                     receiverName:
@@ -135,7 +137,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   return VoiceCallScreen(
                                     isGroup: true,
                                     channelId: callData['channelId'],
-                                    calleeId: ref.watch(chatIdProvider),
+                                    calleeId: ref.read(chatDataProvider) != null
+                                          ? ref.read(chatDataProvider)!.chatId
+                                          : "",
 
                                     receiverDp: ref.read(chatDataProvider)!.dp,
                                     receiverName:
@@ -176,7 +180,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ref
                                 .read(videoCallRepositoryProvider)
                                 .sendCallData(
-                                  calleeId: ref.watch(chatIdProvider),
+                                  calleeId: ref.read(chatDataProvider) != null
+                                          ? ref.read(chatDataProvider)!.chatId
+                                          : "",
                                   callType: "video",
                                   channelId:
                                       "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
@@ -192,7 +198,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         ref.read(chatDataProvider)!.groupName!,
                                     channelId:
                                         "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
-                                    calleeId: ref.watch(chatIdProvider),
+                                    calleeId: ref.read(chatDataProvider) != null
+                                          ? ref.read(chatDataProvider)!.chatId
+                                          : "",
                                   );
                                 },
                               ),
@@ -218,7 +226,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         ref.read(chatDataProvider)!.groupName!,
 
                                     channelId: callData['channelId'],
-                                    calleeId: ref.watch(chatIdProvider),
+                                    calleeId: ref.read(chatDataProvider) != null
+                                          ? ref.read(chatDataProvider)!.chatId
+                                          : "",
                                   );
                                 },
                               ),
