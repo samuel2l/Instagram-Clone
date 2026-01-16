@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:instagram/utils/utils.dart';
 import 'package:instagram/video%20calls/repository/video_call_repository.dart';
 import 'package:permission_handler/permission_handler.dart';
 
