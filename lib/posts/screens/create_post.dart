@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/live%20stream/screens/start_livestream.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/utils/utils.dart';
 
@@ -43,6 +44,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
             child: const Text("Pick Images/Videos"),
           ),
 
+
           ElevatedButton(
             onPressed: () async {
               reelPath = await pickVideoFromGallery(context);
@@ -53,6 +55,18 @@ class _CreatePostState extends ConsumerState<CreatePost> {
             child: const Text("Post Reel"),
           ),
           TextField(controller: captionController),
+                  GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) {
+                    return StartLivestreamScreen();
+                  },
+                ),
+              );
+            },
+            child: Text("Start Live stream"),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: selectedFiles.length,
@@ -65,6 +79,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
               },
             ),
           ),
+            
         ],
       ),
       bottomSheet: TextButton(

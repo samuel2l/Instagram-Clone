@@ -141,11 +141,18 @@ class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
   }
 
   Widget _buildRemoteVideo(int uid) {
-    return AgoraVideoView(
-      controller: VideoViewController.remote(
-        rtcEngine: _engine!,
-        canvas: VideoCanvas(uid: uid),
-        connection: RtcConnection(channelId: widget.channelId),
+    return Container(
+              decoration: BoxDecoration(
+          border: BoxBorder.all(color: Colors.blueAccent),
+          borderRadius: BorderRadius.circular(10),
+        ),
+
+      child: AgoraVideoView(
+        controller: VideoViewController.remote(
+          rtcEngine: _engine!,
+          canvas: VideoCanvas(uid: uid),
+          connection: RtcConnection(channelId: widget.channelId),
+        ),
       ),
     );
   }
