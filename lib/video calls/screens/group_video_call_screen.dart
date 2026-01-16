@@ -13,18 +13,21 @@ class GroupVideoCallScreen extends ConsumerStatefulWidget {
     super.key,
     required this.channelId,
     required this.calleeId,
+    required this.receiverName,
+    required this.receiverDp,
   });
 
   final String channelId;
   final String calleeId;
+  final String receiverName;
+  final String receiverDp;
 
   @override
   ConsumerState<GroupVideoCallScreen> createState() =>
       _GroupVideoCallScreenState();
 }
 
-class _GroupVideoCallScreenState
-    extends ConsumerState<GroupVideoCallScreen> {
+class _GroupVideoCallScreenState extends ConsumerState<GroupVideoCallScreen> {
   RtcEngine? _engine;
 
   final List<int> _remoteUids = [];
@@ -123,10 +126,18 @@ class _GroupVideoCallScreenState
   }
 
   Widget _buildLocalVideo() {
-    return AgoraVideoView(
-      controller: VideoViewController(
-        rtcEngine: _engine!,
-        canvas: const VideoCanvas(uid: 0),
+    return Container(
+      color: Colors.black,
+      child: Column(
+        children: [
+          Text("MEEEEE"),
+          AgoraVideoView(
+            controller: VideoViewController(
+              rtcEngine: _engine!,
+              canvas: const VideoCanvas(uid: 0),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -151,7 +162,7 @@ class _GroupVideoCallScreenState
     int crossAxisCount = views.length <= 2 ? 1 : 2;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Group Video Call")),
+      appBar: AppBar(),
       body: StreamBuilder(
         stream: ref
             .watch(videoCallRepositoryProvider)
@@ -238,16 +249,16 @@ class _GroupVideoCallScreenState
                 setState(() {});
               },
               icon: Icon(
-                isCameraFront
-                    ? Icons.camera_front
-                    : Icons.camera_rear,
+                isCameraFront ? Icons.camera_front : Icons.camera_rear,
                 color: Colors.white,
                 size: 33,
               ),
             ),
             GestureDetector(
               onTap: () {
-                ref.read(videoCallRepositoryProvider).endCall(
+                ref
+                    .read(videoCallRepositoryProvider)
+                    .endCall(
                       calleeId: widget.calleeId,
                       channelId: widget.channelId,
                     );

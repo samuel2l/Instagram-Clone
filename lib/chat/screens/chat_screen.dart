@@ -133,6 +133,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               MaterialPageRoute(
                                 builder: (context) {
                                   return GroupVideoCallScreen(
+                                    receiverDp: ref.read(chatDataProvider)!.dp,
+                                    receiverName:
+                                        ref.read(chatDataProvider)!.groupName!,
                                     channelId:
                                         "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
                                     calleeId: ref.watch(chatIdProvider),
@@ -156,6 +159,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               MaterialPageRoute(
                                 builder: (context) {
                                   return GroupVideoCallScreen(
+                                    receiverDp: ref.read(chatDataProvider)!.dp,
+                                    receiverName:
+                                        ref.read(chatDataProvider)!.groupName!,
+
                                     channelId: callData['channelId'],
                                     calleeId: ref.watch(chatIdProvider),
                                   );
@@ -219,14 +226,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                 .read(messageRecipientProvider)!
                                                 .firebaseUID
                                             : "",
-                                  receiverDp: ref
-                                        .read(messageRecipientProvider)!
-                                        .profile
-                                        .dp,
-                                    receiverName: ref
-                                        .read(messageRecipientProvider)!
-                                        .profile
-                                        .name,
+                                    receiverDp:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .dp,
+                                    receiverName:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .name,
                                   );
                                 },
                               ),
@@ -255,14 +264,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                                 .read(messageRecipientProvider)!
                                                 .firebaseUID
                                             : "",
-                                    receiverDp: ref
-                                        .read(messageRecipientProvider)!
-                                        .profile
-                                        .dp, 
-                                      receiverName: ref
-                                        .read(messageRecipientProvider)!
-                                        .profile
-                                        .name,   
+                                    receiverDp:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .dp,
+                                    receiverName:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .name,
                                   );
                                 },
                               ),
