@@ -70,53 +70,59 @@ class StoryRepository {
     debugPrint(encoder.convert(normalized), wrapWidth: 2048);
   }
 
-Future<List<AppUserModel>> getUsersWithStories(String? currentUserId) async {
-  if (currentUserId == null) return [];
+  Future<List<AppUserModel>> getUsersWithStories(String? currentUserId) async {
+    if (currentUserId == null) return [];
+    print("currentUserId in getUsersWithStories: ");
+    print(currentUserId);
 
-  try {
-    final firestore = FirebaseFirestore.instance;
-    final List<AppUserModel> result = [];
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final List<AppUserModel> result = [];
+      print("before the fetch?");
 
-    final currentUserDoc =
-        await firestore.collection('users').doc(currentUserId).get();
+      final currentUserDoc =
+          await firestore.collection('users').doc(currentUserId).get();
+      print("never fetched?");
+      if (!currentUserDoc.exists) return [];
 
-    if (!currentUserDoc.exists) return [];
+      final currentUserData = currentUserDoc.data()!;
+      result.add(AppUserModel.fromMap(currentUserData));
 
-    final currentUserData = currentUserDoc.data()!;
-    result.add(AppUserModel.fromMap(currentUserData));
-
-    final List<String> following =
-        List<String>.from(currentUserData['following'] ?? []);
-
-    if (following.isEmpty) return result;
-
-
-    following.remove(currentUserId);
-
-    // fetch followed users in chunks of 10 as firestore may throw error if query has contents of length>10
-    for (var i = 0; i < following.length; i += 10) {
-      final chunk = following.sublist(
-        i,
-        i + 10 > following.length ? following.length : i + 10,
+      final List<String> following = List<String>.from(
+        currentUserData['following'] ?? [],
       );
 
-      final snapshot = await firestore
-          .collection('users')
-          .where('hasStory', isEqualTo: true)
-          .where('uid', whereIn: chunk)
-          .get();
+      if (following.isEmpty) return result;
 
-      for (final doc in snapshot.docs) {
-        result.add(AppUserModel.fromMap(doc.data()));
+      following.remove(currentUserId);
+      print("or issue is at fetching followers>");
+      // fetch followed users in chunks of 10 as firestore may throw error if query has contents of length>10
+      for (var i = 0; i < following.length; i += 10) {
+        final chunk = following.sublist(
+          i,
+          i + 10 > following.length ? following.length : i + 10,
+        );
+
+        final snapshot =
+            await firestore
+                .collection('users')
+                .where('hasStory', isEqualTo: true)
+                .where('uid', whereIn: chunk)
+                .get();
+
+        for (final doc in snapshot.docs) {
+          result.add(AppUserModel.fromMap(doc.data()));
+        }
       }
-    }
 
-    return result;
-  } catch (e) {
-    print('Error fetching users with stories: $e');
-    return [];
+      return result;
+    } catch (e) {
+      print('Error fetching users with stories: $e');
+      return [];
+    }
   }
-}  Future<void> addStoryViewer({
+
+  Future<void> addStoryViewer({
     required String ownerId,
     required String storyId,
     required String viewerId,

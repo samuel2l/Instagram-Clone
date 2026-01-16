@@ -23,6 +23,8 @@ final authStateProvider = StreamProvider<User?>((ref) {
 final userProvider = StreamProvider<AppUserModel?>((ref) {
   final auth = ref.watch(authStateProvider).value;
 
+  print("auth in userProvider: $auth");
+  print("auth?.uid in userProvider: ${auth?.uid}");
   if (auth == null) {
     return const Stream.empty();
   }
@@ -137,7 +139,6 @@ class AuthRepository {
     var userData =
         await firestore.collection('users').doc(auth.currentUser!.uid).get();
 
-    print("user data?? ${userData.data()}");
     AppUserModel? user;
     if (userData.data() != null) {
       user = AppUserModel.fromMap(userData.data()!);

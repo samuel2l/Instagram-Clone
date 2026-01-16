@@ -313,7 +313,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         itemBuilder: (context, index) {
                           final currMessage = messages[index];
                           final currUserId =
-                              ref.read(userProvider).value!.firebaseUID;
+                              ref.watch(userProvider).value!.firebaseUID;
                           final isMyReplyMessage =
                               currMessage.repliedTo == currUserId;
                           final isSender = currMessage.senderId == currUserId;

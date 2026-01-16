@@ -64,7 +64,9 @@ class _HomeState extends ConsumerState<Home> {
           FutureBuilder(
             future: ref
                 .read(storyRepositoryProvider)
-                .getUsersWithStories(ref.read(userProvider).value?.firebaseUID),
+                .getUsersWithStories(
+                  ref.watch(userProvider).value?.firebaseUID,
+                ),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Container(height: 100);
@@ -92,14 +94,15 @@ class _HomeState extends ConsumerState<Home> {
                           children: [
                             GestureDetector(
                               onTap: () async {
-                                final currUserStories=await ref
+                                final currUserStories = await ref
                                     .read(storyRepositoryProvider)
                                     .getUserStories(currUser.firebaseUID);
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder:
-                                        (context) =>
-                                            UserStories(userStories: currUserStories),
+                                        (context) => UserStories(
+                                          userStories: currUserStories,
+                                        ),
                                   ),
                                 );
                               },
@@ -108,7 +111,7 @@ class _HomeState extends ConsumerState<Home> {
                                   //if user has no story then its just a circle avatar with dp and a plus icon to post
                                   currUser.firebaseUID ==
                                               ref
-                                                  .read(userProvider)
+                                                  .watch(userProvider)
                                                   .value
                                                   ?.firebaseUID &&
                                           !currentUserHasStory
@@ -170,7 +173,7 @@ class _HomeState extends ConsumerState<Home> {
                                       //essentially it is a rounded container with color of thhe gradient given but we put an element in it(the child container) with a padding which gives us the desired effect
                                       currUser.firebaseUID ==
                                               ref
-                                                  .read(userProvider)
+                                                  .watch(userProvider)
                                                   .value
                                                   ?.firebaseUID &&
                                           currentUserHasStory
@@ -181,7 +184,7 @@ class _HomeState extends ConsumerState<Home> {
                                               ownerId: currUser.firebaseUID,
                                               currentUserId:
                                                   ref
-                                                      .read(userProvider)
+                                                      .watch(userProvider)
                                                       .value
                                                       ?.firebaseUID ??
                                                   "",
@@ -338,7 +341,7 @@ class _HomeState extends ConsumerState<Home> {
                                               ownerId: currUser.firebaseUID,
                                               currentUserId:
                                                   ref
-                                                      .read(userProvider)
+                                                      .watch(userProvider)
                                                       .value
                                                       ?.firebaseUID ??
                                                   "",

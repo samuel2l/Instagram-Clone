@@ -473,7 +473,6 @@ ref.read(chatDataProvider.notifier).state=ref.read(chatDataProvider)!.copyWith(p
   }
 
   Stream<List<Message>> getMessages(String chatId) {
-    print("chat id in repo $chatId"); 
     if (chatId.isEmpty) {
       return firestore
           .collection('chats')

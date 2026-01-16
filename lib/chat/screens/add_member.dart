@@ -33,7 +33,7 @@ class _AddMemberState extends ConsumerState<AddMember> {
                 future: ref
                     .read(chatRepositoryProvider)
                     .getMutualFollowers(
-                      ref.read(userProvider).value!.firebaseUID,
+                      ref.watch(userProvider).value!.firebaseUID,
                       context,
                       chatId: ref.read(chatDataProvider)!.chatId,
                     ),
@@ -113,17 +113,16 @@ class _AddMemberState extends ConsumerState<AddMember> {
                 backgroundColor: const Color.fromARGB(255, 1, 86, 242),
                 foregroundColor: Colors.white,
               ),
-              onPressed: ()async {
-                
-                await ref.read(chatRepositoryProvider).addMembersToGroup(
-                  chatId: ref.read(chatDataProvider)!.chatId,
-                  userIds:
-                      ref.read(selectedGroupMembersProvider).toList(),
-                  context: context,
-                );  
-                
-                ref.read(selectedGroupMembersProvider.notifier).state = {};
+              onPressed: () async {
+                await ref
+                    .read(chatRepositoryProvider)
+                    .addMembersToGroup(
+                      chatId: ref.read(chatDataProvider)!.chatId,
+                      userIds: ref.read(selectedGroupMembersProvider).toList(),
+                      context: context,
+                    );
 
+                ref.read(selectedGroupMembersProvider.notifier).state = {};
               },
               child: const Text(
                 "Add Member(s)",

@@ -34,7 +34,8 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
     });
   }
 
-  String imgString = "https://www.pngall.com/wp-content/uploads/5/Profile-PNG-File.png";
+  String imgString =
+      "https://www.pngall.com/wp-content/uploads/5/Profile-PNG-File.png";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +91,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                 future: ref
                     .read(chatRepositoryProvider)
                     .getMutualFollowers(
-                      ref.read(userProvider).value!.firebaseUID,
+                      ref.watch(userProvider).value!.firebaseUID,
                       context,
                     ),
                 builder: (context, snapshot) {
@@ -186,7 +187,7 @@ class _CreateGroupState extends ConsumerState<CreateGroup> {
                       userIds: ref.read(selectedGroupMembersProvider).toList(),
                       groupName: groupNameController.text.trim(),
                       groupDp: imageUrl,
-                      currentUserId: ref.read(userProvider).value!.firebaseUID,
+                      currentUserId: ref.watch(userProvider).value!.firebaseUID,
                     );
                 ref.read(chatDataProvider.notifier).state = res;
                 ref.read(messageRecipientProvider.notifier).state = null;
