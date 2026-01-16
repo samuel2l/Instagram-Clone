@@ -26,19 +26,24 @@ class LivestreamScreen extends ConsumerStatefulWidget {
 
 class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
   String? appId = dotenv.env["AGORA_APP_ID"];
-
   String baseUrl = "https://agora-token-generator-mtk5.onrender.com";
   String? token;
-  List<int> watchers = [];
-  int? _remoteUid;
-  // ignore: unused_field
-  bool _localUserJoined = false;
+
   late RtcEngine _engine;
   bool _isEngineReady = false;
-  TextEditingController commentController = TextEditingController();
-  // Added for mute/unmute
+  bool _localUserJoined = false;
+
+  int? _remoteUid;
+  List<int> watchers = [];
+
   bool _isMuted = false;
   bool _isVideoMuted = false;
+
+  TextEditingController commentController = TextEditingController();
+
+  /// 🔥 COMMENT STATE
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+  final List<Map<String, dynamic>> _comments = [];
 
   @override
   void initState() {
@@ -46,19 +51,16 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
     initAgora();
   }
 
-  getToken() async {
+  Future<void> getToken() async {
     final res = await http.get(
       Uri.parse(
         "$baseUrl/rtc/${widget.channelId}/publisher/userAccount/${FirebaseAuth.instance.currentUser?.uid}/",
       ),
     );
+
     if (res.statusCode == 200) {
-      setState(() {
-        token = res.body;
-        token = jsonDecode(token!)["rtcToken"];
-      });
+      token = jsonDecode(res.body)["rtcToken"];
     } else {
-      token = "undefined";
       showSnackBar(context: context, content: "Unable to join live");
     }
   }
@@ -78,55 +80,30 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
 
     _engine.registerEventHandler(
       RtcEngineEventHandler(
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          // print("Local user ${connection.localUid} joined");
-          // if (mounted) {
-          setState(() {
-            _localUserJoined = true;
-          });
-          // }
+        onJoinChannelSuccess: (_, __) {
+          setState(() => _localUserJoined = true);
         },
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          // print("Remote user $remoteUid joined");
-          // if (mounted) {
+        onUserJoined: (_, uid, __) {
           setState(() {
-            watchers.add(remoteUid);
-            _remoteUid = remoteUid;
+            watchers.add(uid);
+            _remoteUid = uid;
             ref
                 .read(liveStreamRepositoryProvider)
                 .increaseViewerCount(widget.channelId);
           });
-          // }
         },
-        onUserOffline: (
-          RtcConnection connection,
-          int remoteUid,
-          UserOfflineReasonType reason,
-        ) {
-          // print("Remote user $remoteUid left channel");
-          if (mounted) {
-            setState(() {
-              watchers.remove(remoteUid);
-              if (_remoteUid == remoteUid) _remoteUid = null;
-              ref
-                  .read(liveStreamRepositoryProvider)
-                  .decreaseViewerCount(widget.channelId);
-            });
-          }
+        onUserOffline: (_, uid, __) {
+          setState(() {
+            watchers.remove(uid);
+            if (_remoteUid == uid) _remoteUid = null;
+            ref
+                .read(liveStreamRepositoryProvider)
+                .decreaseViewerCount(widget.channelId);
+          });
         },
-        onLeaveChannel: (connection, stats) async {
-          // print("Left channel: $stats");
-          if (mounted) {
-            setState(() {
-              watchers.clear();
-              _remoteUid = null;
-            });
-            // await endStream();
-          }
-        },
-        onTokenPrivilegeWillExpire: (connection, token) async {
+        onTokenPrivilegeWillExpire: (_, __) async {
           await getToken();
-          await _engine.renewToken(token);
+          await _engine.renewToken(token!);
         },
       ),
     );
@@ -135,9 +112,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
     await _engine.enableVideo();
 
     if (widget.role == ClientRoleType.clientRoleBroadcaster) {
-      if (mounted) {
-        await _engine.startPreview();
-      }
+      await _engine.startPreview();
     }
 
     await _engine.joinChannelWithUserAccount(
@@ -146,33 +121,15 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
       userAccount: FirebaseAuth.instance.currentUser!.uid,
     );
 
-    if (mounted) {
-      setState(() {
-        _isEngineReady = true;
-      });
-    }
+    setState(() => _isEngineReady = true);
   }
 
   @override
   void dispose() {
-    // endStream();
+    _engine.leaveChannel();
+    _engine.release();
+    commentController.dispose();
     super.dispose();
-  }
-
-  Future<void> endStream() async {
-    if (_isEngineReady) {
-      await _engine.leaveChannel();
-      await _engine.release();
-      if (widget.role == ClientRoleType.clientRoleBroadcaster) {
-        await ref
-            .read(liveStreamRepositoryProvider)
-            .endLiveStream(
-              FirebaseAuth.instance.currentUser?.uid ?? "",
-              widget.channelId,
-              context,
-            );
-      }
-    }
   }
 
   Widget _buildVideoView() {
@@ -197,187 +154,172 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
           ),
         );
       } else {
-        return const Center(child: Text("Waiting for the stream to start..."));
+        return const Center(child: Text("Waiting for live..."));
       }
     }
   }
 
+  /// 🔥 Animated comments list
+  Widget _buildAnimatedComments() {
+    return AnimatedList(
+      key: _listKey,
+      reverse: true,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      initialItemCount: _comments.length,
+      itemBuilder: (context, index, animation) {
+        final comment = _comments[index];
+        return _animatedCommentItem(comment, animation);
+      },
+    );
+  }
+
+  Widget _animatedCommentItem(
+    Map<String, dynamic> comment,
+    Animation<double> animation,
+  ) {
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(0, 0.4),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+      ),
+      child: FadeTransition(
+        opacity: animation,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.45),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: "${comment['email'] ?? 'User'}: ",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextSpan(
+                  text: comment['text'] ?? '',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () async {
-            await endStream();
-            if (mounted) Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back_ios),
-        ),
         title: Text(
           widget.role == ClientRoleType.clientRoleBroadcaster
               ? "You are Live"
               : "Live Stream",
         ),
-        actions: [
-          if (widget.role == ClientRoleType.clientRoleBroadcaster) ...[
-            IconButton(
-              icon: Icon(_isMuted ? Icons.mic_off : Icons.mic),
-              onPressed: () {
-                if (_isEngineReady) {
-                  _engine.muteLocalAudioStream(!_isMuted);
-                  setState(() {
-                    _isMuted = !_isMuted;
-                  });
-                }
-              },
-            ),
-            IconButton(
-              icon: Icon(_isVideoMuted ? Icons.videocam_off : Icons.videocam),
-              onPressed: () {
-                if (_isEngineReady) {
-                  _engine.muteLocalVideoStream(!_isVideoMuted);
-                  setState(() {
-                    _isVideoMuted = !_isVideoMuted;
-                  });
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.cameraswitch),
-              onPressed: () {
-                if (_isEngineReady) _engine.switchCamera();
-              },
-            ),
-          ],
-        ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: Stack(
-              children: [
-                _buildVideoView(),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: StreamBuilder<int>(
-                      stream: ref
-                          .read(liveStreamRepositoryProvider)
-                          .getViewerCount(widget.channelId),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Text(
-                            "Watchers: ...",
-                            style: TextStyle(color: Colors.white),
-                          );
-                        }
-                        if (!snapshot.hasData) {
-                          return const Text(
-                            "Watchers: 0",
-                            style: TextStyle(color: Colors.white),
-                          );
-                        }
-                        return Text(
-                          "Watchers: ${snapshot.data}",
-                          style: const TextStyle(color: Colors.white),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: MediaQuery.of(context).size.height * 0.4,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                    ),
-                    child: StreamBuilder<List<Map<String, dynamic>>>(
-                      stream: ref
-                          .read(liveStreamRepositoryProvider)
-                          .getLivestreamComments(widget.channelId),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Center(
-                            child: Text(
-                              "No comments yet",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          );
-                        }
+          _buildVideoView(),
 
-                        final comments = snapshot.data!;
-                        return ListView.builder(
-                          reverse: true, // newer comments at bottom
-                          itemCount: comments.length,
-                          itemBuilder: (context, index) {
-                            final comment = comments[index];
-                            return ListTile(
-                              title: Text(
-                                comment['email'] ?? 'Unknown',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              subtitle: Text(
-                                comment['text'] ?? '',
-                                style: const TextStyle(color: Colors.white70),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+          Positioned(
+            top: 16,
+            right: 16,
+            child: StreamBuilder<int>(
+              stream: ref
+                  .read(liveStreamRepositoryProvider)
+                  .getViewerCount(widget.channelId),
+              builder: (_, snapshot) {
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ),
-              ],
+                  child: Text(
+                    "👀 ${snapshot.data ?? 0}",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              },
             ),
           ),
-          Container(
-            color: Colors.transparent,
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: commentController,
-                    decoration: InputDecoration(hintText: "Write a comment..."),
+
+          Positioned(
+            bottom: 70,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.35,
+              child: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: ref
+                    .read(liveStreamRepositoryProvider)
+                    .getLivestreamComments(widget.channelId),
+                builder: (_, snapshot) {
+                  if (!snapshot.hasData) return const SizedBox();
+
+                  final incoming = snapshot.data!;
+                  if (incoming.length > _comments.length) {
+                    final diff = incoming.length - _comments.length;
+                    for (int i = 0; i < diff; i++) {
+                      _comments.insert(0, incoming[i]);
+                      _listKey.currentState?.insertItem(0);
+                    }
+                  }
+
+                  return _buildAnimatedComments();
+                },
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              color: Colors.black54,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: commentController,
+                      decoration: const InputDecoration(
+                        hintText: "Write a comment...",
+                        hintStyle: TextStyle(color: Colors.white54),
+                        border: InputBorder.none,
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    ref
-                        .read(liveStreamRepositoryProvider)
-                        .addLivestreamComment(
-                          channelId: widget.channelId,
-                          email: FirebaseAuth.instance.currentUser?.email ?? "",
-                          commentText: commentController.text.trim(),
-                        );
-                    commentController.clear();
-                  },
-                  icon: const Icon(Icons.send),
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: () {
+                      if (commentController.text.trim().isEmpty) return;
+                      ref
+                          .read(liveStreamRepositoryProvider)
+                          .addLivestreamComment(
+                            channelId: widget.channelId,
+                            email: FirebaseAuth
+                                    .instance.currentUser?.email ??
+                                "User",
+                            commentText:
+                                commentController.text.trim(),
+                          );
+                      commentController.clear();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],
