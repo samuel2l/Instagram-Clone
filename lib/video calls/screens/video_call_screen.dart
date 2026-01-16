@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -214,6 +215,24 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                             : const CircularProgressIndicator(),
                   ),
                   Align(
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 30),
+                        CircleAvatar(
+                          radius: 45,
+                          backgroundImage: CachedNetworkImageProvider(
+                            widget.receiverDp,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(widget.receiverName,style: TextStyle(fontSize: 25),),
+                        // SizedBox(height: 10),
+                        Text("Calling..."),
+                      ],
+                    ),
+                  ),
+                  Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
                       padding: EdgeInsets.all(10),
@@ -260,7 +279,9 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                               setState(() {});
                             },
                             icon: Icon(
-                              isCameraFront ? Icons.camera_front : Icons.camera_rear,
+                              isCameraFront
+                                  ? Icons.camera_front
+                                  : Icons.camera_rear,
                               color: Colors.white,
                               size: 33,
                             ),
