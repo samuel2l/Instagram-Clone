@@ -15,7 +15,6 @@ class VoiceCallRepository {
 
   VoiceCallRepository({required this.auth, required this.firestore});
 
-  /// Send a voice call request
   Future<void> sendCallData({
     required String calleeId,
     required String channelId,
@@ -30,7 +29,7 @@ class VoiceCallRepository {
       'channelId': channelId,
       'callerId': currentUser.uid,
       'calleeId': calleeId,
-      'callType': 'voice', // always voice
+      'callType': 'voice',
       'timestamp': FieldValue.serverTimestamp(),
       'hasDialled': true,
     };
@@ -42,34 +41,31 @@ class VoiceCallRepository {
       await firestore.collection('calls').doc(calleeId).set(callData);
     }
 
-    // Log outgoing call for caller
     await firestore
         .collection('users')
         .doc(currentUser.uid)
         .collection('call_logs')
         .add({
-      'channelId': channelId,
-      'callType': 'voice',
-      'calleeId': calleeId,
-      'timestamp': FieldValue.serverTimestamp(),
-      'direction': 'outgoing',
-    });
+          'channelId': channelId,
+          'callType': 'voice',
+          'calleeId': calleeId,
+          'timestamp': FieldValue.serverTimestamp(),
+          'direction': 'outgoing',
+        });
 
-    // Log incoming call for callee
     await firestore
         .collection('users')
         .doc(calleeId)
         .collection('call_logs')
         .add({
-      'channelId': channelId,
-      'callType': 'voice',
-      'callerId': currentUser.uid,
-      'timestamp': FieldValue.serverTimestamp(),
-      'direction': 'incoming',
-    });
+          'channelId': channelId,
+          'callType': 'voice',
+          'callerId': currentUser.uid,
+          'timestamp': FieldValue.serverTimestamp(),
+          'direction': 'incoming',
+        });
   }
 
-  /// End a voice call
   Future<void> endCall({
     required String calleeId,
     required String channelId,
@@ -79,6 +75,10 @@ class VoiceCallRepository {
     if (currentUser == null) {
       throw Exception("No authenticated user found.");
     }
+    print("ENDING THE CALL?");
+    print(calleeId);
+    print(channelId);
+    print(isGroup);
 
     if (!isGroup) {
       await firestore.collection('calls').doc(calleeId).update({
@@ -94,7 +94,6 @@ class VoiceCallRepository {
     }
   }
 
-  /// Listen for incoming voice calls
   Stream<Map<String, dynamic>?> checkIncomingCalls(String uid) {
     return firestore.collection('calls').doc(uid).snapshots().map((snapshot) {
       if (snapshot.exists) {
@@ -111,12 +110,13 @@ class VoiceCallRepository {
     });
   }
 
-  /// Listen for call ended events
   Stream<Map<String, dynamic>?> checkCallEnded(String uid) {
     return firestore.collection('calls').doc(uid).snapshots().map((snapshot) {
       if (snapshot.exists) {
         final data = snapshot.data();
-        if (data != null && !data['hasDialled'] && data['callType'] == 'voice') {
+        if (data != null &&
+            !data['hasDialled'] &&
+            data['callType'] == 'voice') {
           return {
             'callerId': data['callerId'],
             'channelId': data['channelId'],

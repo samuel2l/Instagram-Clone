@@ -18,6 +18,8 @@ import 'package:instagram/utils/utils.dart';
 import 'package:instagram/video%20calls/repository/video_call_repository.dart';
 import 'package:instagram/video%20calls/screens/group_video_call_screen.dart';
 import 'package:instagram/video%20calls/screens/video_call_screen.dart';
+import 'package:instagram/voice_calls/repository/voice_call_repository.dart';
+import 'package:instagram/voice_calls/screens/voice_call.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -74,33 +76,85 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         actions:
             isGroup
                 ? [
-                  // GestureDetector(
-                  //   onDoubleTap: () {
-                  //     Navigator.of(context).push(
-                  //       MaterialPageRoute(
-                  //         builder: (context) {
-                  //           return RemoveMember(
-                  //             chatId: ref.watch(chatIdProvider),
-                  //           );
-                  //         },
-                  //       ),
-                  //     );
-                  //   },
-                  //   child: const Text("remove"),
-                  // ),
-                  // const SizedBox(width: 10),
-                  // GestureDetector(
-                  //   onDoubleTap: () {
-                  //     Navigator.of(context).push(
-                  //       MaterialPageRoute(
-                  //         builder: (context) {
-                  //           return AddMember(chatId: ref.watch(chatIdProvider));
-                  //         },
-                  //       ),
-                  //     );
-                  //   },
-                  //   child: const Text("add"),
-                  // ),
+                  StreamBuilder(
+                    stream: ref
+                        .watch(voiceCallRepositoryProvider)
+                        .checkIncomingCalls(
+                          FirebaseAuth.instance.currentUser!.uid,
+                        ),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      }
+
+                      final callData = snapshot.data ?? {};
+
+                      if (callData.isEmpty) {
+                        return IconButton(
+                          onPressed: () async {
+                            await ref
+                                .read(voiceCallRepositoryProvider)
+                                .sendCallData(
+                                  calleeId:
+                                      ref.read(chatDataProvider) != null
+                                          ? ref.read(chatDataProvider)!.chatId
+                                          : "",
+                                  channelId:
+                                      "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(chatDataProvider) != null ? ref.read(chatDataProvider)!.chatId : ""}",
+                                );
+
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return VoiceCallScreen(
+                                    calleeId: ref.watch(chatIdProvider),
+                                    channelId:
+                                        "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
+
+                                    receiverDp: ref.read(chatDataProvider)!.dp,
+                                    receiverName:
+                                        ref.read(chatDataProvider)!.groupName!,
+                                    isGroup: true,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.call, size: 32),
+                        );
+                      } else {
+                        return IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return VoiceCallScreen(
+                                    isGroup: true,
+                                    channelId: callData['channelId'],
+                                    calleeId: ref.watch(chatIdProvider),
+
+                                    receiverDp: ref.read(chatDataProvider)!.dp,
+                                    receiverName:
+                                        ref.read(chatDataProvider)!.groupName!,
+                                  );
+                                },
+                              ),
+                            );
+                            // title: Text(
+                            //   "Incoming call from ${callData['callerId']}",
+                            // ),
+                            // subtitle: Text("Channel: ${callData['channelId']}"
+                          },
+                          icon: Icon(Icons.call_made),
+                        );
+                      }
+                    },
+                  ),
+
                   StreamBuilder(
                     stream: ref
                         .watch(videoCallRepositoryProvider)
@@ -177,6 +231,111 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ]
                 : [
+                  StreamBuilder(
+                    stream: ref
+                        .watch(voiceCallRepositoryProvider)
+                        .checkIncomingCalls(
+                          FirebaseAuth.instance.currentUser!.uid,
+                        ),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      }
+
+                      final callData = snapshot.data ?? {};
+
+                      if (callData.isEmpty) {
+                        return IconButton(
+                          onPressed: () async {
+                            await ref
+                                .read(voiceCallRepositoryProvider)
+                                .sendCallData(
+                                  calleeId:
+                                      ref.read(messageRecipientProvider) != null
+                                          ? ref
+                                              .read(messageRecipientProvider)!
+                                              .firebaseUID
+                                          : "",
+                                  channelId:
+                                      "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(messageRecipientProvider)?.firebaseUID}",
+                                );
+
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return VoiceCallScreen(
+                                    channelId:
+                                        "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(messageRecipientProvider)?.firebaseUID}",
+                                    calleeId:
+                                        ref.read(messageRecipientProvider) !=
+                                                null
+                                            ? ref
+                                                .read(messageRecipientProvider)!
+                                                .firebaseUID
+                                            : "",
+
+                                    receiverDp:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .dp,
+                                    receiverName:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .name,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.call, size: 32),
+                        );
+                      } else {
+                        return IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return VoiceCallScreen(
+                                    channelId: callData['channelId'],
+                                    calleeId:
+                                        ref.read(messageRecipientProvider) !=
+                                                null
+                                            ? ref
+                                                .read(messageRecipientProvider)!
+                                                .firebaseUID
+                                            : "",
+
+                                    receiverDp:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .dp,
+                                    receiverName:
+                                        ref
+                                            .read(messageRecipientProvider)!
+                                            .profile
+                                            .name,
+                                  );
+                                },
+                              ),
+                            );
+                            // title: Text(
+                            //   "Incoming call from ${callData['callerId']}",
+                            // ),
+                            // subtitle: Text("Channel: ${callData['channelId']}"
+                          },
+                          icon: Icon(Icons.call_made),
+                        );
+                      }
+                    },
+                  ),
+
                   StreamBuilder(
                     stream: ref
                         .watch(videoCallRepositoryProvider)
