@@ -112,18 +112,16 @@ class LivestreamRepository {
   }
 
   Stream<int> getViewerCount(String channelId) {
-  return firestore
-      .collection('livestreams')
-      .doc(channelId)
-      .snapshots()
-      .map((snapshot) {
-    if (snapshot.exists) {
-      return snapshot.data()?['viewerCount'] ?? 0;
-    } else {
-      return 0;
-    }
-  });
-}
+    return firestore.collection('livestreams').doc(channelId).snapshots().map((
+      snapshot,
+    ) {
+      if (snapshot.exists) {
+        return snapshot.data()?['viewerCount'] ?? 0;
+      } else {
+        return 0;
+      }
+    });
+  }
 
   Future<void> addLivestreamComment({
     required String channelId,
@@ -151,7 +149,6 @@ class LivestreamRepository {
         .orderBy('createdAt', descending: false)
         .snapshots()
         .map((snapshot) {
-
           // for (var doc in snapshot.docs) {
           //   // print('Comment: ${doc.data()}');
           // }
@@ -168,5 +165,4 @@ class LivestreamRepository {
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }
-
 }
