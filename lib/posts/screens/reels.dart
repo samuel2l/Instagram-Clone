@@ -43,8 +43,6 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
     }
 
     setState(() {});
-    print("reels before err");
-    print(reels);
     // if (reels != null)
       final newController = CachedVideoPlayerPlusController.networkUrl(
         Uri.parse(reels![index]),
@@ -80,7 +78,12 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+
+
+      ),
       body:
           controller != null && controller!.value.isInitialized && reels != null
               ? GestureDetector(
