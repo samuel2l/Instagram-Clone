@@ -47,18 +47,6 @@ class _HomeState extends ConsumerState<Home> {
           ),
         ),
         actions: [
-          // TextButton(
-          //   onPressed: () async {
-          //     Navigator.of(context).push(
-          //       MaterialPageRoute(
-          //         builder: (context) {
-          //           return Reels();
-          //         },
-          //       ),
-          //     );
-          //   },
-          //   child: Text("Watch reels"),
-          // ),
           IconButton(
             onPressed: () async {
               final res = await ref.read(postRepositoryProvider).getReels();
