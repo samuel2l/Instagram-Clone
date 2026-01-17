@@ -229,5 +229,47 @@ Stream<bool> hasUserWatchedAllStories({
         ),
       );
     }
+  }Future<void> deleteExpiredStories() async {
+  final cutoff = Timestamp.fromDate(
+    DateTime.now().subtract(const Duration(hours: 24)),
+  );
+
+  final storiesUsersSnapshot =
+      await firestore.collection('stories').get();
+
+  for (final userDoc in storiesUsersSnapshot.docs) {
+    final userId = userDoc.id;
+
+    final expiredStoriesSnapshot = await firestore
+        .collection('stories')
+        .doc(userId)
+        .collection('userStories')
+        .where('timestamp', isLessThanOrEqualTo: cutoff)
+        .get();
+
+    if (expiredStoriesSnapshot.docs.isEmpty) continue;
+
+    final batch = firestore.batch();
+
+    for (final storyDoc in expiredStoriesSnapshot.docs) {
+      batch.delete(storyDoc.reference);
+    }
+
+    await batch.commit();
+
+    // 🔥 Check if user still has stories
+    final remainingStories = await firestore
+        .collection('stories')
+        .doc(userId)
+        .collection('userStories')
+        .limit(1)
+        .get();
+
+    if (remainingStories.docs.isEmpty) {
+      await firestore.collection('users').doc(userId).update({
+        'hasStory': false,
+      });
+    }
   }
+}
 }

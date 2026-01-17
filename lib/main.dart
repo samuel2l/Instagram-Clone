@@ -45,6 +45,8 @@ class MyApp extends ConsumerWidget {
           .watch(userProvider)
           .when(
             data: (data) {
+
+
               return data == null ? const SignUp() : Home();
             },
             error: (error, stackTrace) {

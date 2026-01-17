@@ -24,6 +24,13 @@ class Home extends ConsumerStatefulWidget {
 
 class _HomeState extends ConsumerState<Home> {
   bool currentUserHasStory = true;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(storyRepositoryProvider).deleteExpiredStories();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -8,6 +8,7 @@ import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
+import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/utils/utils.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
@@ -26,7 +27,7 @@ final userProvider = StreamProvider<AppUserModel?>((ref) {
   if (auth == null) {
     return const Stream.empty();
   }
-
+ 
   return FirebaseFirestore.instance
       .collection('users')
       .doc(auth.uid)
