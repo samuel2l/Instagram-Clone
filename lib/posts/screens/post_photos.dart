@@ -48,7 +48,6 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
           children: [
             Row(
               children: [
-
                 IconButton(
                   onPressed: () {
                     showEmojis = !showEmojis;
@@ -106,7 +105,6 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
                       final text = captionController.text;
                       final textSelection = captionController.selection;
 
-                      // 🛡️ Prevent range error if selection is invalid
                       if (textSelection.start < 0 || textSelection.end < 0) {
                         captionController.text += emoji.emoji;
                         captionController.selection = TextSelection.collapsed(
@@ -123,6 +121,8 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
                       final emojiLength = emoji.emoji.length;
 
                       captionController.text = newText;
+                      print("new caption text/////");
+                      print(captionController.text);
                       captionController.selection = textSelection.copyWith(
                         baseOffset: textSelection.start + emojiLength,
                         extentOffset: textSelection.start + emojiLength,
@@ -200,7 +200,9 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
               child:
                   !isReelProcessing
                       ? Text("Create Reel", style: TextStyle(fontSize: 20))
-                      : Center(child: CircularProgressIndicator(color: Colors.white,)),
+                      : Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
             ),
             SizedBox(height: 20),
 
@@ -268,7 +270,9 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
               child:
                   !isProcessing
                       ? Text("Post Photo(s)", style: TextStyle(fontSize: 20))
-                      : Center(child: CircularProgressIndicator(color: Colors.white,)),
+                      : Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
             ),
           ],
         ),

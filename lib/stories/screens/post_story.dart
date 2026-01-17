@@ -2,9 +2,11 @@
 
 import 'dart:io';
 import 'dart:math';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/utils/utils.dart';
 
@@ -26,6 +28,10 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
 
   List<EditableItem> storyData = [];
   bool isCaption = false;
+  TextEditingController captionController = TextEditingController();
+  bool showEmojis = false;
+  bool isProcessing = false;
+  FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -85,25 +91,137 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
             Container(color: Colors.black),
             ...storyData.map(_buildItemWidget),
             isCaption
-                ? Center(
-                  child: TextField(
-                    onSubmitted: (value) {
-                      setState(() {
-                        isCaption = false;
-                        EditableItem nextItem = EditableItem();
-                        nextItem.value = value;
-                        nextItem.type = ItemType.text;
-                        storyData.add(nextItem);
-                      });
-                    },
-                  ),
+                ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                showEmojis = !showEmojis;
+                                if (showEmojis) {
+                                  focusNode.unfocus();
+                                } else {
+                                  focusNode.requestFocus();
+                                }
+                                setState(() {});
+                              },
+                              icon: Icon(Icons.emoji_emotions_outlined),
+                            ),
+                            showEmojis
+                                ? SizedBox(
+                                  height: 250,
+                                  width: 400,
+                                  child: EmojiPicker(
+                                    onBackspacePressed: () {
+                                      final text = captionController.text;
+                                      final selection =
+                                          captionController.selection;
+
+                                      if (selection.start <= 0) return;
+
+                                      final characters = text.characters;
+                                      int deleteOffset = selection.start;
+
+                                      int currentOffset = 0;
+                                      for (final char in characters) {
+                                        final nextOffset =
+                                            currentOffset + char.length;
+                                        if (nextOffset >= deleteOffset) {
+                                          final newText = text.replaceRange(
+                                            currentOffset,
+                                            nextOffset,
+                                            '',
+                                          );
+                                          captionController.text = newText;
+                                          captionController.selection =
+                                              TextSelection.collapsed(
+                                                offset: currentOffset,
+                                              );
+                                          return;
+                                        }
+                                        currentOffset = nextOffset;
+                                      }
+                                    },
+                                    onEmojiSelected: (category, emoji) {
+                                      final text = captionController.text;
+                                      final textSelection =
+                                          captionController.selection;
+
+                                      // 🛡️ Prevent range error if selection is invalid
+                                      if (textSelection.start < 0 ||
+                                          textSelection.end < 0) {
+                                        captionController.text += emoji.emoji;
+                                        captionController.selection =
+                                            TextSelection.collapsed(
+                                              offset:
+                                                  captionController.text.length,
+                                            );
+                                        return;
+                                      }
+
+                                      final newText = text.replaceRange(
+                                        textSelection.start,
+                                        textSelection.end,
+                                        emoji.emoji,
+                                      );
+                                      final emojiLength = emoji.emoji.length;
+
+                                      captionController.text = newText;
+                                      print("new caption text/////");
+                                      print(captionController.text);
+
+                                      captionController
+                                          .selection = textSelection.copyWith(
+                                        baseOffset:
+                                            textSelection.start + emojiLength,
+                                        extentOffset:
+                                            textSelection.start + emojiLength,
+                                      );
+                                      setState(() {});
+                                    },
+                                  ),
+                                )
+                                : SizedBox.shrink(),
+                          ],
+                        ),
+
+                        Expanded(
+                          child: TextField(
+                            controller: captionController,
+                            onSubmitted: (value) {
+                              setState(() {
+                                isCaption = false;
+                                EditableItem nextItem = EditableItem();
+                                nextItem.value = value;
+                                nextItem.type = ItemType.text;
+                                storyData.add(nextItem);
+                                captionController.clear();
+                                
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 )
                 : SizedBox.shrink(),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        child:
+            isProcessing
+                ? Center(child: CircularProgressIndicator())
+                : Icon(Icons.call_made_outlined),
         onPressed: () async {
+          isProcessing = true;
+          setState(() {});
           String mediaUrl = await uploadImageToCloudinary(
             widget.selectedImage!.path,
           );
@@ -121,7 +239,13 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
                 context: context,
                 content: "story uploaded successfully",
               );
-              Navigator.pop(context);
+              isProcessing = false;
+              captionController.clear();
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const Home()),
+                (route) => false,
+              );
             }
           }
         },
