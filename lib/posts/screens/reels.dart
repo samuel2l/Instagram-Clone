@@ -1,70 +1,58 @@
 import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:instagram/auth/repository/auth_repository.dart';
+
 import 'package:instagram/posts/repository/post_repository.dart';
-import 'package:instagram/widgets/comments_text_field.dart';
-import 'package:instagram/widgets/gif_sticker_message.dart';
 
 class Reels extends ConsumerStatefulWidget {
   const Reels({super.key});
 
   @override
-  ConsumerState<Reels> createState() => _ConsumerReelsState();
+  ConsumerState<Reels> createState() => _ReelsState();
 }
 
-class _ConsumerReelsState extends ConsumerState<Reels> {
+class _ReelsState extends ConsumerState<Reels> {
   late PageController pageController;
   CachedVideoPlayerPlusController? controller;
-  List<dynamic>? reelData;
-  TextEditingController commentController = TextEditingController();
-  List<dynamic>? reels;
 
-  int currentVideoIndex = 0;
+  List<dynamic>? reelData;
+  List<String> reels = [];
+
+  int currentIndex = 0;
   bool isHolding = false;
-  bool tapped = false;
+
   @override
   void initState() {
     super.initState();
     pageController = PageController();
-    _initializeAndPlay(currentVideoIndex);
+    _loadReels();
   }
 
-  Future<void> _initializeAndPlay(int index) async {
+  Future<void> _loadReels() async {
     reelData = await ref.read(postRepositoryProvider).getReels();
-    if (reelData != null) {
-      for (int i = 0; i < reelData!.length; i++) {
-        if (reels == null) {
-          reels = [reelData![i]["imageUrls"][0]];
-        } else {
-          reels!.add(reelData![i]["imageUrls"][0]);
-        }
-      }
-    }
 
-    setState(() {});
-    // if (reels != null)
-      final newController = CachedVideoPlayerPlusController.networkUrl(
-        Uri.parse(reels![index]),
-      );
+    reels = reelData!
+        .map<String>((reel) => reel["imageUrls"][0] as String)
+        .toList();
+
+    await _playVideo(0);
+  }
+
+  Future<void> _playVideo(int index) async {
+    if (index < 0 || index >= reels.length) return;
+
+    final newController = CachedVideoPlayerPlusController.networkUrl(
+      Uri.parse(reels[index]),
+    );
+
     await newController.initialize();
-
-    newController.addListener(() {
-      if (newController.value.position >= newController.value.duration) {
-        newController.seekTo(Duration.zero);
-        newController.play();
-      }
-      setState(() {});
-    });
-
-    await newController.setLooping(false);
     await newController.play();
 
     controller?.dispose();
 
     setState(() {
       controller = newController;
-      currentVideoIndex = index;
+      currentIndex = index;
     });
   }
 
@@ -77,298 +65,100 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
 
   @override
   Widget build(BuildContext context) {
+    if (controller == null || reelData == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
+      appBar: AppBar(backgroundColor: Colors.transparent),
+      body: GestureDetector(
+        onLongPress: () {
+          controller?.pause();
+          setState(() => isHolding = true);
+        },
+        onLongPressUp: () {
+          controller?.play();
+          setState(() => isHolding = false);
+        },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PageView.builder(
+              scrollDirection: Axis.vertical,
+              controller: pageController,
+              itemCount: reels.length,
+              onPageChanged: (index) {
+                _playVideo(index);
+              },
+              itemBuilder: (context, index) {
+                return CachedVideoPlayerPlus(controller!);
+              },
+            ),
 
-
-      ),
-      body:
-          controller != null && controller!.value.isInitialized && reels != null
-              ? GestureDetector(
-                onLongPress: () {
-                  controller?.pause();
-                  setState(() {
-                    isHolding = true;
-                  });
-                },
-                onLongPressUp: () {
-                  controller?.play();
-                  setState(() {
-                    isHolding = false;
-                  });
-                },
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    PageView.builder(
-                      scrollDirection: Axis.vertical,
-                      controller: pageController,
-                      onPageChanged: (index) {
-                        _initializeAndPlay(index);
-                      },
-                      itemCount: reels!.length,
-                      itemBuilder: (context, index) {
-                        return controller != null &&
-                                controller!.value.isInitialized
-                            ? Stack(
-                              children: [
-                                CachedVideoPlayerPlus(controller!),
-                                Positioned(
-                                  right: 0,
-                                  bottom: 200,
-                                  child: Row(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          ref
-                                              .read(postRepositoryProvider)
-                                              .toggleLikePost(
-                                                reelData![index]["postId"],
-                                              );
-                                          setState(() {});
-                                        },
-                                        icon: FutureBuilder<bool>(
-                                          future: ref
-                                              .watch(postRepositoryProvider)
-                                              .hasLikedPost(
-                                                "${reelData![index]["postId"]}",
-                                              ),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.hasData) {
-                                              return snapshot.data == true
-                                                  ? Icon(
-                                                    Icons.favorite,
-                                                    color: Colors.red,
-                                                  )
-                                                  : Icon(
-                                                    Icons.favorite_outline,
-                                                    color: Colors.white,
-                                                  );
-                                            }
-                                            return Icon(
-                                              Icons.favorite_outline,
-                                              color: Colors.black,
-                                            );
-                                          },
-                                        ),
-                                      ),
-
-                                      StreamBuilder(
-                                        stream: ref
-                                            .watch(postRepositoryProvider)
-                                            .getLikesCount(
-                                              reelData![index]["postId"],
-                                            ),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.hasData) {
-                                            return Text(
-                                              "${snapshot.data}",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            );
-                                          }
-
-                                          return Text(" ");
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Positioned(
-                                  right: 0,
-                                  bottom: 150,
-                                  child: IconButton(
-                                    icon: Icon(Icons.message),
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        builder: (context) {
-                                          return DraggableScrollableSheet(
-                                            initialChildSize: 0.5,
-                                            minChildSize: 0.5,
-                                            maxChildSize: 0.8,
-                                            expand: false,
-                                            builder: (
-                                              context,
-                                              scrollController,
-                                            ) {
-                                              return Container(
-                                                padding: EdgeInsets.all(16),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.vertical(
-                                                        top: Radius.circular(
-                                                          20,
-                                                        ),
-                                                      ),
-                                                ),
-                                                child: Column(
-                                                  children: [
-                                                    StreamBuilder(
-                                                      stream: ref
-                                                          .watch(
-                                                            postRepositoryProvider,
-                                                          )
-                                                          .getPostComments(
-                                                            reelData![index]["postId"],
-                                                          ),
-                                                      builder: (
-                                                        context,
-                                                        snapshot,
-                                                      ) {
-                                                        if (snapshot.hasData) {
-                                                          if (snapshot.data !=
-                                                                  null &&
-                                                              snapshot
-                                                                  .data!
-                                                                  .isNotEmpty) {
-                                                            final commentData =
-                                                                snapshot.data!;
-                                                            return Expanded(
-                                                              child: ListView.builder(
-                                                                itemCount:
-                                                                    snapshot
-                                                                        .data!
-                                                                        .length,
-                                                                itemBuilder: (
-                                                                  context,
-                                                                  index,
-                                                                ) {
-                                                                  final comment =
-                                                                      commentData[index];
-                                                                  return ListTile(
-                                                                    leading: CircleAvatar(
-                                                                      backgroundImage:
-                                                                          NetworkImage(
-                                                                            comment["dp"],
-                                                                          ),
-                                                                    ),
-                                                                    subtitle: Text(
-                                                                      "${comment["username"]}",
-                                                                    ),
-                                                                    title:comment["type"]!="GIF"? Text(
-                                                                      "${comment["text"]}",
-                                                                    ):GifStickerMessage(email: comment["username"], content: comment["text"]),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            );
-                                                          }
-                                                        }
-                                                        return Center(
-                                                          child: Text(
-                                                            "No comments yet",
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                    // TextField(
-                                                    //   controller:
-                                                    //       commentController,
-                                                    //   onSubmitted: (
-                                                    //     value,
-                                                    //   ) async {
-                                                    //     final profileData =
-                                                    //          ref
-                                                    //             .watch(
-                                                    //               userProvider,
-                                                    //             )
-                                                    //             .value;
-                                                    //     if (profileData !=
-                                                    //         null) {
-                                                    //       await ref
-                                                    //           .read(
-                                                    //             postRepositoryProvider,
-                                                    //           )
-                                                    //           .addCommentToPost(
-                                                    //             postId:
-                                                    //                 reelData![index]["postId"],
-                                                    //             username:
-                                                    //                 profileData
-                                                    //                     .profile
-                                                    //                     .username,
-                                                    //             dp:
-                                                    //                 profileData
-                                                    //                     .profile
-                                                    //                     .dp,
-                                                    //             commentText:
-                                                    //                 commentController
-                                                    //                     .text
-                                                    //                     .trim(),
-                                                    //             type: "text",
-                                                    //           );
-                                                    //     }
-                                                    //     commentController
-                                                    //         .clear();
-                                                    //   },
-                                                    // ),
-                                                    UnifiedTextField(
-                                                      user:
-                                                          ref
-                                                              .watch(
-                                                                userProvider,
-                                                              )
-                                                              .value,
-                                                      hintText:
-                                                          "Add comment...",
-                                                      isPost: true,
-                                                      postId:
-                                                          reelData![index]["postId"],
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            )
-                            : const Center(child: CircularProgressIndicator());
+            /// ❤️ LIKE + COUNT
+            Positioned(
+              right: 10,
+              bottom: 220,
+              child: Column(
+                children: [
+                  IconButton(
+                    icon: FutureBuilder<bool>(
+                      future: ref
+                          .watch(postRepositoryProvider)
+                          .hasLikedPost(
+                            reelData![currentIndex]["postId"],
+                          ),
+                      builder: (context, snapshot) {
+                        return Icon(
+                          snapshot.data == true
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: snapshot.data == true
+                              ? Colors.red
+                              : Colors.white,
+                        );
                       },
                     ),
-
-                    Positioned(
-                      bottom: 20,
-                      left: 20,
-                      right: 20,
-                      child:
-                          controller != null
-                              ? VideoProgressIndicator(
-                                controller!,
-                                key: ValueKey(controller),
-                                allowScrubbing: true,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 5,
-                                ),
-                                colors: const VideoProgressColors(
-                                  playedColor: Colors.red,
-                                  bufferedColor: Colors.grey,
-                                  backgroundColor: Colors.black26,
-                                ),
-                              )
-                              : const SizedBox.shrink(),
-                    ),
-                    if (isHolding)
-                      const Center(
-                        child: Icon(
-                          Icons.pause_circle_filled,
-                          color: Colors.white,
-                          size: 80,
+                    onPressed: () {
+                      ref
+                          .read(postRepositoryProvider)
+                          .toggleLikePost(
+                            reelData![currentIndex]["postId"],
+                          );
+                    },
+                  ),
+                  StreamBuilder(
+                    stream: ref
+                        .watch(postRepositoryProvider)
+                        .getLikesCount(
+                          reelData![currentIndex]["postId"],
                         ),
-                      ),
-                  ],
+                    builder: (context, snapshot) {
+                      return Text(
+                        snapshot.data?.toString() ?? "0",
+                        style: const TextStyle(color: Colors.white),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            /// ⏸ HOLD INDICATOR
+            if (isHolding)
+              const Center(
+                child: Icon(
+                  Icons.pause_circle_filled,
+                  size: 80,
+                  color: Colors.white,
                 ),
-              )
-              : const Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

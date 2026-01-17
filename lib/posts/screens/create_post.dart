@@ -54,7 +54,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                 await ref
                     .read(postRepositoryProvider)
                     .createPost(
-                      caption: "first reel",
+                      caption: "",
                       imageUrls: [reelUrl!],
                       context: context,
                       postType: "reel",
