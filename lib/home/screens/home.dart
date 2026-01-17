@@ -1,8 +1,10 @@
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
+import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/posts/screens/post_feed.dart';
@@ -116,17 +118,32 @@ class _HomeState extends ConsumerState<Home> {
                           children: [
                             GestureDetector(
                               onTap: () async {
-                                final currUserStories = await ref
-                                    .read(storyRepositoryProvider)
-                                    .getUserStories(currUser.firebaseUID);
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => UserStories(
-                                          userStories: currUserStories,
-                                        ),
-                                  ),
-                                );
+                                if (!currUser.profile.isLive) {
+                                  final currUserStories = await ref
+                                      .read(storyRepositoryProvider)
+                                      .getUserStories(currUser.firebaseUID);
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => UserStories(
+                                            userStories: currUserStories,
+                                          ),
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return LivestreamScreen(
+                                          role:
+                                              ClientRoleType.clientRoleAudience,
+                                          channelId:
+                                              "${currUser.firebaseUID} ${currUser.email}",
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }
                               },
 
                               child:
@@ -136,7 +153,8 @@ class _HomeState extends ConsumerState<Home> {
                                                   .watch(userProvider)
                                                   .value
                                                   ?.firebaseUID &&
-                                          !currentUserHasStory
+                                          !currentUserHasStory &&
+                                          !currUser.profile.isLive
                                       ? Stack(
                                         children: [
                                           Container(
@@ -214,7 +232,10 @@ class _HomeState extends ConsumerState<Home> {
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
-                                            return Center(child: CircularProgressIndicator(),);
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
                                           }
                                           if (snapshot.hasError) {
                                             return Text("error");
@@ -225,10 +246,8 @@ class _HomeState extends ConsumerState<Home> {
                                           return Stack(
                                             children: [
                                               Container(
-                                                width:
-                                                    80, // 2 * radius + border
-                                                height:
-                                                    80, // 2 * radius + border
+                                                width: 80,
+                                                height: 80,
                                                 decoration: BoxDecoration(
                                                   color:
                                                       hasWatchedAllStories
@@ -371,7 +390,10 @@ class _HomeState extends ConsumerState<Home> {
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
-                                            return Center(child: CircularProgressIndicator(),);
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
                                           }
                                           if (snapshot.hasError) {
                                             return Text("error");
@@ -382,10 +404,8 @@ class _HomeState extends ConsumerState<Home> {
                                           return Stack(
                                             children: [
                                               Container(
-                                                width:
-                                                    80, // 2 * radius + border
-                                                height:
-                                                    80, // 2 * radius + border
+                                                width: 80,
+                                                height: 80,
                                                 decoration: BoxDecoration(
                                                   color:
                                                       hasWatchedAllStories
@@ -479,6 +499,10 @@ class _HomeState extends ConsumerState<Home> {
                                         },
                                       ),
                             ),
+                            currUser.profile.isLive
+                                ? Text("LIVE!")
+                                : SizedBox.shrink(),
+
                             SizedBox(height: 5),
                             Text(
                               currUser.profile.username,
@@ -495,7 +519,6 @@ class _HomeState extends ConsumerState<Home> {
             },
           ),
           PostFeed(),
-
         ],
       ),
     );
