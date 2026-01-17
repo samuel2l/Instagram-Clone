@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
+import 'package:instagram/widgets/comments_text_field.dart';
 
 class Reels extends ConsumerStatefulWidget {
   const Reels({super.key});
@@ -41,9 +42,12 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
     }
 
     setState(() {});
-    final newController = CachedVideoPlayerPlusController.networkUrl(
-      Uri.parse(reels![index]),
-    );
+    print("reels before err");
+    print(reels);
+    // if (reels != null)
+      final newController = CachedVideoPlayerPlusController.networkUrl(
+        Uri.parse(reels![index]),
+      );
     await newController.initialize();
 
     newController.addListener(() {
@@ -260,45 +264,58 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                                         );
                                                       },
                                                     ),
-                                                    TextField(
-                                                      controller:
-                                                          commentController,
-                                                      onSubmitted: (
-                                                        value,
-                                                      ) async {
-                                                        final profileData =
-                                                             ref
-                                                                .watch(
-                                                                  userProvider,
-                                                                )
-                                                                .value;
-                                                        if (profileData !=
-                                                            null) {
-                                                          await ref
-                                                              .read(
-                                                                postRepositoryProvider,
+                                                    // TextField(
+                                                    //   controller:
+                                                    //       commentController,
+                                                    //   onSubmitted: (
+                                                    //     value,
+                                                    //   ) async {
+                                                    //     final profileData =
+                                                    //          ref
+                                                    //             .watch(
+                                                    //               userProvider,
+                                                    //             )
+                                                    //             .value;
+                                                    //     if (profileData !=
+                                                    //         null) {
+                                                    //       await ref
+                                                    //           .read(
+                                                    //             postRepositoryProvider,
+                                                    //           )
+                                                    //           .addCommentToPost(
+                                                    //             postId:
+                                                    //                 reelData![index]["postId"],
+                                                    //             username:
+                                                    //                 profileData
+                                                    //                     .profile
+                                                    //                     .username,
+                                                    //             dp:
+                                                    //                 profileData
+                                                    //                     .profile
+                                                    //                     .dp,
+                                                    //             commentText:
+                                                    //                 commentController
+                                                    //                     .text
+                                                    //                     .trim(),
+                                                    //             type: "text",
+                                                    //           );
+                                                    //     }
+                                                    //     commentController
+                                                    //         .clear();
+                                                    //   },
+                                                    // ),
+                                                    UnifiedTextField(
+                                                      user:
+                                                          ref
+                                                              .watch(
+                                                                userProvider,
                                                               )
-                                                              .addCommentToPost(
-                                                                postId:
-                                                                    reelData![index]["postId"],
-                                                                username:
-                                                                    profileData
-                                                                        .profile
-                                                                        .username,
-                                                                dp:
-                                                                    profileData
-                                                                        .profile
-                                                                        .dp,
-                                                                commentText:
-                                                                    commentController
-                                                                        .text
-                                                                        .trim(),
-                                                                type: "text",
-                                                              );
-                                                        }
-                                                        commentController
-                                                            .clear();
-                                                      },
+                                                              .value,
+                                                      hintText:
+                                                          "Add comment...",
+                                                      isPost: true,
+                                                      postId:
+                                                          reelData![index]["postId"],
                                                     ),
                                                   ],
                                                 ),

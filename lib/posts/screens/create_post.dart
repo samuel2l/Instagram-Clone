@@ -44,18 +44,27 @@ class _CreatePostState extends ConsumerState<CreatePost> {
             child: const Text("Pick Images/Videos"),
           ),
 
-
           ElevatedButton(
             onPressed: () async {
               reelPath = await pickVideoFromGallery(context);
 
               reelUrl = await uploadVideoToCloudinary(reelPath);
               setState(() {});
+              if (reelUrl != null) {
+                await ref
+                    .read(postRepositoryProvider)
+                    .createPost(
+                      caption: "first reel",
+                      imageUrls: [reelUrl!],
+                      context: context,
+                      postType: "reel",
+                    );
+              }
             },
             child: const Text("Post Reel"),
           ),
           TextField(controller: captionController),
-                  GestureDetector(
+          GestureDetector(
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -79,7 +88,6 @@ class _CreatePostState extends ConsumerState<CreatePost> {
               },
             ),
           ),
-            
         ],
       ),
       bottomSheet: TextButton(

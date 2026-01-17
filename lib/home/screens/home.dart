@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
+import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
 import 'package:instagram/posts/screens/post_feed.dart';
+import 'package:instagram/posts/screens/reels.dart';
 import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/stories/screens/select_story_image.dart';
 import 'package:instagram/stories/screens/user_stories.dart';
 import 'package:instagram/chat/screens/chats.dart';
+import 'package:instagram/utils/utils.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({super.key});
@@ -44,6 +47,36 @@ class _HomeState extends ConsumerState<Home> {
           ),
         ),
         actions: [
+          // TextButton(
+          //   onPressed: () async {
+          //     Navigator.of(context).push(
+          //       MaterialPageRoute(
+          //         builder: (context) {
+          //           return Reels();
+          //         },
+          //       ),
+          //     );
+          //   },
+          //   child: Text("Watch reels"),
+          // ),
+          IconButton(
+            onPressed: () async {
+              final res = await ref.read(postRepositoryProvider).getReels();
+              if (res.isNotEmpty) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return Reels();
+                    },
+                  ),
+                );
+              } else {
+                showSnackBar(context: context, content: "No reels available");
+              }
+            },
+            icon: Icon(Icons.video_camera_back),
+          ),
+
           IconButton(
             onPressed: () {
               Navigator.push(
