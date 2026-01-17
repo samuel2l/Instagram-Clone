@@ -313,14 +313,14 @@ Positioned(
   child: Container(
     height: MediaQuery.of(context).size.height * 0.4,
     decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-        colors: [
-          Colors.black54,
-          Colors.transparent,
-        ],
-      ),
+      // gradient: LinearGradient(
+      //   begin: Alignment.bottomCenter,
+      //   end: Alignment.topCenter,
+      //   colors: [
+      //     Colors.black54,
+      //     Colors.transparent,
+      //   ],
+      // ),
     ),
     child: StreamBuilder<List<Map<String, dynamic>>>(
       stream: ref
