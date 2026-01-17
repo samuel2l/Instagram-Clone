@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/widgets/comments_text_field.dart';
+import 'package:instagram/widgets/gif_sticker_message.dart';
 
 class Reels extends ConsumerStatefulWidget {
   const Reels({super.key});
@@ -246,11 +247,11 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                                                           ),
                                                                     ),
                                                                     subtitle: Text(
-                                                                      "${comment["email"]}",
+                                                                      "${comment["username"]}",
                                                                     ),
-                                                                    title: Text(
+                                                                    title:comment["type"]!="GIF"? Text(
                                                                       "${comment["text"]}",
-                                                                    ),
+                                                                    ):GifStickerMessage(email: comment["username"], content: comment["text"]),
                                                                   );
                                                                 },
                                                               ),
