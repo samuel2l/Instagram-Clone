@@ -37,58 +37,73 @@ class _CreatePostState extends ConsumerState<CreatePost> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Column(
-        children: [
-          ElevatedButton(
-            onPressed: pickFiles,
-            child: const Text("Pick Images/Videos"),
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: pickFiles,
+              child: const Text("Pick Images/Videos"),
+            ),
 
-          ElevatedButton(
-            onPressed: () async {
-              reelPath = await pickVideoFromGallery(context);
-
-              reelUrl = await uploadVideoToCloudinary(reelPath);
-              setState(() {});
-              if (reelUrl != null) {
-                await ref
-                    .read(postRepositoryProvider)
-                    .createPost(
-                      caption: "",
-                      imageUrls: [reelUrl!],
-                      context: context,
-                      postType: "reel",
-                    );
-              }
-            },
-            child: const Text("Post Reel"),
-          ),
-          TextField(controller: captionController),
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) {
-                    return StartLivestreamScreen();
-                  },
+            TextButton(
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              );
-            },
-            child: Text("Start Live stream"),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: selectedFiles.length,
-              itemBuilder: (context, index) {
-                final file = selectedFiles[index];
-                return ListTile(
-                  title: Text(file.name),
-                  subtitle: Text(file.extension ?? ''),
+                fixedSize: Size(MediaQuery.sizeOf(context).width, 60),
+
+                backgroundColor: const Color.fromARGB(255, 1, 86, 242),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                reelPath = await pickVideoFromGallery(context);
+                reelUrl = await uploadVideoToCloudinary(reelPath);
+                setState(() {});
+
+
+                if (reelPath!.isNotEmpty &&
+                    reelUrl!.isNotEmpty) {
+                  await ref
+                      .read(postRepositoryProvider)
+                      .createPost(
+                        caption: "",
+                        imageUrls: [reelUrl!],
+                        context: context,
+                        postType: "reel",
+                      );
+                }
+              },
+              child: const Text("Create Reel", style: TextStyle(fontSize: 20)),
+            ),
+
+            TextField(controller: captionController),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return StartLivestreamScreen();
+                    },
+                  ),
                 );
               },
+              child: Text("Start Live stream"),
             ),
-          ),
-        ],
+            Expanded(
+              child: ListView.builder(
+                itemCount: selectedFiles.length,
+                itemBuilder: (context, index) {
+                  final file = selectedFiles[index];
+                  return ListTile(
+                    title: Text(file.name),
+                    subtitle: Text(file.extension ?? ''),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       bottomSheet: TextButton(
         onPressed: () async {
