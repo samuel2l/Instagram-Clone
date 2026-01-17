@@ -76,14 +76,14 @@ class _UnifiedTextFieldState extends ConsumerState<UnifiedTextField> {
               onPressed: () async {
                 GiphyGif? gif = await pickGIF(context);
                 if (gif != null) {
-                  // await widget.onSendGifOrSticker(gif);
-                  await ref
-                      .read(liveStreamRepositoryProvider)
-                      .sendStickerOrGif(
-                        channelId: widget.channelId!,
-                        email: FirebaseAuth.instance.currentUser?.email ?? "",
-                        commentText: gif.images!.original!.url,
-                      );
+                  // await widget.onSendGifOrSticker(gif.images!.original!.url);
+
+                  sendCommentStickerOrGif(
+                    ref,
+                    liveStreamRepositoryProvider,
+                    widget.channelId,
+                    gif.images!.original!.url,
+                  );
 
                   setState(() {});
                 }
@@ -95,13 +95,12 @@ class _UnifiedTextFieldState extends ConsumerState<UnifiedTextField> {
               icon: Icon(Icons.send),
               onPressed: () async {
                 // await widget.onSendMessage();
-                await ref
-                    .read(liveStreamRepositoryProvider)
-                    .addLivestreamComment(
-                      channelId: widget.channelId!,
-                      email: FirebaseAuth.instance.currentUser?.email ?? "",
-                      commentText: messageController.text.trim(),
-                    );
+                await sendCommentMessage(
+                  ref,
+                  liveStreamRepositoryProvider,
+                  widget.channelId,
+                  messageController.text.trim(),
+                );
                 messageController.clear();
               },
             ),

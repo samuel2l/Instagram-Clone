@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/live%20stream/models/livestream.dart';
-import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
 final isLiveProvider = StreamProvider<bool>((ref) {
@@ -124,7 +123,7 @@ class LivestreamRepository {
     });
   }
 
-  Future<void> addLivestreamComment({
+  Future<void> addComment({
     required String channelId,
     required String email,
     required String commentText,

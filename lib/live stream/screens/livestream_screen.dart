@@ -376,7 +376,14 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
           UnifiedTextField(
             user: ref.read(userProvider).value,
             hintText: "Add a comment..",
-            onSendMessage: ()async {
+            onSendMessage: (String gifUrl)async {
+                  // await ref
+                  //     .read(liveStreamRepositoryProvider)
+                  //     .sendStickerOrGif(
+                  //       channelId: widget.channelId!,
+                  //       email: FirebaseAuth.instance.currentUser?.email ?? "",
+                  //       commentText: gifUrl,
+                  //     );
 
             },
             onSendGifOrSticker: ()async{

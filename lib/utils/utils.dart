@@ -3,6 +3,7 @@ import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:giphy_get/giphy_get.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -116,4 +117,42 @@ String timeAgoFromIso(String isoString) {
     final w = (diff.inDays / 7).floor();
     return '${w}w';
   }
+}
+
+Future sendCommentStickerOrGif(
+  WidgetRef ref,
+  Provider provider,
+  String? channelId,
+  String gifUrl,
+) async {
+  await ref
+      .read(provider)
+      .sendStickerOrGif(
+        channelId: channelId ?? "",
+        email: FirebaseAuth.instance.currentUser?.email ?? "",
+        commentText: gifUrl,
+      );
+}
+
+Future sendCommentMessage(
+  WidgetRef ref,
+  Provider provider,
+  String? channelId,
+  String text
+) async {
+  // await ref
+  //     .read(provider)
+  //     .sendStickerOrGif(
+  //       channelId: channelId ?? "",
+  //       email: FirebaseAuth.instance.currentUser?.email ?? "",
+  //       commentText: gifUrl,
+  //     );
+                await ref
+                    .read(provider)
+                    .addComment(
+                      channelId: channelId??"",
+                      email: FirebaseAuth.instance.currentUser?.email ?? "",
+                      commentText: text,
+                    );
+
 }
