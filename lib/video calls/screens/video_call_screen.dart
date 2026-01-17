@@ -51,7 +51,6 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
         "$baseUrl/rtc/${widget.channelId}/publisher/userAccount/$userId/",
       ),
     );
-    print("Response status: ${res.statusCode} ${res.body}");
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       if (mounted) {

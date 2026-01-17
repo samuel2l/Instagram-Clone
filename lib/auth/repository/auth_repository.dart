@@ -8,7 +8,6 @@ import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/screens/sign_up.dart';
 import 'package:instagram/home/screens/home.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
-import 'package:instagram/stories/repository/story_repository.dart';
 import 'package:instagram/utils/utils.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
@@ -149,9 +148,7 @@ class AuthRepository {
   Future<void> logoutUser(BuildContext context) async {
     try {
       final auth = FirebaseAuth.instance;
-      // print(auth.currentUser);
       await auth.signOut();
-      // print("ah logout??? ${auth.currentUser}");
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) {

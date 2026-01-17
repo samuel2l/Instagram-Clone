@@ -53,7 +53,6 @@ class ChatRepository {
 
                 if (userSnap.docs.isNotEmpty) {
                   final userData = userSnap.docs.first.data();
-                  // print("user data at chat repo? $userData");
                   chatData['email'] = userData['email'];
                   chatData['name'] = userData['name'];
                   chatData['dp'] = userData['dp'];

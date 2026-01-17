@@ -121,8 +121,6 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
                       final emojiLength = emoji.emoji.length;
 
                       captionController.text = newText;
-                      print("new caption text/////");
-                      print(captionController.text);
                       captionController.selection = textSelection.copyWith(
                         baseOffset: textSelection.start + emojiLength,
                         extentOffset: textSelection.start + emojiLength,

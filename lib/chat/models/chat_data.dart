@@ -62,7 +62,6 @@ class ChatData {
   }
 
   factory ChatData.fromMap(Map<String, dynamic> map) {
-    // print("chat data map $map");
     return ChatData(
       chatId: map['chatId'] as String,
       isGroup: map['isGroup'] as bool,

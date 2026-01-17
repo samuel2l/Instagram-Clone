@@ -41,7 +41,6 @@ class StartLivestreamScreen extends ConsumerWidget {
                       context,
                     );
 
-                // print("livestream channel id??? ${channelId}");
                 Navigator.push(
                   context,
                   MaterialPageRoute(
