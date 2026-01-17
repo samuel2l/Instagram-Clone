@@ -18,7 +18,7 @@ class GifStickerMessage extends StatelessWidget {
       //   bottom: 2,
       //   left: !isSender ? 3 : 0,
       // ),
-      height: 50,
+      height: 150,
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.3,
       ),

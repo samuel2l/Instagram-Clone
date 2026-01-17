@@ -6,6 +6,7 @@ import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/widgets/post_video.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
+import 'package:instagram/widgets/comments_text_field.dart';
 import 'package:instagram/widgets/gif_sticker_message.dart';
 
 class PostDetail extends ConsumerStatefulWidget {
@@ -18,7 +19,6 @@ class PostDetail extends ConsumerStatefulWidget {
 
 class _PostDetailState extends ConsumerState<PostDetail> {
   final PageController _controller = PageController();
-  TextEditingController commentController = TextEditingController();
   bool hasProfileLoaded = false;
   AppUserModel? userProfile;
   @override
@@ -179,31 +179,24 @@ class _PostDetailState extends ConsumerState<PostDetail> {
                                     itemCount: snapshot.data!.length,
                                     itemBuilder: (context, index) {
                                       final comment = commentData[index];
-                                      return comment['type'] == "text"
-                                          ? ListTile(
-                                            leading: CircleAvatar(
-                                              backgroundImage: NetworkImage(
-                                                comment["dp"],
-                                              ),
-                                            ),
-                                            subtitle: Text(
-                                              "${comment["email"]}",
-                                            ),
-                                            title: Text("${comment["text"]}"),
-                                          )
-                                          : Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              CircleAvatar(
-                                                backgroundImage: NetworkImage(
-                                                  comment["dp"],
+                                      return ListTile(
+                                        
+                                        leading: CircleAvatar(
+                                          backgroundImage: NetworkImage(
+                                            comment["dp"],
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          "${comment["username"]}",
+                                        ),
+                                        title:
+                                            comment['type'] == "text"
+                                                ? Text("${comment["text"]}")
+                                                : GifStickerMessage(
+                                                  email: comment["username"],
+                                                  content: comment["text"],
                                                 ),
-                                              ),
-                                              GifStickerMessage(email: comment["username"], content: comment["text"])
-                                            ],
-                                          );
+                                      );
                                     },
                                   ),
                                 );
@@ -212,29 +205,22 @@ class _PostDetailState extends ConsumerState<PostDetail> {
                             return Center(child: Text("No comments yet"));
                           },
                         ),
-                        Container(
-                          padding: EdgeInsets.all(8),
-                          child: TextField(
-                            controller: commentController,
-                            onSubmitted: (value) async {
-                              final profileData =
-                                   ref
-                                      .watch(userProvider)
-                                      .value;
-                              if (profileData != null) {
-                                await ref
-                                    .read(postRepositoryProvider)
-                                    .addCommentToPost(
-                                      postId: post.postId,
-                                      username: profileData.profile.username,
-                                      dp: profileData.profile.dp,
-                                      commentText:
-                                          commentController.text.trim(),
-                                      type: "text",
-                                    );
-                              }
-                            },
-                          ),
+
+                        //                     await ref
+                        // .read(postRepositoryProvider)
+                        // .addCommentToPost(
+                        //   postId: post.postId,
+                        //   username: profileData.profile.username,
+                        //   dp: profileData.profile.dp,
+                        //   commentText:
+                        //       commentController.text.trim(),
+                        //   type: "text",
+                        // );
+                        UnifiedTextField(
+                          user: ref.watch(userProvider).value,
+                          hintText: "Add comment..",
+                          isPost: true,
+                          postId: widget.post.postId,
                         ),
                       ],
                     );

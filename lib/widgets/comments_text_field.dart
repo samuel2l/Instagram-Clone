@@ -5,6 +5,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
+import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/utils/utils.dart';
 
 class UnifiedTextField extends ConsumerStatefulWidget {
@@ -12,12 +13,15 @@ class UnifiedTextField extends ConsumerStatefulWidget {
   final String hintText;
   final String? channelId;
   final bool isPost; //check if commenting on a post
+  final String? postId;
+
   const UnifiedTextField({
     super.key,
     required this.user,
     required this.hintText,
     this.channelId,
     this.isPost = false,
+    this.postId,
   });
 
   @override
@@ -75,7 +79,14 @@ class _UnifiedTextFieldState extends ConsumerState<UnifiedTextField> {
                 GiphyGif? gif = await pickGIF(context);
                 if (gif != null) {
                   if (widget.isPost) {
-                    
+                    await ref
+                        .read(postRepositoryProvider)
+                        .addStickerToPost(
+                          postId: widget.postId!,
+                          username: widget.user!.profile.username,
+                          dp: widget.user!.profile.dp,
+                          commentText: gif.images!.original!.url,
+                        );
                   } else {
                     await ref
                         .read(liveStreamRepositoryProvider)
@@ -98,14 +109,27 @@ class _UnifiedTextFieldState extends ConsumerState<UnifiedTextField> {
             IconButton(
               icon: Icon(Icons.send),
               onPressed: () async {
-                await ref
-                    .read(liveStreamRepositoryProvider)
-                    .addComment(
-                      channelId: widget.channelId ?? "",
-                      username: ref.watch(userProvider).value!.profile.username,
-                      dp: ref.watch(userProvider).value!.profile.dp,
-                      commentText: messageController.text.trim(),
-                    );
+                if (widget.isPost) {
+                  await ref
+                      .read(postRepositoryProvider)
+                      .addCommentToPost(
+                        postId: widget.postId!,
+                        username: widget.user!.profile.username,
+                        dp: widget.user!.profile.dp,
+                        commentText: messageController.text.trim(),
+                        type: "text",
+                      );
+                } else {
+                  await ref
+                      .read(liveStreamRepositoryProvider)
+                      .addComment(
+                        channelId: widget.channelId ?? "",
+                        username:
+                            ref.watch(userProvider).value!.profile.username,
+                        dp: ref.watch(userProvider).value!.profile.dp,
+                        commentText: messageController.text.trim(),
+                      );
+                }
                 messageController.clear();
               },
             ),

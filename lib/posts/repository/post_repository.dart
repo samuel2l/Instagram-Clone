@@ -135,6 +135,28 @@ class PostRepository {
         .add(commentData);
   }
 
+  Future<void> addStickerToPost({
+    required String postId,
+    required String username,
+    required String dp,
+    required String commentText,
+  }) async {
+    final commentData = {
+      'text': commentText,
+      'username': username,
+      'dp': dp,
+      'createdAt': FieldValue.serverTimestamp(),
+      'uid': auth.currentUser!.uid,
+      'type':"GIF"
+    };
+
+    await firestore
+        .collection('posts')
+        .doc(postId)
+        .collection('comments')
+        .add(commentData);
+  }
+
   Stream<List<Map<String, dynamic>>> getPostComments(String postId) {
     return firestore
         .collection('posts')
