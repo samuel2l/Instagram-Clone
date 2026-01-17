@@ -183,6 +183,7 @@ Stream<bool> hasUserWatchedAllStories({
             dp: "",
             username: "",
             hasStory: false,
+            isLive: false
           ),
         );
       }
@@ -224,6 +225,7 @@ Stream<bool> hasUserWatchedAllStories({
           dp: "",
           username: "",
           hasStory: false,
+          isLive: false
         ),
       );
     }

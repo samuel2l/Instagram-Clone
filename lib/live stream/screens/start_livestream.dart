@@ -10,8 +10,6 @@ class StartLivestreamScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
-
     return Scaffold(
       appBar: AppBar(title: const Text("Start Livestream")),
       body: Padding(
@@ -20,9 +18,19 @@ class StartLivestreamScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 32),
-            ElevatedButton.icon(
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                fixedSize: Size(MediaQuery.sizeOf(context).width, 60),
+
+                backgroundColor: const Color.fromARGB(255, 1, 86, 242),
+                foregroundColor: Colors.white,
+              ),
+
               icon: const Icon(Icons.videocam),
-              label: const Text("Start Live"),
+              label: const Text("Start Live", style: TextStyle(fontSize: 20)),
               onPressed: () async {
                 String channelId = await ref
                     .read(liveStreamRepositoryProvider)

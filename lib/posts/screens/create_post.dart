@@ -2,9 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/live%20stream/screens/start_livestream.dart';
-import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/post_photos.dart';
-import 'package:instagram/utils/utils.dart';
 
 class CreatePost extends ConsumerStatefulWidget {
   const CreatePost({super.key});

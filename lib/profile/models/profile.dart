@@ -6,6 +6,8 @@ class Profile {
   final String dp;
   final String username;
   bool hasStory = false;
+  bool isLive = false;
+  
 
   Profile({
     required this.following,
@@ -15,6 +17,7 @@ class Profile {
     required this.dp,
     required this.username,
     required this.hasStory,
+    required this.isLive
   });
   Map<String, dynamic> toMap() {
     return {
@@ -25,6 +28,8 @@ class Profile {
       'dp': dp,
       'username': username,
       'hasStory': hasStory,
+      'isLive': isLive,
+      
     };
   }
 
@@ -37,6 +42,8 @@ class Profile {
       dp: map['dp'] as String,
       username: map['username'] as String,
       hasStory: map['hasStory'] as bool? ?? false,
+      isLive: map['isLive'] as bool? ?? false,
+
     );
   }
 }

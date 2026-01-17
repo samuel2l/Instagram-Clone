@@ -109,6 +109,7 @@ class _HomeState extends ConsumerState<Home> {
                     itemBuilder: (context, index) {
                       final currUser = usersWithStories[index];
                       currentUserHasStory = currUser.profile.hasStory;
+
                       return SizedBox(
                         width: 100,
                         child: Column(
@@ -494,7 +495,7 @@ class _HomeState extends ConsumerState<Home> {
             },
           ),
           PostFeed(),
-          // Text("errrrr")
+
         ],
       ),
     );
