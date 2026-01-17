@@ -133,40 +133,38 @@ class StoryRepository {
     });
   }
 
-  Future<bool> hasUserWatchedAllStories({
-    required String ownerId,
-    required String currentUserId,
-  }) async {
-    try {
-      final storiesSnapshot =
-          await firestore
-              .collection('stories')
-              .doc(ownerId)
-              .collection('userStories')
-              .get();
-
-      // No stories? Then nothing to watch
-      if (storiesSnapshot.docs.isEmpty) {
-        return true;
-      }
-
-      for (final doc in storiesSnapshot.docs) {
-        final data = doc.data();
-        final watchers = List<String>.from(data['watchers'] ?? []);
-
-        // If any story does NOT include the current user
-        if (!watchers.contains(currentUserId)) {
-          return false;
+Stream<bool> hasUserWatchedAllStories({
+  required String ownerId,
+  required String currentUserId,
+}) {
+  return firestore
+      .collection('stories')
+      .doc(ownerId)
+      .collection('userStories')
+      .snapshots()
+      .map((storiesSnapshot) {
+        // No stories → treated as all watched
+        if (storiesSnapshot.docs.isEmpty) {
+          return true;
         }
-      }
 
-      // All stories contained the user
-      return true;
-    } catch (e) {
-      debugPrint("Error checking if all stories watched: $e");
-      return false;
-    }
-  }
+        for (final doc in storiesSnapshot.docs) {
+          final data = doc.data();
+          final watchers = List<String>.from(data['watchers'] ?? []);
+
+          // If any story does NOT include the user
+          if (!watchers.contains(currentUserId)) {
+            return false;
+          }
+        }
+
+        return true;
+      })
+      .handleError((e) {
+        debugPrint("Error checking if all stories watched: $e");
+        return false;
+      });
+}
 
   Future<UserStories> getUserStories(String userId) async {
     try {

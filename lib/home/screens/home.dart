@@ -198,9 +198,9 @@ class _HomeState extends ConsumerState<Home> {
                                                   .value
                                                   ?.firebaseUID &&
                                           currentUserHasStory
-                                      ? FutureBuilder(
-                                        future: ref
-                                            .read(storyRepositoryProvider)
+                                      ? StreamBuilder(
+                                        stream: ref
+                                            .watch(storyRepositoryProvider)
                                             .hasUserWatchedAllStories(
                                               ownerId: currUser.firebaseUID,
                                               currentUserId:
@@ -213,7 +213,7 @@ class _HomeState extends ConsumerState<Home> {
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
-                                            return Container();
+                                            return Center(child: CircularProgressIndicator(),);
                                           }
                                           if (snapshot.hasError) {
                                             return Text("error");
@@ -355,8 +355,8 @@ class _HomeState extends ConsumerState<Home> {
                                           );
                                         },
                                       )
-                                      : FutureBuilder(
-                                        future: ref
+                                      : StreamBuilder(
+                                        stream: ref
                                             .read(storyRepositoryProvider)
                                             .hasUserWatchedAllStories(
                                               ownerId: currUser.firebaseUID,
@@ -370,7 +370,7 @@ class _HomeState extends ConsumerState<Home> {
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {
-                                            return Container();
+                                            return Center(child: CircularProgressIndicator(),);
                                           }
                                           if (snapshot.hasError) {
                                             return Text("error");

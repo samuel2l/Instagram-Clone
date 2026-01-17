@@ -129,7 +129,6 @@ class _UserStoriesState extends ConsumerState<UserStories> {
                 _startWatching();
               } else {
                 percentageCoveredList[currentStoryIndex] = 1;
-                Navigator.pop(context);
               }
             }
             setState(() {});

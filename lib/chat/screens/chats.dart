@@ -410,8 +410,8 @@ class Chats extends ConsumerWidget {
                                                             ),
                                                           );
                                                         },
-                                                        child: FutureBuilder(
-                                                          future: ref
+                                                        child: StreamBuilder(
+                                                          stream: ref
                                                               .read(
                                                                 storyRepositoryProvider,
                                                               )
