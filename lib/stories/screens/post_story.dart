@@ -172,8 +172,6 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
                                       final emojiLength = emoji.emoji.length;
 
                                       captionController.text = newText;
-                                      print("new caption text/////");
-                                      print(captionController.text);
 
                                       captionController
                                           .selection = textSelection.copyWith(
@@ -201,7 +199,7 @@ class _StoryEditorState extends ConsumerState<StoryEditor> {
                                 nextItem.type = ItemType.text;
                                 storyData.add(nextItem);
                                 captionController.clear();
-                                
+
                               });
                             },
                           ),
