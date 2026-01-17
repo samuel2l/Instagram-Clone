@@ -197,7 +197,6 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                               return Container(
                                                 padding: EdgeInsets.all(16),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.red,
                                                   borderRadius:
                                                       BorderRadius.vertical(
                                                         top: Radius.circular(
