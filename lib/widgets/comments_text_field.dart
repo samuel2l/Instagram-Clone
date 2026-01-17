@@ -1,25 +1,23 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:giphy_get/giphy_get.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:instagram/auth/models/app_user_model.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'package:instagram/utils/utils.dart';
 
 class UnifiedTextField extends ConsumerStatefulWidget {
   final AppUserModel? user;
   final String hintText;
-  final Function onSendMessage;
-  final Function onSendGifOrSticker;
   final String? channelId;
+  final bool isPost; //check if commenting on a post
   const UnifiedTextField({
     super.key,
     required this.user,
     required this.hintText,
-    required this.onSendMessage,
-    required this.onSendGifOrSticker,
     this.channelId,
+    this.isPost = false,
   });
 
   @override
@@ -76,14 +74,20 @@ class _UnifiedTextFieldState extends ConsumerState<UnifiedTextField> {
               onPressed: () async {
                 GiphyGif? gif = await pickGIF(context);
                 if (gif != null) {
-                  // await widget.onSendGifOrSticker(gif.images!.original!.url);
+                  if (widget.isPost) {
+                    
+                  } else {
+                    await ref
+                        .read(liveStreamRepositoryProvider)
+                        .sendStickerOrGif(
+                          channelId: widget.channelId ?? "",
+                          username:
+                              ref.watch(userProvider).value!.profile.username,
+                          dp: ref.watch(userProvider).value!.profile.dp,
 
-                  sendCommentStickerOrGif(
-                    ref,
-                    liveStreamRepositoryProvider,
-                    widget.channelId,
-                    gif.images!.original!.url,
-                  );
+                          commentText: gif.images!.original!.url,
+                        );
+                  }
 
                   setState(() {});
                 }
@@ -94,13 +98,14 @@ class _UnifiedTextFieldState extends ConsumerState<UnifiedTextField> {
             IconButton(
               icon: Icon(Icons.send),
               onPressed: () async {
-                // await widget.onSendMessage();
-                await sendCommentMessage(
-                  ref,
-                  liveStreamRepositoryProvider,
-                  widget.channelId,
-                  messageController.text.trim(),
-                );
+                await ref
+                    .read(liveStreamRepositoryProvider)
+                    .addComment(
+                      channelId: widget.channelId ?? "",
+                      username: ref.watch(userProvider).value!.profile.username,
+                      dp: ref.watch(userProvider).value!.profile.dp,
+                      commentText: messageController.text.trim(),
+                    );
                 messageController.clear();
               },
             ),

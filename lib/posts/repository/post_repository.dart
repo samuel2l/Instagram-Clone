@@ -114,16 +114,18 @@ class PostRepository {
 
   Future<void> addCommentToPost({
     required String postId,
-    required String email,
+    required String username,
     required String dp,
     required String commentText,
+    required String type,
   }) async {
     final commentData = {
       'text': commentText,
-      'email': email,
+      'username': username,
       'dp': dp,
       'createdAt': FieldValue.serverTimestamp(),
       'uid': auth.currentUser!.uid,
+      'type':type
     };
 
     await firestore

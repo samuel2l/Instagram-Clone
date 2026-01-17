@@ -181,7 +181,6 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                         isScrollControlled: true,
                                         builder: (context) {
                                           return DraggableScrollableSheet(
-                                            
                                             initialChildSize: 0.5,
                                             minChildSize: 0.5,
                                             maxChildSize: 0.8,
@@ -202,7 +201,6 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                                       ),
                                                 ),
                                                 child: Column(
-
                                                   children: [
                                                     StreamBuilder(
                                                       stream: ref
@@ -269,11 +267,11 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                                         value,
                                                       ) async {
                                                         final profileData =
-                                                            await ref
+                                                             ref
                                                                 .watch(
-                                                                  authRepositoryProvider,
+                                                                  userProvider,
                                                                 )
-                                                                .getUser();
+                                                                .value;
                                                         if (profileData !=
                                                             null) {
                                                           await ref
@@ -283,9 +281,10 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                                               .addCommentToPost(
                                                                 postId:
                                                                     reelData![index]["postId"],
-                                                                email:
+                                                                username:
                                                                     profileData
-                                                                        .email,
+                                                                        .profile
+                                                                        .username,
                                                                 dp:
                                                                     profileData
                                                                         .profile
@@ -294,6 +293,7 @@ class _ConsumerReelsState extends ConsumerState<Reels> {
                                                                     commentController
                                                                         .text
                                                                         .trim(),
+                                                                type: "text",
                                                               );
                                                         }
                                                         commentController

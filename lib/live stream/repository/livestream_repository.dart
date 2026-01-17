@@ -125,13 +125,15 @@ class LivestreamRepository {
 
   Future<void> addComment({
     required String channelId,
-    required String email,
+    required String username,
+    required String dp,
     required String commentText,
   }) async {
     final commentData = {
       'type': "text",
       'text': commentText,
-      'email': email,
+      'dp':dp,
+      'username': username,
       'createdAt': FieldValue.serverTimestamp(),
     };
 
@@ -144,13 +146,15 @@ class LivestreamRepository {
 
   Future<void> sendStickerOrGif({
     required String channelId,
-    required String email,
+    required String username,
+    required String dp,
     required String commentText,
   }) async {
     final commentData = {
       'type': "GIF",
       'text': commentText,
-      'email': email,
+      'username': username,
+      'dp':dp,
       'createdAt': FieldValue.serverTimestamp(),
     };
 

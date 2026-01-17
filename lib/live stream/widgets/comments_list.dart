@@ -76,7 +76,7 @@ class _AnimatedCommentsListState extends State<AnimatedCommentsList> {
         final isNew = _isNewComment(index);
         
         return AnimatedCommentBubble(
-          email: comment['email'] ?? 'Unknown',
+          email: comment['username'] ?? 'Unknown',
           text: comment['text'] ?? '',
           index: index,
           isNew: isNew,

@@ -9,7 +9,7 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'package:instagram/live%20stream/widgets/comments_list.dart';
 import 'package:instagram/utils/utils.dart';
-import 'package:instagram/widgets/unified_text_field.dart';
+import 'package:instagram/widgets/comments_text_field.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
@@ -346,55 +346,9 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
               ],
             ),
           ),
-          // Container(
-          //   color: Colors.transparent,
-          //   padding: const EdgeInsets.all(8),
-          //   child: Row(
-          //     children: [
-          //       Expanded(
-          //         child: TextField(
-          //           controller: commentController,
-          //           decoration: InputDecoration(hintText: "Write a comment..."),
-          //         ),
-          //       ),
-          //       IconButton(
-          //         onPressed: () {
-          //           ref
-          //               .read(liveStreamRepositoryProvider)
-          //               .addLivestreamComment(
-          //                 channelId: widget.channelId,
-          //                 email: FirebaseAuth.instance.currentUser?.email ?? "",
-          //                 commentText: commentController.text.trim(),
-          //               );
-          //           commentController.clear();
-          //         },
-          //         icon: const Icon(Icons.send),
-          //       ),
-          //     ],
-          //   ),
-          // ),
           UnifiedTextField(
             user: ref.read(userProvider).value,
             hintText: "Add a comment..",
-            onSendMessage: (String gifUrl)async {
-                  // await ref
-                  //     .read(liveStreamRepositoryProvider)
-                  //     .sendStickerOrGif(
-                  //       channelId: widget.channelId!,
-                  //       email: FirebaseAuth.instance.currentUser?.email ?? "",
-                  //       commentText: gifUrl,
-                  //     );
-
-            },
-            onSendGifOrSticker: ()async{
-                  //     await ref
-                  // .read(liveStreamRepositoryProvider)
-                  // .sendStickerOrGif(
-                  //   channelId: widget.channelId,
-                  //   email: FirebaseAuth.instance.currentUser?.email ?? "",
-                  //   commentText: ,
-                  // );
-            },
             channelId:widget.channelId
           ),
         ],

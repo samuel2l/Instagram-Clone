@@ -6,6 +6,7 @@ import 'package:instagram/posts/models/Post.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/widgets/post_video.dart';
 import 'package:instagram/profile/repository/profile_repository.dart';
+import 'package:instagram/widgets/gif_sticker_message.dart';
 
 class PostDetail extends ConsumerStatefulWidget {
   const PostDetail({super.key, required this.post});
@@ -123,7 +124,6 @@ class _PostDetailState extends ConsumerState<PostDetail> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             IconButton(
-
               onPressed: () {
                 ref.read(postRepositoryProvider).toggleLikePost(post.postId);
                 setState(() {});
@@ -179,15 +179,31 @@ class _PostDetailState extends ConsumerState<PostDetail> {
                                     itemCount: snapshot.data!.length,
                                     itemBuilder: (context, index) {
                                       final comment = commentData[index];
-                                      return ListTile(
-                                        leading: CircleAvatar(
-                                          backgroundImage: NetworkImage(
-                                            comment["dp"],
-                                          ),
-                                        ),
-                                        subtitle: Text("${comment["email"]}"),
-                                        title: Text("${comment["text"]}"),
-                                      );
+                                      return comment['type'] == "text"
+                                          ? ListTile(
+                                            leading: CircleAvatar(
+                                              backgroundImage: NetworkImage(
+                                                comment["dp"],
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              "${comment["email"]}",
+                                            ),
+                                            title: Text("${comment["text"]}"),
+                                          )
+                                          : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              CircleAvatar(
+                                                backgroundImage: NetworkImage(
+                                                  comment["dp"],
+                                                ),
+                                              ),
+                                              GifStickerMessage(email: comment["username"], content: comment["text"])
+                                            ],
+                                          );
                                     },
                                   ),
                                 );
@@ -202,18 +218,19 @@ class _PostDetailState extends ConsumerState<PostDetail> {
                             controller: commentController,
                             onSubmitted: (value) async {
                               final profileData =
-                                  await ref
-                                      .watch(authRepositoryProvider)
-                                      .getUser();
+                                   ref
+                                      .watch(userProvider)
+                                      .value;
                               if (profileData != null) {
                                 await ref
                                     .read(postRepositoryProvider)
                                     .addCommentToPost(
                                       postId: post.postId,
-                                      email: profileData.email,
+                                      username: profileData.profile.username,
                                       dp: profileData.profile.dp,
                                       commentText:
                                           commentController.text.trim(),
+                                      type: "text",
                                     );
                               }
                             },

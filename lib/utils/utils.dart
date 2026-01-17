@@ -133,26 +133,3 @@ Future sendCommentStickerOrGif(
         commentText: gifUrl,
       );
 }
-
-Future sendCommentMessage(
-  WidgetRef ref,
-  Provider provider,
-  String? channelId,
-  String text
-) async {
-  // await ref
-  //     .read(provider)
-  //     .sendStickerOrGif(
-  //       channelId: channelId ?? "",
-  //       email: FirebaseAuth.instance.currentUser?.email ?? "",
-  //       commentText: gifUrl,
-  //     );
-                await ref
-                    .read(provider)
-                    .addComment(
-                      channelId: channelId??"",
-                      email: FirebaseAuth.instance.currentUser?.email ?? "",
-                      commentText: text,
-                    );
-
-}
