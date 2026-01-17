@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:instagram/widgets/gif_sticker_message.dart';
 
 class AnimatedCommentsList extends StatefulWidget {
   final List<Map<String, dynamic>> comments;
@@ -20,6 +21,7 @@ class _AnimatedCommentsListState extends State<AnimatedCommentsList> {
   void didUpdateWidget(AnimatedCommentsList oldWidget) {
     super.didUpdateWidget(oldWidget);
     
+    // Auto-scroll to bottom when new comment arrives
     if (widget.comments.length > oldWidget.comments.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
@@ -78,6 +80,7 @@ class _AnimatedCommentsListState extends State<AnimatedCommentsList> {
           text: comment['text'] ?? '',
           index: index,
           isNew: isNew,
+          type: comment['type'],
         );
       },
     );
@@ -89,6 +92,7 @@ class AnimatedCommentBubble extends StatefulWidget {
   final String text;
   final int index;
   final bool isNew;
+  final String? type;
 
   const AnimatedCommentBubble({
     super.key,
@@ -96,6 +100,7 @@ class AnimatedCommentBubble extends StatefulWidget {
     required this.text,
     required this.index,
     required this.isNew,
+    this.type,
   });
 
   @override
@@ -166,50 +171,55 @@ class _AnimatedCommentBubbleState extends State<AnimatedCommentBubble>
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.75,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withOpacity(0.6),
-                      Colors.black.withOpacity(0.4),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
-                    width: 1,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.email.split('@')[0],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+              child: widget.type == 'GIF'
+                  ? GifStickerMessage(
+                      email: widget.email,
+                      content: widget.text,
+                    )
+                  : Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withOpacity(0.6),
+                            Colors.black.withOpacity(0.4),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.email.split('@')[0],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.text,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.text,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
         ),

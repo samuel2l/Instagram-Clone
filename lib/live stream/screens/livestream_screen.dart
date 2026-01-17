@@ -5,9 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/live%20stream/repository/livestream_repository.dart';
 import 'package:instagram/live%20stream/widgets/comments_list.dart';
 import 'package:instagram/utils/utils.dart';
+import 'package:instagram/widgets/unified_text_field.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
@@ -122,7 +124,7 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
               watchers.clear();
               _remoteUid = null;
             });
-            print("leaving channel?");
+
             await endStream();
           }
         },
@@ -304,72 +306,89 @@ class _LivestreamScreenState extends ConsumerState<LivestreamScreen> {
                     ),
                   ),
                 ),
-// Replace the Positioned widget for comments (around line 220) with this:
 
-Positioned(
-  bottom: 0,
-  left: 0,
-  right: 0,
-  child: Container(
-    height: MediaQuery.of(context).size.height * 0.4,
-    decoration: const BoxDecoration(
-      // gradient: LinearGradient(
-      //   begin: Alignment.bottomCenter,
-      //   end: Alignment.topCenter,
-      //   colors: [
-      //     Colors.black54,
-      //     Colors.transparent,
-      //   ],
-      // ),
-    ),
-    child: StreamBuilder<List<Map<String, dynamic>>>(
-      stream: ref
-          .read(liveStreamRepositoryProvider)
-          .getLivestreamComments(widget.channelId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox.shrink();
-        }
-        
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const SizedBox.shrink();
-        }
+                // Replace the Positioned widget for comments (around line 220) with this:
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.4,
+                    decoration: const BoxDecoration(
+                      // gradient: LinearGradient(
+                      //   begin: Alignment.bottomCenter,
+                      //   end: Alignment.topCenter,
+                      //   colors: [
+                      //     Colors.black54,
+                      //     Colors.transparent,
+                      //   ],
+                      // ),
+                    ),
+                    child: StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: ref
+                          .read(liveStreamRepositoryProvider)
+                          .getLivestreamComments(widget.channelId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox.shrink();
+                        }
 
-        return AnimatedCommentsList(
-          comments: snapshot.data!,
-        );
-      },
-    ),
-  ),
-),              ],
-            ),
-          ),
-          Container(
-            color: Colors.transparent,
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: commentController,
-                    decoration: InputDecoration(hintText: "Write a comment..."),
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return AnimatedCommentsList(comments: snapshot.data!);
+                      },
+                    ),
                   ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    ref
-                        .read(liveStreamRepositoryProvider)
-                        .addLivestreamComment(
-                          channelId: widget.channelId,
-                          email: FirebaseAuth.instance.currentUser?.email ?? "",
-                          commentText: commentController.text.trim(),
-                        );
-                    commentController.clear();
-                  },
-                  icon: const Icon(Icons.send),
                 ),
               ],
             ),
+          ),
+          // Container(
+          //   color: Colors.transparent,
+          //   padding: const EdgeInsets.all(8),
+          //   child: Row(
+          //     children: [
+          //       Expanded(
+          //         child: TextField(
+          //           controller: commentController,
+          //           decoration: InputDecoration(hintText: "Write a comment..."),
+          //         ),
+          //       ),
+          //       IconButton(
+          //         onPressed: () {
+          //           ref
+          //               .read(liveStreamRepositoryProvider)
+          //               .addLivestreamComment(
+          //                 channelId: widget.channelId,
+          //                 email: FirebaseAuth.instance.currentUser?.email ?? "",
+          //                 commentText: commentController.text.trim(),
+          //               );
+          //           commentController.clear();
+          //         },
+          //         icon: const Icon(Icons.send),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          UnifiedTextField(
+            user: ref.read(userProvider).value,
+            hintText: "Add a comment..",
+            onSendMessage: ()async {
+
+            },
+            onSendGifOrSticker: ()async{
+                  //     await ref
+                  // .read(liveStreamRepositoryProvider)
+                  // .sendStickerOrGif(
+                  //   channelId: widget.channelId,
+                  //   email: FirebaseAuth.instance.currentUser?.email ?? "",
+                  //   commentText: ,
+                  // );
+            },
+            channelId:widget.channelId
           ),
         ],
       ),

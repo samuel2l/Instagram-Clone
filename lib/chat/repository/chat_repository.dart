@@ -513,7 +513,6 @@ ref.read(chatDataProvider.notifier).state=ref.read(chatDataProvider)!.copyWith(p
   }
 
   Future<void> sendFile({
-    //generic function to send audio,images,gifs,files etc
     required String receiverId,
     required String senderId,
     required String chatId,

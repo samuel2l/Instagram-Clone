@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/live%20stream/models/livestream.dart';
+import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 
 final isLiveProvider = StreamProvider<bool>((ref) {
@@ -129,6 +130,26 @@ class LivestreamRepository {
     required String commentText,
   }) async {
     final commentData = {
+      'type': "text",
+      'text': commentText,
+      'email': email,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    await firestore
+        .collection('livestreams')
+        .doc(channelId)
+        .collection('comments')
+        .add(commentData);
+  }
+
+  Future<void> sendStickerOrGif({
+    required String channelId,
+    required String email,
+    required String commentText,
+  }) async {
+    final commentData = {
+      'type': "GIF",
       'text': commentText,
       'email': email,
       'createdAt': FieldValue.serverTimestamp(),
@@ -149,12 +170,9 @@ class LivestreamRepository {
         .orderBy('createdAt', descending: false)
         .snapshots()
         .map((snapshot) {
-          // for (var doc in snapshot.docs) {
-          //   // print('Comment: ${doc.data()}');
-          // }
-
-          // Return as a list of maps
-          return snapshot.docs.map((doc) => doc.data()).toList();
+          return snapshot.docs.map((doc) {
+            return {'id': doc.id, ...doc.data()};
+          }).toList();
         });
   }
 
