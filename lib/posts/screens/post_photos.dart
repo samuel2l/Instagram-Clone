@@ -48,7 +48,7 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
           children: [
             Row(
               children: [
-                Text("eiiiii"),
+
                 IconButton(
                   onPressed: () {
                     showEmojis = !showEmojis;
@@ -195,11 +195,12 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
                 isReelProcessing = false;
                 setState(() {});
                 captionController.clear();
+                Navigator.pop(context);
               },
               child:
                   !isReelProcessing
                       ? Text("Create Reel", style: TextStyle(fontSize: 20))
-                      : Center(child: CircularProgressIndicator()),
+                      : Center(child: CircularProgressIndicator(color: Colors.white,)),
             ),
             SizedBox(height: 20),
 
@@ -261,12 +262,13 @@ class _PostPhotosState extends ConsumerState<PostPhotos> {
                 isProcessing = false;
                 setState(() {});
                 captionController.clear();
+                selectedFiles.clear();
                 Navigator.pop(context);
               },
               child:
                   !isProcessing
-                      ? Text("Post", style: TextStyle(fontSize: 20))
-                      : Center(child: CircularProgressIndicator()),
+                      ? Text("Post Photo(s)", style: TextStyle(fontSize: 20))
+                      : Center(child: CircularProgressIndicator(color: Colors.white,)),
             ),
           ],
         ),

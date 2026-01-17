@@ -47,9 +47,12 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                   ),
                 );
               },
-              child: const Text("Post Photos", style: TextStyle(fontSize: 20)),
+              child: const Text(
+                "Post Photos/Reels",
+                style: TextStyle(fontSize: 20),
+              ),
             ),
-
+            SizedBox(height: 10),
 
             TextButton(
               style: TextButton.styleFrom(
