@@ -57,8 +57,7 @@ class _FindUsersState extends ConsumerState<FindUsers> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) {
-                        // return ChatScreen(chatData: {},user: user);
-                        return ProfileDetails(uid: user.firebaseUID);
+                        return ProfileDetails(user: user);
                       },
                     ),
                   );
