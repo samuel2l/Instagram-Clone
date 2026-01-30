@@ -4,16 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
 import 'package:instagram/chat/screens/add_member.dart';
 import 'package:instagram/chat/screens/create_group.dart';
+import 'package:instagram/chat/screens/group_members.dart';
 import 'package:instagram/chat/screens/remove_members.dart';
 
-class ChatSettings extends ConsumerStatefulWidget {
-  const ChatSettings({super.key});
+class GroupSettings extends ConsumerStatefulWidget {
+  const GroupSettings({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _ChatSettingsState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _GroupSettingsState();
 }
 
-class _ChatSettingsState extends ConsumerState<ChatSettings> {
+class _GroupSettingsState extends ConsumerState<GroupSettings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +80,7 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
                           return RemoveMembers();
                         },
                       ),
-                    );      
+                    );
                   },
                   style: TextButton.styleFrom(foregroundColor: Colors.black),
                   child: Column(
@@ -104,7 +105,21 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
                 ),
                 SizedBox(width: 10),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final members = await ref
+                        .read(chatRepositoryProvider)
+                        .getGroupMembers(
+                          ref.read(chatDataProvider)!.chatId,
+                          context,
+                        );
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return GroupMembers(members: members);
+                        },
+                      ),
+                    );
+                  },
                   style: TextButton.styleFrom(foregroundColor: Colors.black),
                   child: Column(
                     children: [

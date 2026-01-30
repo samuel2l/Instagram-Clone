@@ -7,7 +7,7 @@ import 'package:instagram/auth/repository/auth_repository.dart';
 import 'package:instagram/chat/models/message.dart';
 import 'package:instagram/chat/models/message_to_reply.dart';
 import 'package:instagram/chat/repository/chat_repository.dart';
-import 'package:instagram/chat/screens/chat_settings.dart';
+import 'package:instagram/chat/screens/group_settings.dart';
 import 'package:instagram/chat/widgets/image_message.dart';
 import 'package:instagram/chat/widgets/reply_widget.dart';
 import 'package:instagram/chat/widgets/send_message.dart';
@@ -59,7 +59,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
-                    return ChatSettings();
+                    return GroupSettings();
                   },
                 ),
               );
