@@ -53,7 +53,6 @@ class ProfileRepository {
       }
     } catch (e) {
       if (context != null) {
-
         showSnackBar(context: context, content: 'Error updating profile: $e');
       }
     }
@@ -98,7 +97,7 @@ class ProfileRepository {
   }) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      
+
       final docSnapshot = await firestore.collection('users').doc(uid).get();
 
       if (docSnapshot.exists) {
@@ -205,27 +204,71 @@ class ProfileRepository {
     }
   }
 
-Stream<List<AppUserModel>> searchUsersByUsername(String query) {
-  if (query.trim().isEmpty) {
-    return Stream.value([]);
+  Stream<List<AppUserModel>> searchUsersByUsername(String query) {
+    if (query.trim().isEmpty) {
+      return Stream.value([]);
+    }
+
+    return firestore
+        .collection('users')
+        .where('username', isGreaterThanOrEqualTo: query)
+        .where('username', isLessThan: '$query\uf8ff')
+        .limit(20)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => AppUserModel.fromMap(doc.data()))
+              .toList();
+        });
   }
 
-  return firestore
-      .collection('users')
-      .where(
-        'username',
-        isGreaterThanOrEqualTo: query,
-      )
-      .where(
-        'username',
-        isLessThan: query + '\uf8ff',
-      )
-      .limit(20)
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => AppUserModel.fromMap(doc.data()))
-            .toList();
-      });
-}
+  Future<void> updateUserProfile({
+    required String uid,
+    String? name,
+    String? username,
+    String? bio,
+    String? dp,
+    BuildContext? context,
+  }) async {
+    try {
+      final Map<String, dynamic> updates = {};
+
+      if (username != null) {
+        final usernameQuery =
+            await firestore
+                .collection('users')
+                .where('username', isEqualTo: username)
+                .get();
+
+        if (usernameQuery.docs.isNotEmpty &&
+            usernameQuery.docs.first.id != uid) {
+          if (context != null) {
+            showSnackBar(
+              context: context,
+              content: "Username is already taken",
+            );
+          }
+          return;
+        }
+
+        updates['username'] = username;
+      }
+
+      if (name != null) updates['name'] = name;
+      if (bio != null) updates['bio'] = bio;
+      if (dp != null) updates['dp'] = dp;
+
+      if (updates.isEmpty) return;
+
+      await firestore.collection('users').doc(uid).update(updates);
+
+      if (context != null) {
+        showSnackBar(context: context, content: "Profile updated successfully");
+      }
+    } catch (e) {
+      if (context != null) {
+        showSnackBar(context: context, content: "Error updating profile: $e");
+      }
+    }
+  }
 }
