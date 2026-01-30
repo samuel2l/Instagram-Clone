@@ -204,4 +204,28 @@ class ProfileRepository {
       }
     }
   }
+
+Stream<List<AppUserModel>> searchUsersByUsername(String query) {
+  if (query.trim().isEmpty) {
+    return Stream.value([]);
+  }
+
+  return firestore
+      .collection('users')
+      .where(
+        'username',
+        isGreaterThanOrEqualTo: query,
+      )
+      .where(
+        'username',
+        isLessThan: query + '\uf8ff',
+      )
+      .limit(20)
+      .snapshots()
+      .map((snapshot) {
+        return snapshot.docs
+            .map((doc) => AppUserModel.fromMap(doc.data()))
+            .toList();
+      });
+}
 }

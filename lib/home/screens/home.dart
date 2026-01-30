@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram/auth/repository/auth_repository.dart';
+import 'package:instagram/home/screens/find_users.dart';
 import 'package:instagram/live%20stream/screens/livestream_screen.dart';
 import 'package:instagram/posts/repository/post_repository.dart';
 import 'package:instagram/posts/screens/create_post.dart';
@@ -56,6 +57,14 @@ class _HomeState extends ConsumerState<Home> {
           ),
         ),
         actions: [
+          IconButton(onPressed: (){
+
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => FindUsers(),
+              ),
+            );          
+          }, icon: Icon(Icons.search)),
           IconButton(
             onPressed: () async {
               final res = await ref.read(postRepositoryProvider).getReels();
