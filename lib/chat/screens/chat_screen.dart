@@ -13,6 +13,7 @@ import 'package:instagram/chat/widgets/reply_widget.dart';
 import 'package:instagram/chat/widgets/send_message.dart';
 import 'package:instagram/chat/widgets/text_message.dart';
 import 'package:instagram/chat/widgets/video_message.dart';
+import 'package:instagram/profile/screens/profile_details.dart';
 import 'package:instagram/utils/constants.dart';
 import 'package:instagram/utils/utils.dart';
 import 'package:instagram/video%20calls/repository/video_call_repository.dart';
@@ -53,14 +54,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         centerTitle: false,
 
         title: GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) {
-                  return ChatSettings();
-                },
-              ),
-            );
+          onTap: () async {
+            if (ref.read(chatDataProvider)!.isGroup) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) {
+                    return ChatSettings();
+                  },
+                ),
+              );
+            } else {
+              final user = await ref
+                  .read(authRepositoryProvider)
+                  .getUserById(ref.read(chatDataProvider)!.userId!);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) {
+                    return ProfileDetails(user: user);
+                  },
+                ),
+              );
+            }
           },
           child: Container(
             width: MediaQuery.of(context).size.width * 0.6,
@@ -111,11 +125,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               MaterialPageRoute(
                                 builder: (context) {
                                   return VoiceCallScreen(
-                                    calleeId: ref.read(chatDataProvider) != null
-                                          ? ref.read(chatDataProvider)!.chatId
-                                          : "",
+                                    calleeId:
+                                        ref.read(chatDataProvider) != null
+                                            ? ref.read(chatDataProvider)!.chatId
+                                            : "",
                                     channelId:
-                                      "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(chatDataProvider) != null ? ref.read(chatDataProvider)!.chatId : ""}",
+                                        "${FirebaseAuth.instance.currentUser?.uid} ${ref.read(chatDataProvider) != null ? ref.read(chatDataProvider)!.chatId : ""}",
 
                                     receiverDp: ref.read(chatDataProvider)!.dp,
                                     receiverName:
@@ -137,9 +152,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   return VoiceCallScreen(
                                     isGroup: true,
                                     channelId: callData['channelId'],
-                                    calleeId: ref.read(chatDataProvider) != null
-                                          ? ref.read(chatDataProvider)!.chatId
-                                          : "",
+                                    calleeId:
+                                        ref.read(chatDataProvider) != null
+                                            ? ref.read(chatDataProvider)!.chatId
+                                            : "",
 
                                     receiverDp: ref.read(chatDataProvider)!.dp,
                                     receiverName:
@@ -180,7 +196,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ref
                                 .read(videoCallRepositoryProvider)
                                 .sendCallData(
-                                  calleeId: ref.read(chatDataProvider) != null
+                                  calleeId:
+                                      ref.read(chatDataProvider) != null
                                           ? ref.read(chatDataProvider)!.chatId
                                           : "",
                                   callType: "video",
@@ -198,9 +215,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         ref.read(chatDataProvider)!.groupName!,
                                     channelId:
                                         "${ref.watch(chatIdProvider)} ${ref.read(chatDataProvider)!.groupName}",
-                                    calleeId: ref.read(chatDataProvider) != null
-                                          ? ref.read(chatDataProvider)!.chatId
-                                          : "",
+                                    calleeId:
+                                        ref.read(chatDataProvider) != null
+                                            ? ref.read(chatDataProvider)!.chatId
+                                            : "",
                                   );
                                 },
                               ),
@@ -226,9 +244,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         ref.read(chatDataProvider)!.groupName!,
 
                                     channelId: callData['channelId'],
-                                    calleeId: ref.read(chatDataProvider) != null
-                                          ? ref.read(chatDataProvider)!.chatId
-                                          : "",
+                                    calleeId:
+                                        ref.read(chatDataProvider) != null
+                                            ? ref.read(chatDataProvider)!.chatId
+                                            : "",
                                   );
                                 },
                               ),
@@ -362,7 +381,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       }
 
                       final callData = snapshot.data ?? {};
-
 
                       if (callData.isEmpty) {
                         return IconButton(
