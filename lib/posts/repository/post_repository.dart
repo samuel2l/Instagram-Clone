@@ -227,4 +227,19 @@ class PostRepository {
       return [];
     }
   }
+
+  Future<int> getPostCount(String uid) async {
+  try {
+    final snapshot = await firestore
+        .collection('posts')
+        .where('uid', isEqualTo: uid)
+        .where('postType', isEqualTo: 'post')
+        .get();
+
+    return snapshot.size;
+  } catch (e) {
+    debugPrint('Error getting post count: $e');
+    return 0;
+  }
+}
 }

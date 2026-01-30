@@ -19,14 +19,14 @@ class _UserPostsState extends ConsumerState<UserPosts> {
       stream: ref.watch(postRepositoryProvider).getUserPosts(widget.userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Colors.red,));
+          return Center(child: CircularProgressIndicator(color: Colors.red));
         } else if (snapshot.hasError) {
           return Text("Something went wrong: ${snapshot.error}");
         } else if (snapshot.hasData) {
           final posts = snapshot.data!;
 
           if (posts.isEmpty) {
-            return Text("User has no posts");
+            return Center(child: Text("User has no posts"));
           } else {
             return GridView.builder(
               padding: EdgeInsets.all(10),
@@ -57,7 +57,7 @@ class _UserPostsState extends ConsumerState<UserPosts> {
                           ),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator(),);
+                      return Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
                       return Icon(Icons.error);
                     } else {
@@ -82,8 +82,7 @@ class _UserPostsState extends ConsumerState<UserPosts> {
               },
             );
           }
-        } 
-        else {
+        } else {
           return Text("Unexpected error");
         }
       },
